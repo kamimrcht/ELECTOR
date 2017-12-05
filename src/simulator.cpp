@@ -112,9 +112,9 @@ int main(int argc, char ** argv){
 		exit(0);
 	}
 	bool long_reads(false);
-	if(argc==6){
+	//~ if(argc==6){
 		long_reads=true;
-	}
+	//~ }
 	string input(argv[1]);
 	double coverage(stof(argv[3]));
 	float length(stof(argv[2]));
