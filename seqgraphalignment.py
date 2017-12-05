@@ -221,7 +221,7 @@ class SeqGraphAlignment(object):
                 best = scores[prevIdxs[0]+1,0]
                 for prevIdx in prevIdxs:
                     best = max(best, scores[prevIdx+1,0])
-                scores[index+1,0] = best + self.__extendgapscore
+                scores[index+1,0] = best + self.extendgapscore
                 scores[0,0] = 0
 
         # backtracking matrices
