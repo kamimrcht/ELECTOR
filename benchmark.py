@@ -75,50 +75,17 @@ def checkWrittenFiles(files):
 
 
 
-def main():
-	beg = time.time()
-	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
-	# Manage command line arguments
-	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors. Usage: python3 benchmark -r perfect_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa")
-
-	# Define allowed options
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-c', nargs='?', type=argparse.FileType('r'), action="store", dest="corrected")
-	parser.add_argument('-u', nargs='?', type=argparse.FileType('r'),  action="store", dest="uncorrected")
-	parser.add_argument('-r', nargs='?', type=argparse.FileType('r'),  action="store", dest="reference")
-	parser.add_argument('-g','--globalAlign', action='store_true', help='Global alignment, or (default) local alignment')
-	#~ parser.add_argument('-H','--html', nargs='?', type=argparse.FileType('w'), default='poa.html', help='html output')
-
-
-	# get options for this run
-	args = parser.parse_args()
-	
-
-
-	# format to store fasta: ('header', 'sequence')
-	fastaCorrected = readfasta(args.corrected)
-	fastaUncorrected = readfasta(args.uncorrected)
-	fastaReference = readfasta(args.reference)
+def computeMetrics(fastaReference, fastaUncorrected, fastaCorrected):
 	sumFP = []
 	sumFN = []
 	sumTP = []
 	for uncorrectedRead, correctedRead, referenceRead in zip(fastaUncorrected, fastaCorrected, fastaReference): #hypothesis: same order
-		#~ print(uncorrectedRead, correctedRead)
 		graph = poagraph.POAGraph(referenceRead[1], referenceRead[0]+"r")
-		alignment = seqgraphalignment.SeqGraphAlignment(uncorrectedRead[1], graph, globalAlign=args.globalAlign)
-		#~ print(alignment.sequence)
-
+		alignment = seqgraphalignment.SeqGraphAlignment(uncorrectedRead[1], graph, globalAlign=True)
 		graph.incorporateSeqAlignment(alignment, uncorrectedRead[1], uncorrectedRead[0]+"u")
-		alignment = seqgraphalignment.SeqGraphAlignment(correctedRead[1], graph, globalAlign=args.globalAlign)
-		#~ print(alignment.sequence)
+		alignment = seqgraphalignment.SeqGraphAlignment(correctedRead[1], graph, globalAlign=True)
 		graph.incorporateSeqAlignment(alignment, correctedRead[1], correctedRead[0]+"c")
 		alignments, consensus = graph.generateAlignmentStrings()
-		#~ print(">reference")
-		#~ print(alignments[0])
-		#~ print(">uncorrected")
-		#~ print(alignments[1])
-		#~ print(">corrected")
-		#~ print(alignments[2])
 		toW = ""
 		FN = 0 #code M
 		FP = 0 #code !
@@ -148,24 +115,33 @@ def main():
 		sumFN.append(FN)
 		sumFP.append(FP)
 		sumTP.append(TP)
-		#~ print(">", referenceRead[0])
-		#~ print(referenceRead[1])
-		#~ print(">", uncorrectedRead[0])
-		#~ print(uncorrectedRead[1])
-		#~ print(">", correctedRead[0])
-		#~ print(correctedRead[1])
-	
-		
-		#~ break
-	#~ finalMeanFN = sum(meanFN)/len(meanFN) if sum(meanFN) != 0 else 0
-	#~ finalMeanFP = sum(meanFP)/len(meanFP) if sum(meanFP) != 0 else 0
-	#~ finalMeanTP = sum(meanTP)/len(meanTP) if sum(meanTP) != 0 else 0
 	
 	precision = sum(sumTP)/(sum(sumTP)+sum(sumFP)) if sum(sumTP)+sum(sumFP) != 0 else 0
 	recall = sum(sumTP)/(sum(sumTP)+sum(sumFN)) if  sum(sumTP)+sum(sumFN) != 0 else 0
-	print("recall:", round(recall,2), "precision:", round(precision,2) )
+	return precision, recall
+
+
+def main():
+	beg = time.time()
+	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
+	# Manage command line arguments
+	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors. Usage: python3 benchmark -r perfect_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa")
+	# Define allowed options
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-c', nargs='?', type=argparse.FileType('r'), action="store", dest="corrected", help="Mandatory fasta file with corrected reads (each read sequence on one line)")
+	parser.add_argument('-u', nargs='?', type=argparse.FileType('r'),  action="store", dest="uncorrected",  help="Mandatory fasta file with uncorrected reads (each read sequence on one line)")
+	parser.add_argument('-r', nargs='?', type=argparse.FileType('r'),  action="store", dest="reference",  help="Mandatory fasta file with reference read sequences (each read sequence on one line)")
+	# get options for this run
+	args = parser.parse_args()
+	# format to store fasta: ('header', 'sequence')
+	fastaCorrected = readfasta(args.corrected)
+	fastaUncorrected = readfasta(args.uncorrected)
+	fastaReference = readfasta(args.reference)
+	# gets precision and recall from MSA of 3 versions of reads
+	precision, recall = computeMetrics(fastaReference, fastaUncorrected, fastaCorrected)
+	print("Recall:", round(recall,2), "Precision:", round(precision,2) )
 	end = time.time()
-	#~ print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
+	print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
 
 
 		
