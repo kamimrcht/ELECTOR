@@ -79,7 +79,7 @@ def main():
 	beg = time.time()
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
 	# Manage command line arguments
-	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
+	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors. Usage: python3 benchmark -r perfect_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa")
 
 	# Define allowed options
 	parser = argparse.ArgumentParser()
@@ -92,8 +92,6 @@ def main():
 
 	# get options for this run
 	args = parser.parse_args()
-
-
 	
 
 
@@ -165,7 +163,7 @@ def main():
 	
 	precision = sum(sumTP)/(sum(sumTP)+sum(sumFP)) if sum(sumTP)+sum(sumFP) != 0 else 0
 	recall = sum(sumTP)/(sum(sumTP)+sum(sumFN)) if  sum(sumTP)+sum(sumFN) != 0 else 0
-	print("recall:", recall, "precision:", precision )
+	print("recall:", round(recall,2), "precision:", round(precision,2) )
 	end = time.time()
 	#~ print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
 
