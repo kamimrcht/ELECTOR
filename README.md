@@ -8,7 +8,7 @@ Benchmark for hybrid and self long read correction
 
 
 # Requirements
-* gcc
+* gcc and C++11
 * Python3
 
 # Usage
