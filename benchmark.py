@@ -20,7 +20,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************"""
 
-
+from Bio import SeqIO
 import time
 import argparse
 import sys
@@ -29,33 +29,13 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re 
 
-# read fasta
-def readfasta(infile):
-    labels = []
-    sequences = []
 
-    curlabel = None
-    cursequence = ""
 
-    def updatelists():
-        if len(cursequence) is not 0:
-            sequences.append(cursequence)
-            if curlabel is not None:
-                labels.append(curlabel)
-            else:
-                labels.append('seq'+str(len(sequences)))
-
-    for line in infile:
-        if line[0] == ">":
-            updatelists()
-            cursequence = ""
-            curlabel = line[1:].strip()
-        else:
-            cursequence += line.strip()
-
-    updatelists()
-    return list(zip(labels, sequences))
-
+def readAndSortFasta(infileName):
+	handle = open(infileName, "rU")
+	l = SeqIO.parse(handle, "fasta")
+	sortedList = [f for f in sorted(l, key=lambda x : x.id)]
+	return sortedList
 
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
@@ -127,6 +107,9 @@ def computeMetrics(fileName):
 
 
 
+
+
+
 def main():
 	beg = time.time()
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -167,12 +150,11 @@ def main():
 	subprocessLauncher(cmdPOA)
 	# gets precision and recall from MSA of 3 versions of reads
 	precision, recall = computeMetrics("default_output_msa.fasta")
-	print("Recall:", round(recall,2), "Precision:", round(precision,2) )
+	print("Recall:", round(recall,2), "Precision:", round(precision,2))
 	end = time.time()
 	print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
 
 
-		
 if __name__ == '__main__':
 	main()
 
