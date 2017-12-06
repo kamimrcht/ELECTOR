@@ -108,23 +108,22 @@ string mutateSequence(const string& referenceSequence,uint mutRate, vector <doub
 
 int main(int argc, char ** argv){
 	if(argc<5){
-		cout<<"[Genome reference file] [read length] [coverage] [error rate] [prefix] [LR]"<<endl;
+		cout<<"[Genome reference file] [read length] [coverage] [error rate] [prefix]"<<endl;
 		exit(0);
 	}
-	bool long_reads(false);
-	//~ if(argc==6){
-		long_reads=true;
-	//~ }
+	//~ bool long_reads(true);
 	string input(argv[1]);
 	double coverage(stof(argv[3]));
+	double coverageSR(50);
 	float length(stof(argv[2]));
 	srand (time(NULL));
 	ifstream in(input);
 	uint errorRate((stof(argv[4]))*10000);
+	uint errorRateSR(0.1*10000);
 	string prefix(argv[5]);
 	string useless, ref,read,pread;
-	uint i(0);
-	ofstream perfect("p."+prefix+".fa"),out(prefix+".fa");
+	uint i(0), srNo(0);
+	ofstream perfect("p."+prefix+".fa"),out(prefix+".fa"),outSR(prefix+"_short.fa");
 	while(not in.eof()){
 		getline(in,useless);
 		getline(in,ref);
@@ -136,31 +135,54 @@ int main(int argc, char ** argv){
 				}
 				//produce a read
 				uint64_t position=xs(seed)%ref.size();
-				//~ uint position=rand()%ref.size();
 				if(position+length<=ref.size()){
-					bool valid(true);
+					
 					uint error(0);
 					pread=ref.substr(position,length);
 					read=pread;
-					if(long_reads){
-						read=mutateSequence(read,errorRate/100);
-					}else{
-						for(uint i(0);i<read.size();++i){
-							if(read[i]=='N' or read[i]=='n'){valid=false;break;}
-							if(xs(seed)%10000<=errorRate){
-							//~ if(rand()%errorRate==0){
-								read[i]=randNucle(read[i]);
-								++error;
-							}
+					
+					read=mutateSequence(read,errorRate/100);
+
+						//~ for(uint i(0);i<read.size();++i){
+							//~ if(read[i]=='N' or read[i]=='n'){valid=false;break;}
+							//~ if(xs(seed)%10000<=errorRate){
+								//~ read[i]=randNucle(read[i]);
+								//~ ++error;
+							//~ }
+						//~ }
+					
+					//~ if(valid){
+					perfect<<">"+to_string(i)<<"\n";
+					perfect<<pread<<"\n";
+					out<<">"+to_string(i)<<"\n";
+					out<<read<<"\n";
+					nucProduced+=read.size();
+					++i;
+					//~ }
+				}
+			}
+
+			uint64_t nucProducedSR(0);
+			while(nucProducedSR<(uint64_t)(coverageSR*ref.size())){
+				if(srNo%100==0){
+					seed=(rand());
+				}
+				uint64_t position=xs(seed)%ref.size();
+				if(position+length<=ref.size()){
+					bool valid(true);
+					pread=ref.substr(position,150);
+					read=pread;
+					for(uint i(0);i<read.size();++i){
+						if(read[i]=='N' or read[i]=='n'){valid=false;break;}
+						if(xs(seed)%10000<=errorRateSR){
+							read[i]=randNucle(read[i]);
 						}
 					}
-					if(valid){
-						perfect<<">"+to_string(i)<<"\n";
-						perfect<<pread<<"\n";
-						out<<">"+to_string(i)<<"\n";
-						out<<read<<"\n";
-						nucProduced+=read.size();
-						++i;
+					if (valid){
+						outSR<<">"+to_string(srNo)<<"\n";
+						outSR<<read<<"\n";
+						nucProducedSR += read.size();
+						++srNo;
 					}
 				}
 			}
