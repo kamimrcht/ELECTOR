@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """*****************************************************************************
- *   Authors: Camille Marchet Antoine Limasset Pierre Morisse Lolita Lecompte
+ *   Authors: Camille Marchet  Pierre Morisse Lolita Lecompte Antoine Limasset
  *   Contact: camille.marchet@irisa.fr, IRISA/Univ Rennes/GenScale, Campus de Beaulieu, 35042 Rennes Cedex, France
  *   Source: https://github.com/Malfoy/BGREAT
  *
@@ -125,20 +125,40 @@ def computeMetrics(fileName):
 	return precision, recall
 
 
+
+
 def main():
 	beg = time.time()
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
 	# Manage command line arguments
-	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors. Usage: python3 benchmark -r perfect_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa")
+	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
 	# Define allowed options
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Mandatory fasta file with corrected reads (each read sequence on one line)")
-	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Mandatory fasta file with uncorrected reads (each read sequence on one line)")
-	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Mandatory fasta file with reference read sequences (each read sequence on one line)")
+	parser.add_argument('-genome', nargs='?', type=str, action="store", dest="genomeRef", help="Reference genome file for simulation (sequence on one line)")
+	parser.add_argument('-read_length', nargs='?', type=int, action="store", dest="readLen", help="Simulated read length", default=10000)
+	parser.add_argument('-coverage', nargs='?', type=int, action="store", dest="coverage", help="Simulation coverage (example: 10 for 10X)", default=10)
+	parser.add_argument('-error_rate', nargs='?', type=float, action="store", dest="errorRate", help="Error rate (example: 0.1 for 10%)", default = 0.1)
+	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
+	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Fasta file with uncorrected reads (each read sequence on one line)")
+	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference read sequences (each read sequence on one line)")
 	# get options for this run
 	args = parser.parse_args()
-	#launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
-	cmdPOA = "./bin/poa -corrected_reads_fasta " + args.corrected + " -reference_reads_fasta " + args.reference + " -uncorrected_reads_fasta " + args.uncorrected
+	corrected = ""
+	uncorrected = ""
+	reference = ""
+	if args.corrected is None and args.uncorrected is None and args.reference is None:
+		# simulate data
+		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
+		corrected = "simulatedReads.fa"
+		uncorrected = "simulatedReads.fa"
+		reference = "p.simulatedReads.fa"
+		subprocessLauncher(cmdSimul)
+	else: # else directly use data provided and skip simulation
+		corrected = args.corrected
+		uncorrected = args.uncorrected
+		reference = args.reference
+	# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+	cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
 	subprocessLauncher(cmdPOA)
 	# gets precision and recall from MSA of 3 versions of reads
 	precision, recall = computeMetrics("default_output_msa.fasta")

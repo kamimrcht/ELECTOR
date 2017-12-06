@@ -3,3 +3,4 @@ tests
 bin
 __pycache__
 *.pyc
+*.a

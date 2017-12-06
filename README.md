@@ -1,8 +1,23 @@
 Benchmark for hybrid and self long read correction
 =================================================
 
+# Description
+* This program enables the testing of different hybrid and non hybrid long read correction tools.
+* It embeds a modified version of [poaV2](https://sourceforge.net/projects/poamsa/)
+* Authors: Camille Marchet, Pierre Morisse, Lolita Lecompte, Antoine Limasset
+
+
+# Requirements
+* gcc
+* Python3
 
 # Usage
+
+## Installation
+
+	./install.sh
+
+Binaries are then in ./bin
 
 ## Running the tool
 
