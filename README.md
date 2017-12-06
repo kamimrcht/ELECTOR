@@ -68,11 +68,9 @@ For each read, this file comes in three parts:
 
 * The false negative (FN), false positive (FP) and true positive (TP) counts for this read.
 
-	FN = sum('M')
-
-	FP = sum('!')
-
-	TP = sum('*')
+	FN = sum(M)
+	FP = sum(!)
+	TP = sum(*)
 
 The last lines report of summary of the results. They provide the recall and precision of the tools and its runtime.
 
