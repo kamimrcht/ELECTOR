@@ -23,6 +23,14 @@ Binaries are then in ./bin
 
 	python3 benchmark.py -genome yourgenome.fa -read_length READLEN -coverage COV -error_rate RATE
 
+The simulation produces 3 files in the directory:
+
+* simulatedReads.fa is the long erroneous read file
+
+* p.simulatedReads.fa is the long genomic read file (same sequences, in same order than in simulatedReads.fa, without errors)
+
+* simulatedReads_short.fa is the short reads file
+
 ## Running the tool when reference/corrected/uncorrected files are already present
 
 	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa

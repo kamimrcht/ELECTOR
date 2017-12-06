@@ -52,6 +52,15 @@ def checkWrittenFiles(files):
 		dieToFatalError("One or more files could not be written.")
 
 
+def lordec():
+	outfile = "corrected_by_LoRDEC.fa"
+	logFile = open("lordec.log", 'w')
+	cmdLordec = "lordec-correct -i simulatedReads.fa -2 simulatedReads_short.fa -o " + outfile + " -k 21 -s 2 -T 4"
+	p = subprocessLauncher(cmdLordec, logFile, logFile)
+	cmdRm = "rm *.h5"
+	subprocess.check_output(['bash','-c', cmdRm])
+	return outfile
+
 
 def computeMetrics(fileName):
 	msa = open(fileName, 'r')
@@ -111,7 +120,6 @@ def computeMetrics(fileName):
 
 
 def main():
-	beg = time.time()
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
 	# Manage command line arguments
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
@@ -137,22 +145,30 @@ def main():
 	if args.corrected is None and args.uncorrected is None and args.reference is None:
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
-		corrected = "simulatedReads.fa"
+		#~ corrected = "simulatedReads.fa"
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
+		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-	# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
-	cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
-	subprocessLauncher(cmdPOA)
-	# gets precision and recall from MSA of 3 versions of reads
-	precision, recall = computeMetrics("default_output_msa.fasta")
-	print("Recall:", round(recall,2), "Precision:", round(precision,2))
-	end = time.time()
-	print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
+	#we assume binaries are in PATH
+	for soft in ["Lordec"]:
+		if soft == "Lordec":
+			beg = time.time()
+			corrected = lordec()
+			end = time.time()
+		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+			cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
+			subprocessLauncher(cmdPOA)
+		# gets precision and recall from MSA of 3 versions of reads
+			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+			subprocess.check_output(['bash','-c', cmdMv])
+			precision, recall = computeMetrics("msa_" + soft + ".fa")
+			print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
+			print("Run in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 
 
 if __name__ == '__main__':
