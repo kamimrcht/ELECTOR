@@ -9,7 +9,7 @@ Benchmark for hybrid and self long read correction
 
 # Requirements
 * gcc and C++11
-* Python3
+* Python3 and Biopython
 
 # Usage
 
@@ -18,6 +18,18 @@ Benchmark for hybrid and self long read correction
 	./install.sh
 
 Binaries are then in ./bin
+
+Any tool you wish to test must be installed and in your PATH.
+
+To add a tool in your PATH:
+
+	PATH=/path/to/tool/binary:$PATH
+
+Compatible tools:
+
+* LoRDEC
+
+* ColorMap
 
 ## Running the tool and simulate read files
 
@@ -69,7 +81,9 @@ For each read, this file comes in three parts:
 * The false negative (FN), false positive (FP) and true positive (TP) counts for this read.
 
 	FN = sum(M)
+	
 	FP = sum(!)
+	
 	TP = sum(*)
 
 The last lines report of summary of the results. They provide the recall and precision of the tools and its runtime.
