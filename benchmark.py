@@ -62,13 +62,14 @@ def lordec():
 	return outfile
 
 
-def computeMetrics(fileName):
+def computeMetrics(fileName, outfile):
 	msa = open(fileName, 'r')
 	sumFP = []
 	sumFN = []
 	sumTP = []
 	nbLines = 0
 	lines = msa.readlines()
+	readNo = 0
 	while nbLines < len(lines) - 3:
 		toW = ""
 		if not ">" in lines[nbLines]:
@@ -101,11 +102,13 @@ def computeMetrics(fileName):
 							else: #new error introduced by corrector
 								FP += 1
 								toW += "!"
-			print(toW)
-			print("FN:", FN, "FP:", FP, "TP:", TP)
+			outfile.write(">read " + str(readNo) + "\n")
+			outfile.write(toW + "\n")
+			outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
 			sumFN.append(FN)
 			sumFP.append(FP)
 			sumTP.append(TP)
+			readNo += 1
 		else:
 			nbLines += 1
 	
@@ -137,8 +140,6 @@ def main():
 	if (len(sys.argv) <= 1):
 		parser.print_help()
 		return 0
-	else:
-		print(args)
 	corrected = ""
 	uncorrected = ""
 	reference = ""
@@ -155,20 +156,24 @@ def main():
 		uncorrected = args.uncorrected
 		reference = args.reference
 	#we assume binaries are in PATH
-	for soft in ["Lordec"]:
-		if soft == "Lordec":
+	for soft in ["lordec"]:
+		if soft == "lordec":
 			beg = time.time()
 			corrected = lordec()
 			end = time.time()
 		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
 			cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
+			outProfile = open(soft + "_msa_profile.txt", 'w')
 			subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
 			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
 			subprocess.check_output(['bash','-c', cmdMv])
-			precision, recall = computeMetrics("msa_" + soft + ".fa")
+			precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
+			outProfile.write("\n***********SUMMARY***********\n")
+			outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
 			print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
-			print("Run in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
+			outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
+			print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 
 
 if __name__ == '__main__':

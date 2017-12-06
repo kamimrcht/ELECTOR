@@ -39,6 +39,45 @@ The simulation produces 3 files in the directory:
 
 	python3 benchmark.py -h
 
+
+## Output
+
+For each corrector, the program outputs two files
+
+* corrector.log
+
+* corrector_msa_profile.txt
+
+The log of the corrector's run is printed in corrector.log file.
+The analysis of the correction per read is printed in corrector_msa_profile.txt.
+For each read, this file comes in three parts:
+
+* A header with the identifier of the read, for instance:
+	>read 45
+
+* The alignment profile. For correct bases untouched by the corrector, we leave a blank space. For erroneous bases corrected, we print a "*". For erroneous bases left uncorrected, we print a "M". For positions were the corrector inserted a wrong base, we output a "!". For instance:
+
+	     *                            M   M             MM                    M            M     M      M M      MM   *                         M              M  M     *         * **
+	     *        **             *       *         *                      *   *   *         ***    *            *                                    *                                 
+	          *       *              M        * !                          *       *                           **         *          *                       *                   **    
+	               *                *  **          *** **        * ***           *     **          MM    M  *         *   *      *       *    *                  *  *           *      
+	                        **      *                 * * **  *            *         *                     *     *                 ***             *  *         *              *       
+	                            *                  * *                 *                           *  **      *                         *   *        *  *               M   M          
+	                                 **** *        *                              M
+
+
+* The false negative (FN), false positive (FP) and true positive (TP) counts for this read.
+
+	FN = sum('M')
+	FP = sum('!')
+	TP = sum('*')
+
+The last lines report of summary of the results. They provide the recall and precision of the tools and its runtime.
+
+	recall = TP/(TP+FN)
+	precision = TP/(TP+FP)
+
+
 # Toy tests
 
 ## Example 1: simulating files + bench
