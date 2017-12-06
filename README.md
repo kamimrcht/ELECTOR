@@ -19,7 +19,11 @@ Benchmark for hybrid and self long read correction
 
 Binaries are then in ./bin
 
-## Running the tool
+## Running the tool and simulate read files
+
+	python3 benchmark.py -genome yourgenome.fa -read_length READLEN -coverage COV -error_rate RATE
+
+## Running the tool when reference/corrected/uncorrected files are already present
 
 	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa
 
@@ -27,6 +31,12 @@ Binaries are then in ./bin
 
 	python3 benchmark.py -h
 
-## Toy example for testing
+# Toy tests
+
+## Example 1: simulating files + bench
+
+	python3 benchmark.py -genome example/example_reference.fasta -read_length 1000
+
+## Example 2: directly provide read files and skip simulation
 
 	python3 benchmark.py -r example/perfect_reads.fasta -c example/corrected_reads.fasta -u example/uncorrected_reads.fasta
