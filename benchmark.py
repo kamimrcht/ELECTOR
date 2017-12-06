@@ -27,9 +27,7 @@ import sys
 import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
-import re
-import poagraph
-import seqgraphalignment
+import re 
 
 # read fasta
 def readfasta(infile):
@@ -75,46 +73,52 @@ def checkWrittenFiles(files):
 
 
 
-def computeMetrics(fastaReference, fastaUncorrected, fastaCorrected):
+def computeMetrics(fileName):
+	msa = open(fileName, 'r')
 	sumFP = []
 	sumFN = []
 	sumTP = []
-	for uncorrectedRead, correctedRead, referenceRead in zip(fastaUncorrected, fastaCorrected, fastaReference): #hypothesis: same order
-		graph = poagraph.POAGraph(referenceRead[1], referenceRead[0]+"r")
-		alignment = seqgraphalignment.SeqGraphAlignment(uncorrectedRead[1], graph, globalAlign=True)
-		graph.incorporateSeqAlignment(alignment, uncorrectedRead[1], uncorrectedRead[0]+"u")
-		alignment = seqgraphalignment.SeqGraphAlignment(correctedRead[1], graph, globalAlign=True)
-		graph.incorporateSeqAlignment(alignment, correctedRead[1], correctedRead[0]+"c")
-		alignments, consensus = graph.generateAlignmentStrings()
+	nbLines = 0
+	lines = msa.readlines()
+	while nbLines < len(lines) - 3:
 		toW = ""
-		FN = 0 #code M
-		FP = 0 #code !
-		TP = 0 #code *
-		for ntRef, ntUnco, ntResult in zip(alignments[0], alignments[1], alignments[2]):
-			if ntRef == ntUnco == ntResult:
-				toW += " "
-			else:
-				if ntRef == ntUnco:  #no error
-					if ntUnco != ntResult: #FP
-						FP += 1
-						toW += "!"
-					# else good nt not corrected = ok
-				else: #error
-					if ntRef == ntResult: #error corrected
-						TP += 1
-						toW += "*"
-					else:
-						if ntUnco == ntResult: # error not corrected
-							FN += 1
-							toW += "M"
-						else: #new error introduced by corrector
+		if not ">" in lines[nbLines]:
+			reference = lines[nbLines].rstrip()
+			nbLines += 2
+			uncorrected =  lines[nbLines].rstrip()
+			nbLines += 2
+			corrected = lines[nbLines].rstrip()
+			nbLines += 2
+			FN = 0 #code M
+			FP = 0 #code !
+			TP = 0 #code *
+			for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
+				if ntRef == ntUnco == ntResult:
+					toW += " "
+				else:
+					if ntRef == ntUnco:  #no error
+						if ntUnco != ntResult: #FP
 							FP += 1
 							toW += "!"
-		print(toW)
-		print("FN:", FN, "FP:", FP, "TP:", TP)
-		sumFN.append(FN)
-		sumFP.append(FP)
-		sumTP.append(TP)
+						# else good nt not corrected = ok
+					else: #error
+						if ntRef == ntResult: #error corrected
+							TP += 1
+							toW += "*"
+						else:
+							if ntUnco == ntResult: # error not corrected
+								FN += 1
+								toW += "M"
+							else: #new error introduced by corrector
+								FP += 1
+								toW += "!"
+			print(toW)
+			print("FN:", FN, "FP:", FP, "TP:", TP)
+			sumFN.append(FN)
+			sumFP.append(FP)
+			sumTP.append(TP)
+		else:
+			nbLines += 1
 	
 	precision = sum(sumTP)/(sum(sumTP)+sum(sumFP)) if sum(sumTP)+sum(sumFP) != 0 else 0
 	recall = sum(sumTP)/(sum(sumTP)+sum(sumFN)) if  sum(sumTP)+sum(sumFN) != 0 else 0
@@ -128,17 +132,16 @@ def main():
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors. Usage: python3 benchmark -r perfect_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa")
 	# Define allowed options
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-c', nargs='?', type=argparse.FileType('r'), action="store", dest="corrected", help="Mandatory fasta file with corrected reads (each read sequence on one line)")
-	parser.add_argument('-u', nargs='?', type=argparse.FileType('r'),  action="store", dest="uncorrected",  help="Mandatory fasta file with uncorrected reads (each read sequence on one line)")
-	parser.add_argument('-r', nargs='?', type=argparse.FileType('r'),  action="store", dest="reference",  help="Mandatory fasta file with reference read sequences (each read sequence on one line)")
+	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Mandatory fasta file with corrected reads (each read sequence on one line)")
+	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Mandatory fasta file with uncorrected reads (each read sequence on one line)")
+	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Mandatory fasta file with reference read sequences (each read sequence on one line)")
 	# get options for this run
 	args = parser.parse_args()
-	# format to store fasta: ('header', 'sequence')
-	fastaCorrected = readfasta(args.corrected)
-	fastaUncorrected = readfasta(args.uncorrected)
-	fastaReference = readfasta(args.reference)
+	#launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+	cmdPOA = "./bin/poa -corrected_reads_fasta " + args.corrected + " -reference_reads_fasta " + args.reference + " -uncorrected_reads_fasta " + args.uncorrected
+	subprocessLauncher(cmdPOA)
 	# gets precision and recall from MSA of 3 versions of reads
-	precision, recall = computeMetrics(fastaReference, fastaUncorrected, fastaCorrected)
+	precision, recall = computeMetrics("default_output_msa.fasta")
 	print("Recall:", round(recall,2), "Precision:", round(precision,2) )
 	end = time.time()
 	print("Run ends in {0} seconds.".format(str(round(end-beg, 2))))
