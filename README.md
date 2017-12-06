@@ -78,6 +78,8 @@ The last lines report of summary of the results. They provide the recall and pre
 	precision = TP/(TP+FP)
 
 
+The program also recalls precision, recall and runtime for each tool in the standard output.
+
 # Toy tests
 
 ## Example 1: simulating files + bench
