@@ -196,6 +196,7 @@ def main():
 	corrected = ""
 	uncorrected = ""
 	reference = ""
+	outProfile = open(soft + "_msa_profile.txt", 'w')
 	if args.corrected is None and args.uncorrected is None and args.reference is None:
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
@@ -226,7 +227,6 @@ def main():
 		reference = args.reference
 		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
 		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
-		outProfile = open(soft + "_msa_profile.txt", 'w')
 		subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
 		cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
