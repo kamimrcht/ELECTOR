@@ -199,20 +199,18 @@ def computeMetrics(fileName, outfile):
 
 
 
-
-
 def main():
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
 	# Manage command line arguments
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
 	# Define allowed options
-	threads = 2
+	#~ threads = 2
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-genome', nargs='?', type=str, action="store", dest="genomeRef", help="Reference genome file for simulation (sequence on one line)")
 	parser.add_argument('-read_length', nargs='?', type=int, action="store", dest="readLen", help="Simulated read length", default=10000)
 	parser.add_argument('-coverage', nargs='?', type=int, action="store", dest="coverage", help="Simulation coverage (example: 10 for 10X)", default=10)
 	parser.add_argument('-error_rate', nargs='?', type=float, action="store", dest="errorRate", help="Error rate (example: 0.1 for 10 percent)", default = 0.1)
-	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default = 2)
+	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default=2)
 	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
 	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Fasta file with uncorrected reads (each read sequence on one line)")
 	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference read sequences (each read sequence on one line)")
@@ -235,7 +233,7 @@ def main():
 		for soft in ["lordec", "colormap", "mecat", "lorma"]:
 			if soft == "lordec":
 				beg = time.time()
-				corrected = lordec(threads)
+				corrected = lordec(args.threads)
 				end = time.time()
 			#~ if soft == "mecat":
 				#~ beg = time.time()
@@ -243,18 +241,18 @@ def main():
 				#~ end = time.time()
 			if soft == "colormap":
 				beg = time.time()
-				corrected_tmp = colormap(threads)
+				corrected_tmp = colormap(args.threads)
 				end = time.time()
 				corrected = "corrected_sorted_by_colormap.fa"
 				readAndSortFasta(corrected_tmp, corrected)
-			getPOA(corrected, reference, uncorrected, threads, soft)
+			getPOA(corrected, reference, uncorrected, args.threads, soft)
 			outputRecallPrecision(beg, end, soft)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-		getPOA(corrected, reference, uncorrected, threads)
+		getPOA(corrected, reference, uncorrected, args.threads)
 		outputRecallPrecision()
 
 
