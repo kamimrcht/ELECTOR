@@ -177,11 +177,13 @@ def main():
 	# Manage command line arguments
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
 	# Define allowed options
+	threads = 2
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-genome', nargs='?', type=str, action="store", dest="genomeRef", help="Reference genome file for simulation (sequence on one line)")
 	parser.add_argument('-read_length', nargs='?', type=int, action="store", dest="readLen", help="Simulated read length", default=10000)
 	parser.add_argument('-coverage', nargs='?', type=int, action="store", dest="coverage", help="Simulation coverage (example: 10 for 10X)", default=10)
 	parser.add_argument('-error_rate', nargs='?', type=float, action="store", dest="errorRate", help="Error rate (example: 0.1 for 10 percent)", default = 0.1)
+	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default = 2)
 	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
 	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Fasta file with uncorrected reads (each read sequence on one line)")
 	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference read sequences (each read sequence on one line)")
@@ -206,8 +208,7 @@ def main():
 		uncorrected = args.uncorrected
 		reference = args.reference
 	#we assume binaries are in PATH
-	#~ for soft in ["lordec", "colormap", "mecat"]:
-	for soft in ["lorma"]:
+	for soft in ["lordec", "colormap", "mecat", "lorma"]:
 		if soft == "lordec":
 			beg = time.time()
 			corrected = lordec()
@@ -225,7 +226,7 @@ def main():
 
 
 		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
-		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
+		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
 		outProfile = open(soft + "_msa_profile.txt", 'w')
 		subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
