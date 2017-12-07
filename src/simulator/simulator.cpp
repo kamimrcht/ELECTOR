@@ -119,7 +119,7 @@ int main(int argc, char ** argv){
 	srand (time(NULL));
 	ifstream in(input);
 	uint errorRate((stof(argv[4]))*10000);
-	uint errorRateSR(0.1*10000);
+	uint errorRateSR(0.001*10000);
 	string prefix(argv[5]);
 	string useless, ref,read,pread;
 	uint i(0), srNo(0);
