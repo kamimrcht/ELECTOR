@@ -196,7 +196,7 @@ def main():
 	corrected = ""
 	uncorrected = ""
 	reference = ""
-	outProfile = open(soft + "_msa_profile.txt", 'w')
+
 	if args.corrected is None and args.uncorrected is None and args.reference is None:
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
@@ -220,12 +220,24 @@ def main():
 				end = time.time()
 				corrected = "corrected_sorted_by_colormap.fa"
 				readAndSortFasta(corrected_tmp, corrected)
+			outProfile = open(soft + "_msa_profile.txt", 'w')
+			cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
+			subprocessLauncher(cmdPOA)
+			# gets precision and recall from MSA of 3 versions of reads
+			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+			subprocess.check_output(['bash','-c', cmdMv])
+			precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
+			outProfile.write("\n***********SUMMARY***********\n")
+			outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
+			print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
+			outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
+			print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+		outProfile = open("msa_profile.txt", 'w')
 		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
 		subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
@@ -237,6 +249,8 @@ def main():
 		print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
 		outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
 		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
+		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+		
 
 
 if __name__ == '__main__':
