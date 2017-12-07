@@ -198,6 +198,15 @@ def computeMetrics(fileName, outfile):
 	return precision, recall
 
 
+# get list of correctors from parameter file
+def getCorrectors(parameterFileName):
+	listCorrectors = []
+	par = open(parameterFileName, 'r')
+	lines = par.readlines()
+	for line in lines:
+		listCorrectors.append(line.rstrip())
+	return listCorrectors
+
 
 def main():
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -211,6 +220,7 @@ def main():
 	parser.add_argument('-coverage', nargs='?', type=int, action="store", dest="coverage", help="Simulation coverage (example: 10 for 10X)", default=10)
 	parser.add_argument('-error_rate', nargs='?', type=float, action="store", dest="errorRate", help="Error rate (example: 0.1 for 10 percent)", default = 0.1)
 	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default=2)
+	parser.add_argument('-par', nargs='?', type=str, action="store", dest="parameterFile", help="parameters file: list of correctors, one per line", default=None)
 	parser.add_argument('-c', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
 	parser.add_argument('-u', nargs='?', type=str,  action="store", dest="uncorrected",  help="Fasta file with uncorrected reads (each read sequence on one line)")
 	parser.add_argument('-r', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference read sequences (each read sequence on one line)")
@@ -219,34 +229,41 @@ def main():
 	if (len(sys.argv) <= 1):
 		parser.print_help()
 		return 0
+	
 	corrected = ""
 	uncorrected = ""
 	reference = ""
 
 	if args.corrected is None and args.uncorrected is None and args.reference is None:  # we simulate reads and correct them with tools incuded in the benchmark
+		if args.parameterFile is None:
+			print("\nParameter file is mandatory\n\n")
+			parser.print_help()
+			return 0
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
-		# launch correctors, we assume binaries are in PATH
-		for soft in ["lordec", "colormap", "mecat", "lorma"]:
-			if soft == "lordec":
-				beg = time.time()
-				corrected = lordec(args.threads)
-				end = time.time()
-			#~ if soft == "mecat":
-				#~ beg = time.time()
-				#~ corrected = mecat()
-				#~ end = time.time()
-			if soft == "colormap":
-				beg = time.time()
-				corrected_tmp = colormap(args.threads)
-				end = time.time()
-				corrected = "corrected_sorted_by_colormap.fa"
-				readAndSortFasta(corrected_tmp, corrected)
-			getPOA(corrected, reference, uncorrected, args.threads, soft)
-			outputRecallPrecision(beg, end, soft)
+		listCorrectors = getCorrectors(args.parameterFile)
+		if len(listCorrectors) > 0:
+			# launch correctors, we assume binaries are in PATH
+			for soft in listCorrectors:
+				if soft == "lordec":
+					beg = time.time()
+					corrected = lordec(args.threads)
+					end = time.time()
+				#~ if soft == "mecat":
+					#~ beg = time.time()
+					#~ corrected = mecat()
+					#~ end = time.time()
+				if soft == "colormap":
+					beg = time.time()
+					corrected_tmp = colormap(args.threads)
+					end = time.time()
+					corrected = "corrected_sorted_by_colormap.fa"
+					readAndSortFasta(corrected_tmp, corrected)
+				getPOA(corrected, reference, uncorrected, args.threads, soft)
+				outputRecallPrecision(beg, end, soft)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected

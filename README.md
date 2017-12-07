@@ -33,7 +33,15 @@ Compatible tools:
 
 ## Running the tool and simulate read files
 
-	python3 benchmark.py -genome yourgenome.fa -read_length READLEN -coverage COV -error_rate RATE
+	python3 benchmark.py -genome yourgenome.fa -read_length READLEN -coverage COV -error_rate RATE -par PARAMETERS_FILE -threads NBTHREADS
+
+* the mandatory genome file must be in fasta format, with one line per sequences
+
+* optional read_length, coverage and error rate modify the length, coverage and error rate of long reads (for instance -read_length 10000 for size 10000, -coverage 10 for 10X, -error_rate 0.1 for 10 percent)
+
+* the mandatory parameter file is a text file with name of the correctors to be run, one by line, in lower case
+
+* optionnally you can ask for more threads (default is 2), this will be used both for accelerating multiple alignment and correctors runs
 
 The simulation produces 3 files in the directory:
 
@@ -45,7 +53,7 @@ The simulation produces 3 files in the directory:
 
 ## Running the tool when reference/corrected/uncorrected files are already present
 
-	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa
+	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa -threads NBTHREADS
 
 ## Help
 
@@ -98,7 +106,7 @@ The program also recalls precision, recall and runtime for each tool in the stan
 
 ## Example 1: simulating files + bench
 
-	python3 benchmark.py -genome example/example_reference.fasta -read_length 1000
+	python3 benchmark.py -genome example/example_reference.fasta -read_length 1000 -par example/correctors.par -threads 4
 
 ## Example 2: directly provide read files and skip simulation
 
