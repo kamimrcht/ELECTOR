@@ -238,7 +238,7 @@ def main():
 		uncorrected = args.uncorrected
 		reference = args.reference
 		outProfile = open("msa_profile.txt", 'w')
-		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
+		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads)
 		subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
 		cmdMv = "mv default_output_msa.fasta msa.fa"
