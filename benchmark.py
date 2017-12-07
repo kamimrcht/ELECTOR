@@ -77,6 +77,40 @@ def colormap():
 	return outfile
 
 
+def lorma(suffix):
+	cmdcp = "cp simulatedReads.fa" + suffix + ".fa copy.fa"
+	subprocess.check_output(['bash','-c', cmdcp])
+	cmdLorma = "lorma.sh -threads 4 copy.fa -s"
+	p = subprocessLauncher(cmdLorma)
+	try:
+		cmdmv = "mv trim.fasta corrected_by_LoRMA_trim.fa"
+		subprocess.check_output(['bash','-c', cmdmv])
+	except subprocess.CalledProcessError:
+		pass
+	try:
+		cmdmv = "mv discarded.fasta discarded_by_LoRMA_discarded.fa"
+		subprocess.check_output(['bash','-c', cmdmv])
+	except subprocess.CalledProcessError:
+		pass
+	try:
+		cmdmv = "mv final.fasta corrected_by_LoRMA.fa"
+		subprocess.check_output(['bash','-c', cmdmv])
+	except subprocess.CalledProcessError:
+		cmdnull = "> corrected_by_LoRMA" + suffix + ".fa"
+		subprocess.check_output(['bash','-c', cmdnull])
+
+#todo: provide mecat the right error model (-x)
+# does not work for the moment
+#~ def mecat():
+	#~ outfile = "corrected_by_mecat.fa"
+	#~ logFile = open("mecat.log", 'w')
+	#~ cmdMecat = "mecat2pw -j 0 -d simulatedReads.fa -o candidates.txt -w . -t 4 -x 1"
+	#~ p = subprocessLauncher(cmdMecat, logFile, logFile)
+	#~ cmdMecat = "mecat2cns -i 0 -t 4 -x 1 candidates.txt simulatedReads.fa " + outfile
+	#~ p = subprocessLauncher(cmdMecat, logFile, logFile)
+	#~ return outfile
+
+
 
 def computeMetrics(fileName, outfile):
 	msa = open(fileName, 'r')
@@ -172,12 +206,16 @@ def main():
 		uncorrected = args.uncorrected
 		reference = args.reference
 	#we assume binaries are in PATH
-	#~ for soft in ["lordec", "colormap"]:
-	for soft in ["colormap"]:
+	#~ for soft in ["lordec", "colormap", "mecat"]:
+	for soft in ["lorma"]:
 		if soft == "lordec":
 			beg = time.time()
 			corrected = lordec()
 			end = time.time()
+		#~ if soft == "mecat":
+			#~ beg = time.time()
+			#~ corrected = mecat()
+			#~ end = time.time()
 		if soft == "colormap":
 			beg = time.time()
 			corrected_tmp = colormap()
@@ -186,11 +224,11 @@ def main():
 			readAndSortFasta(corrected_tmp, corrected)
 
 
-		#~ # launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
+		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
 		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
 		outProfile = open(soft + "_msa_profile.txt", 'w')
 		subprocessLauncher(cmdPOA)
-	# gets precision and recall from MSA of 3 versions of reads
+		# gets precision and recall from MSA of 3 versions of reads
 		cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 		precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
