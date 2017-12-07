@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """*****************************************************************************
- *   Authors: Camille Marchet  Pierre Morisse Lolita Lecompte Antoine Limasset
+ *   Authors: Camille Marchet  Pierre Morisse Antoine Limasset
  *   Contact: camille.marchet@irisa.fr, IRISA/Univ Rennes/GenScale, Campus de Beaulieu, 35042 Rennes Cedex, France
- *   Source: https://github.com/Malfoy/BGREAT
+ *   Source: https://github.com/kamimrcht/benchmark-long-read-correction
  *
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -35,12 +35,10 @@ def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
 	l = SeqIO.parse(handle, "fasta")
 	sortedList = [f for f in sorted(l, key=lambda x : int(x.id))]
-	#~ return sortedList
 	outfile = open(outfileName, 'w')
 	for record in sortedList:
 		outfile.write(">" + record.description+"\n")
 		outfile.write(str(record.seq)+"\n")
-	#~ print(sortedList)
 
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
@@ -71,8 +69,9 @@ def colormap(threads):
 	outfile = "corrected_by_colormap.fa"
 	logFile = open("colormap.log", 'w')
 	cmdColorMap = "runCorr.sh simulatedReads.fa simulatedReads_short.fa colorMapDir pre " + str(threads)
-	cmdColorMap = "runOEA.sh colorMapDir/pre_sp.fasta simulatedReads_short.fa colorMapDir pre " + str(threads)
 	p = subprocessLauncher(cmdColorMap, logFile, logFile)
+	cmdColorMapOEA = "runOEA.sh colorMapDir/pre_sp.fasta simulatedReads_short.fa colorMapDir pre " + str(threads) # second pass to enhance the correction
+	p = subprocessLauncher(cmdColorMapOEA, logFile, logFile)
 	cmdCp = "cp colorMapDir/pre_oea.fasta " + outfile
 	subprocess.check_output(['bash','-c', cmdCp])
 	return outfile
@@ -112,7 +111,38 @@ def lorma(threads):
 	#~ return outfile
 
 
+# computes msa with POA
+def getPOA(corrected, reference, uncorrected, threads, soft=None):
+	cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads)
+	#~ cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
+	subprocessLauncher(cmdPOA)
+	if soft is not None:
+		cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+	else:
+		cmdMv = "mv default_output_msa.fasta msa.fa"
+	subprocess.check_output(['bash','-c', cmdMv])
 
+
+
+# compute recall and precision and writes output files
+def outputRecallPrecision(beg=0, end=0, soft=None):
+	if soft is not None:
+		outProfile = open(soft + "_msa_profile.txt", 'w')
+		precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
+	else:
+		outProfile = open("msa_profile.txt", 'w')
+		precision, recall = computeMetrics("msa.fa", outProfile)
+	outProfile.write("\n***********SUMMARY***********\n")
+	if soft is not None:
+		outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
+		print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
+		outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
+		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
+	else:
+		outProfile.write("Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
+		print("Recall ", round(recall,2), "Precision ", round(precision,2))
+
+# compute false positives, false negatives, true positives for a msa
 def computeMetrics(fileName, outfile):
 	msa = open(fileName, 'r')
 	sumFP = []
@@ -171,8 +201,6 @@ def computeMetrics(fileName, outfile):
 
 
 
-
-
 def main():
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
 	# Manage command line arguments
@@ -197,14 +225,13 @@ def main():
 	uncorrected = ""
 	reference = ""
 
-	if args.corrected is None and args.uncorrected is None and args.reference is None:
+	if args.corrected is None and args.uncorrected is None and args.reference is None:  # we simulate reads and correct them with tools incuded in the benchmark
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
-		# launch correctors
-		# we assume binaries are in PATH
+		# launch correctors, we assume binaries are in PATH
 		for soft in ["lordec", "colormap", "mecat", "lorma"]:
 			if soft == "lordec":
 				beg = time.time()
@@ -220,37 +247,15 @@ def main():
 				end = time.time()
 				corrected = "corrected_sorted_by_colormap.fa"
 				readAndSortFasta(corrected_tmp, corrected)
-			outProfile = open(soft + "_msa_profile.txt", 'w')
-			cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
-			subprocessLauncher(cmdPOA)
-			# gets precision and recall from MSA of 3 versions of reads
-			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
-			subprocess.check_output(['bash','-c', cmdMv])
-			precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
-			outProfile.write("\n***********SUMMARY***********\n")
-			outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
-			print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
-			outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
-			print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
+			getPOA(corrected, reference, uncorrected, threads, soft)
+			outputRecallPrecision(beg, end, soft)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-		outProfile = open("msa_profile.txt", 'w')
-		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads)
-		subprocessLauncher(cmdPOA)
-		# gets precision and recall from MSA of 3 versions of reads
-		cmdMv = "mv default_output_msa.fasta msa.fa"
-		subprocess.check_output(['bash','-c', cmdMv])
-		precision, recall = computeMetrics("msa.fa", outProfile)
-		outProfile.write("\n***********SUMMARY***********\n")
-		outProfile.write(": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
-		print( "Recall ", round(recall,2), "Precision ", round(precision,2))
-		#~ outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
-		#~ print(" ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
-		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
-		
+		getPOA(corrected, reference, uncorrected, threads)
+		outputRecallPrecision()
 
 
 if __name__ == '__main__':
