@@ -241,14 +241,14 @@ def main():
 		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
 		subprocessLauncher(cmdPOA)
 		# gets precision and recall from MSA of 3 versions of reads
-		cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+		cmdMv = "mv default_output_msa.fasta msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
-		precision, recall = computeMetrics("msa_" + soft + ".fa", outProfile)
+		precision, recall = computeMetrics("msa.fa", outProfile)
 		outProfile.write("\n***********SUMMARY***********\n")
-		outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
-		print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
-		outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
-		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
+		outProfile.write(": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
+		print( "Recall ", round(recall,2), "Precision ", round(precision,2))
+		#~ outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
+		#~ print(" ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
 		
 
