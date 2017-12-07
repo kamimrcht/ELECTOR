@@ -28,7 +28,7 @@ LIBOBJECTS= \
 
 CC = gcc
 #CFLAGS= -g -ansi-strict -W -Wall -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I.
-CFLAGS= -g -Ofast -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I.
+CFLAGS= -g -Ofast -DUSE_WEIGHTED_LINKS -DUSE_PROJECT_HEADER -I. -pthread
 # -I$(HOME)/lib/include
 # -DREPORT_MAX_ALLOC
 
@@ -44,7 +44,7 @@ liblpo.a: $(LIBOBJECTS)
 
 # NB: LIBRARY MUST FOLLOW OBJECTS OR LINK FAILS WITH UNRESOLVED REFERENCES!!
 poa: $(OBJECTS) liblpo.a
-	$(CC) -o $@ $(OBJECTS) -lm liblpo.a
+	$(CC) -o $@ $(OBJECTS) -lm liblpo.a -lpthread
 
 what:
 	@echo poa: partial-order based sequence alignment program
