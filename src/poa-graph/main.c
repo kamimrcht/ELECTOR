@@ -39,7 +39,8 @@ void* doThreadJob(void* params) {
 	LPOSequence_T** input_seqs = p->in_seqs;
 	LPOSequence_T* lpo_out = p->lpo_out;
 	int n_input_seqs;
-	for (int i = 0; i < sizeArray[tnb]; i++) {
+	int i;
+	for (i = 0; i < sizeArray[tnb]; i++) {
 		n_input_seqs = 0;
 		input_seqs[n_input_seqs++] = &(seqRef[seqArray[tnb][i]]);
 		input_seqs[n_input_seqs++] = &(seqUnco[seqArray[tnb][i]]);
@@ -51,7 +52,7 @@ void* doThreadJob(void* params) {
 		n_input_seqs++;
 	}
 	
-	for (int i = 0; i < n_input_seqs; i++) {
+	for (i = 0; i < n_input_seqs; i++) {
 		free_lpo_sequence(p->in_seqs[i],0);
 	}
 	FREE(p->in_seqs);
@@ -220,14 +221,15 @@ int main(int argc,char *argv[])
     sizeArray = calloc(nThreads, sizeof(int));
     int cpt = 0;
 	seqArray[0] = malloc((nseq / nThreads + nseq % nThreads) * sizeof(int));
-	for (int j = 0; j < (nseq / nThreads + nseq % nThreads); j++) {
+	int j;
+	for (j = 0; j < (nseq / nThreads + nseq % nThreads); j++) {
 		seqArray[0][j] = cpt;
 		cpt++;
 		sizeArray[0]++;
 	}
     for (i = 1; i < nThreads; i++) {
 		seqArray[i] = malloc(nseq / nThreads * sizeof(int));
-		for (int j = 0 ; j < nseq / nThreads; j++) {
+		for (j = 0 ; j < nseq / nThreads; j++) {
 			seqArray[i][j] = cpt;
 			sizeArray[i]++;
 			cpt++;
