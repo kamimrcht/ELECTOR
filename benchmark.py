@@ -56,48 +56,55 @@ def checkWrittenFiles(files):
 
 
 def lordec(threads):
-	outfile = "corrected_by_lordec.fa"
+	outfile = "corrected_sorted_by_lordec.fa"
+	corrected_tmp = "corrected_by_lordec.fa"
 	logFile = open("lordec.log", 'w')
-	cmdLordec = "lordec-correct -i simulatedReads.fa -2 simulatedReads_short.fa -o " + outfile + " -k 21 -s 2 -T " + str(threads)
+	cmdLordec = "lordec-correct -i simulatedReads.fa -2 simulatedReads_short.fa -o " + corrected_tmp + " -k 21 -s 2 -T " + str(threads)
 	p = subprocessLauncher(cmdLordec, logFile, logFile)
 	cmdRm = "rm *.h5"
 	subprocess.check_output(['bash','-c', cmdRm])
+	readAndSortFasta(corrected_tmp, outfile)
 	return outfile
 
-
+#todo: formatting the headers before the sort
 def colormap(threads):
-	outfile = "corrected_by_colormap.fa"
+	outfile = "corrected_sorted_by_colormap.fa"
+	corrected_tmp = "corrected_by_colormap.fa"
 	logFile = open("colormap.log", 'w')
 	cmdColorMap = "runCorr.sh simulatedReads.fa simulatedReads_short.fa colorMapDir pre " + str(threads)
 	p = subprocessLauncher(cmdColorMap, logFile, logFile)
 	cmdColorMapOEA = "runOEA.sh colorMapDir/pre_sp.fasta simulatedReads_short.fa colorMapDir pre " + str(threads) # second pass to enhance the correction
 	p = subprocessLauncher(cmdColorMapOEA, logFile, logFile)
-	cmdCp = "cp colorMapDir/pre_oea.fasta " + outfile
+	cmdCp = "cp colorMapDir/pre_oea.fasta " + corrected_tmp
 	subprocess.check_output(['bash','-c', cmdCp])
+	readAndSortFasta(corrected_tmp, outfile)
 	return outfile
 
-
+#todo: formatting the headers before the sort
 def lorma(threads):
-	cmdcp = "cp simulatedReads.fa" + suffix + ".fa copy.fa"
+	outfile = "corrected_sorted_by_lorma.fa"
+	corrected_tmp = "corrected_by_lorma.fa"
+	cmdcp = "cp simulatedReads.fa copy.fa"
 	subprocess.check_output(['bash','-c', cmdcp])
 	cmdLorma = "lorma.sh copy.fa -s -threads " + str(threads)
 	p = subprocessLauncher(cmdLorma)
 	try:
-		cmdmv = "mv trim.fasta corrected_by_LoRMA_trim.fa"
+		cmdmv = "mv trim.fasta corrected_by_lorma_trim.fa"
 		subprocess.check_output(['bash','-c', cmdmv])
 	except subprocess.CalledProcessError:
 		pass
 	try:
-		cmdmv = "mv discarded.fasta discarded_by_LoRMA_discarded.fa"
+		cmdmv = "mv discarded.fasta discarded_by_lorma_discarded.fa"
 		subprocess.check_output(['bash','-c', cmdmv])
 	except subprocess.CalledProcessError:
 		pass
 	try:
-		cmdmv = "mv final.fasta corrected_by_LoRMA.fa"
+		cmdmv = "mv final.fasta " + corrected_tmp
 		subprocess.check_output(['bash','-c', cmdmv])
+		readAndSortFasta(corrected_tmp, outfile)
+		return outfile
 	except subprocess.CalledProcessError:
-		cmdnull = "> corrected_by_LoRMA" + suffix + ".fa"
-		subprocess.check_output(['bash','-c', cmdnull])
+		pass
 
 #todo: provide mecat the right error model (-x)
 # does not work for the moment
@@ -134,13 +141,13 @@ def outputRecallPrecision(beg=0, end=0, soft=None):
 		precision, recall = computeMetrics("msa.fa", outProfile)
 	outProfile.write("\n***********SUMMARY***********\n")
 	if soft is not None:
-		outProfile.write(soft + ": Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
-		print(soft + ": Recall ", round(recall,2), "Precision ", round(precision,2))
+		outProfile.write(soft + ": Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + "\n")
+		print(soft + ": Recall ", round(recall,5), "Precision ", round(precision,5))
 		outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2)))+"\n") #runtime of the tool
 		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 	else:
-		outProfile.write("Recall " + str(round(recall,2)) + " Precision " + str(round(precision,2)) + "\n")
-		print("Recall ", round(recall,2), "Precision ", round(precision,2))
+		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + "\n")
+		print("Recall ", round(recall,5), "Precision ", round(precision,5))
 
 # compute false positives, false negatives, true positives for a msa
 def computeMetrics(fileName, outfile):
@@ -252,6 +259,7 @@ def main():
 		if len(listCorrectors) > 0:
 			# launch correctors, we assume binaries are in PATH
 			for soft in listCorrectors:
+				notRun = False
 				if soft == "lordec":
 					beg = time.time()
 					corrected = lordec(args.threads)
@@ -260,14 +268,19 @@ def main():
 					#~ beg = time.time()
 					#~ corrected = mecat()
 					#~ end = time.time()
-				if soft == "colormap":
+				elif soft == "colormap":
 					beg = time.time()
 					corrected_tmp = colormap(args.threads)
 					end = time.time()
-					corrected = "corrected_sorted_by_colormap.fa"
-					readAndSortFasta(corrected_tmp, corrected)
-				getPOA(corrected, reference, uncorrected, args.threads, soft)
-				outputRecallPrecision(beg, end, soft)
+				elif soft == "lorma":
+					beg = time.time()
+					corrected = lorma(args.threads)
+					end = time.time()
+				else:
+					notRun = True
+				if not notRun:
+					getPOA(corrected, reference, uncorrected, args.threads, soft)
+					outputRecallPrecision(beg, end, soft)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
