@@ -57,30 +57,31 @@ def checkWrittenFiles(files):
 		dieToFatalError("One or more files could not be written.")
 
 
-def lordec():
+def lordec(threads):
 	outfile = "corrected_by_lordec.fa"
 	logFile = open("lordec.log", 'w')
-	cmdLordec = "lordec-correct -i simulatedReads.fa -2 simulatedReads_short.fa -o " + outfile + " -k 21 -s 2 -T 4"
+	cmdLordec = "lordec-correct -i simulatedReads.fa -2 simulatedReads_short.fa -o " + outfile + " -k 21 -s 2 -T " + str(threads)
 	p = subprocessLauncher(cmdLordec, logFile, logFile)
 	cmdRm = "rm *.h5"
 	subprocess.check_output(['bash','-c', cmdRm])
 	return outfile
 
 
-def colormap():
+def colormap(threads):
 	outfile = "corrected_by_colormap.fa"
 	logFile = open("colormap.log", 'w')
-	cmdColorMap = "runCorr.sh simulatedReads.fa simulatedReads_short.fa colorMapDir pre 4"
+	cmdColorMap = "runCorr.sh simulatedReads.fa simulatedReads_short.fa colorMapDir pre " + str(threads)
+	cmdColorMap = "runOEA.sh colorMapDir/pre_sp.fasta simulatedReads_short.fa colorMapDir pre " + str(threads)
 	p = subprocessLauncher(cmdColorMap, logFile, logFile)
-	cmdCp = "cp colorMapDir/pre_sp.fasta " + outfile
+	cmdCp = "cp colorMapDir/pre_oea.fasta " + outfile
 	subprocess.check_output(['bash','-c', cmdCp])
 	return outfile
 
 
-def lorma(suffix):
+def lorma(threads):
 	cmdcp = "cp simulatedReads.fa" + suffix + ".fa copy.fa"
 	subprocess.check_output(['bash','-c', cmdcp])
-	cmdLorma = "lorma.sh -threads 4 copy.fa -s"
+	cmdLorma = "lorma.sh copy.fa -s -threads " + str(threads)
 	p = subprocessLauncher(cmdLorma)
 	try:
 		cmdmv = "mv trim.fasta corrected_by_LoRMA_trim.fa"
@@ -198,33 +199,31 @@ def main():
 	if args.corrected is None and args.uncorrected is None and args.reference is None:
 		# simulate data
 		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
-		#~ corrected = "simulatedReads.fa"
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
+		# launch correctors
+		# we assume binaries are in PATH
+		for soft in ["lordec", "colormap", "mecat", "lorma"]:
+			if soft == "lordec":
+				beg = time.time()
+				corrected = lordec(threads)
+				end = time.time()
+			#~ if soft == "mecat":
+				#~ beg = time.time()
+				#~ corrected = mecat()
+				#~ end = time.time()
+			if soft == "colormap":
+				beg = time.time()
+				corrected_tmp = colormap(threads)
+				end = time.time()
+				corrected = "corrected_sorted_by_colormap.fa"
+				readAndSortFasta(corrected_tmp, corrected)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-	#we assume binaries are in PATH
-	for soft in ["lordec", "colormap", "mecat", "lorma"]:
-		if soft == "lordec":
-			beg = time.time()
-			corrected = lordec()
-			end = time.time()
-		#~ if soft == "mecat":
-			#~ beg = time.time()
-			#~ corrected = mecat()
-			#~ end = time.time()
-		if soft == "colormap":
-			beg = time.time()
-			corrected_tmp = colormap()
-			end = time.time()
-			corrected = "corrected_sorted_by_colormap.fa"
-			readAndSortFasta(corrected_tmp, corrected)
-
-
 		# launch poa graph for MSA: prerequisite = all the sequences file have the same size and sequences come in the same order
 		cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + "-threads " + str(threads)
 		outProfile = open(soft + "_msa_profile.txt", 'w')
