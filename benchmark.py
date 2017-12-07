@@ -244,6 +244,10 @@ def main():
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
+		# convert fasta short reads in fastq
+		fastqShortReads = open("simulatedReads_short.fq", 'w')
+		cmdFq = "./bin/fa2fq simulatedReads_short.fa"
+		subprocessLauncher(cmdFq, fastqShortReads)
 		listCorrectors = getCorrectors(args.parameterFile)
 		if len(listCorrectors) > 0:
 			# launch correctors, we assume binaries are in PATH
