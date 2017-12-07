@@ -23,7 +23,7 @@ int do_preserve_sequence_order=1;
 static LPOSequence_T *read_partial_order_file (char *po_filename, char *subset_filename, int remove_listed_seqs, int keep_all_links, int do_switch_case, ResidueScoreMatrix_T *mat);
 
 
-void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T sm, FILE* seq_ifile);
+void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, FILE* seq_ifile);
 
 void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_input_seqs);
 
@@ -44,11 +44,10 @@ void* doThreadJob(void* params) {
 		input_seqs[n_input_seqs++] = &(seqRef[seqArray[tnb][i]]);
 		input_seqs[n_input_seqs++] = &(seqUnco[seqArray[tnb][i]]);
 		input_seqs[n_input_seqs++] = &(seq[seqArray[tnb][i]]);
-		ResidueScoreMatrix_T sm = score_matrix;
-		initialize_seqs_as_lpo(1,&(seqRef[seqArray[tnb][i]]),&sm);
-		initialize_seqs_as_lpo(1,&(seqUnco[seqArray[tnb][i]]),&sm);
-		initialize_seqs_as_lpo(1,&(seq[seqArray[tnb][i]]),&sm);
-		buildAndAnalysePOMSA (n_input_seqs, lpo_out, input_seqs, sm, seq_ifile);
+		initialize_seqs_as_lpo(1,&(seqRef[seqArray[tnb][i]]),&score_matrix);
+		initialize_seqs_as_lpo(1,&(seqUnco[seqArray[tnb][i]]),&score_matrix);
+		initialize_seqs_as_lpo(1,&(seq[seqArray[tnb][i]]),&score_matrix);
+		buildAndAnalysePOMSA (n_input_seqs, lpo_out, input_seqs, score_matrix, seq_ifile);
 		n_input_seqs++;
 	}
 	
@@ -268,8 +267,8 @@ void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_inp
   if (nseq>0) FREE (seq);
 }
 
-void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T sm, FILE* seq_ifile) {
-	lpo_out = buildup_progressive_lpo(n_input_seqs, input_seqs, &sm, use_aggressive_fusion, do_progressive, pair_score_file, matrix_scoring_function, do_global, do_preserve_sequence_order);
+void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, FILE* seq_ifile) {
+	lpo_out = buildup_progressive_lpo(n_input_seqs, input_seqs, &score_matrix, use_aggressive_fusion, do_progressive, pair_score_file, matrix_scoring_function, do_global, do_preserve_sequence_order);
 	  
 	if (comment) { /* SAVE THE COMMENT LINE AS TITLE OF OUR LPO */
 		FREE(lpo_out->title);
