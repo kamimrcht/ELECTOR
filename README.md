@@ -99,6 +99,8 @@ The last lines report of summary of the results. They provide the recall and pre
 	recall = TP/(TP+FN)
 	precision = TP/(TP+FP)
 
+They also provide the number of trimmed reads and the mean size of missing subsequence in trimmed regions.
+For trimmed reads, recall and precision are only computed on the region that is actually corrected.
 
 The program also recalls precision, recall and runtime for each tool in the standard output.
 
