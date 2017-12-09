@@ -30,6 +30,10 @@ from subprocess import Popen, PIPE, STDOUT
 import re 
 
 
+
+THRESH = 5
+THRESH2 = 20
+
 # sort read file by increasing order of headers
 def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
@@ -126,17 +130,6 @@ def lorma(threads):
 	
 	return (outFile, splitFile, occurrenceEachRead)
 
-#todo: provide mecat the right error model (-x)
-# does not work for the moment
-#~ def mecat():
-	#~ outfile = "corrected_by_mecat.fa"
-	#~ logFile = open("mecat.log", 'w')
-	#~ cmdMecat = "mecat2pw -j 0 -d simulatedReads.fa -o candidates.txt -w . -t 4 -x 1"
-	#~ p = subprocessLauncher(cmdMecat, logFile, logFile)
-	#~ cmdMecat = "mecat2cns -i 0 -t 4 -x 1 candidates.txt simulatedReads.fa " + outfile
-	#~ p = subprocessLauncher(cmdMecat, logFile, logFile)
-	#~ return outfile
-
 
 # computes msa with POA
 def getPOA(corrected, reference, uncorrected, threads, soft=None):
@@ -178,6 +171,7 @@ def getMissingSize(reference, positionsToRemove):
 	for position in range(positionsToRemove[0], positionsToRemove[1]+1):
 		if reference[position] != ".":
 			size += 1
+	print(size)
 	return size
 
 
@@ -237,9 +231,9 @@ def computeMetrics(fileName, outfile):
 									toW += "!"
 				position += 1
 			if len(positionsToRemove) > 0:
-				outfile.write(">read " + str(readNo) + "splitted_pos"+ str(positionsToRemove[0]) + ":" + str(positionsToRemove[1]) + "\n")
+				outfile.write(">read " + str(readNo) + " splitted_pos"+ str(positionsToRemove[0]) + ":" + str(positionsToRemove[1]) + "\n")
 				outfile.write(toW + "\n")
-				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"missing_size:" + str(missing) + "\n")
+				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
 				missingSize.append(missing)
 			else:
 				outfile.write(">read " + str(readNo) + "\n")
@@ -275,8 +269,6 @@ def getFileReadNumber(fileName):
 	return int(val.decode('ascii'))
 
 
-THRESH = 5
-THRESH2 = 20
 
 #find stretches of N
 def findGapStretches(correctedSequence):
