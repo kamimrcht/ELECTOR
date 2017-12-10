@@ -132,8 +132,8 @@ def lorma(threads):
 
 
 # computes msa with POA
-def getPOA(corrected, reference, uncorrected, threads, soft=None):
-	cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads)
+def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
+	cmdPOA = installDirectory + "/bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + " -pathMatrix " + installDirectory
 	#~ cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
 	subprocessLauncher(cmdPOA)
 	if soft is not None:
@@ -351,6 +351,7 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size):
 
 def main():
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
+	installDirectory = os.path.dirname(os.path.realpath(__file__))
 	# Manage command line arguments
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
 	# Define allowed options
@@ -381,7 +382,7 @@ def main():
 			parser.print_help()
 			return 0
 		# simulate data
-		cmdSimul = "./bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
+		cmdSimul = installDirectory + "/bin/simulator " + args.genomeRef +  " " + str(args.readLen) + " " + str(args.coverage) + " " + str(args.errorRate) + " simulatedReads "
 		uncorrected = "simulatedReads.fa"
 		reference = "p.simulatedReads.fa"
 		subprocessLauncher(cmdSimul)
@@ -390,7 +391,7 @@ def main():
 		if sizeUnco == sizeRef :
 			# convert fasta short reads in fastq
 			fastqShortReads = open("simulatedReads_short.fq", 'w')
-			cmdFq = "./bin/fa2fq simulatedReads_short.fa"
+			cmdFq = installDirectory + "/bin/fa2fq simulatedReads_short.fa"
 			subprocessLauncher(cmdFq, fastqShortReads)
 			listCorrectors = getCorrectors(args.parameterFile)
 			if len(listCorrectors) > 0:
@@ -416,14 +417,14 @@ def main():
 					else:
 						notRun = True
 					if not notRun:
-						getPOA(split, reference, uncorrected, args.threads, soft)
+						getPOA(split, reference, uncorrected, args.threads, installDirectory, soft)
 						outputRecallPrecision(beg, end, soft)
 		
 	else: # else directly use data provided and skip simulation
 		corrected = args.corrected
 		uncorrected = args.uncorrected
 		reference = args.reference
-		getPOA(corrected, reference, uncorrected, args.threads)
+		getPOA(corrected, reference, uncorrected, args.threads, installDirectory)
 		
 		outputRecallPrecision()
 

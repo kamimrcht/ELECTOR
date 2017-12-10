@@ -68,7 +68,7 @@ int main(int argc,char *argv[])
   char score_file[256],seq_file[256],po_list_entry_filename[256],*al_name="test align";
   LPOSequence_T *lpo_out=NULL,*frame_seq=NULL,*dna_lpo=NULL,*lpo_in=NULL;
   FILE *errfile=stderr,*logfile=NULL,*lpo_file_out=NULL,*po_list_file=NULL,*seqCorrected_ifile=NULL,*seqUncorrected_ifile=NULL,*seqReference_ifile=NULL;
-  char *print_matrix_letters=NULL,*fasta_out=NULL,*po_out=NULL,*matrix_filename="./src/poa-graph/blosum80.mat",
+  char *print_matrix_letters=NULL,*fasta_out=NULL,*po_out=NULL,*matrix_filename=NULL,
     *seq_filename=NULL, *unco_seq_filename=NULL,*ref_seq_filename=NULL,*frame_dna_filename=NULL,*po_filename=NULL,*po2_filename=NULL,
     *po_list_filename=NULL, *hbmin=NULL,*numeric_data=NULL,*numeric_data_name="Nmiscall",
     *dna_to_aa=NULL,*aafreq_file=NULL,*termval_file=NULL,
@@ -137,6 +137,7 @@ int main(int argc,char *argv[])
     ARGGET("-uncorrected_reads_fasta",unco_seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
     ARGGET("-reference_reads_fasta",ref_seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
     ARGGET("-threads", nbT);
+    ARGGET("-pathMatrix", matrix_filename);
   }
   nThreads = atoi(nbT);
   
@@ -174,7 +175,16 @@ int main(int argc,char *argv[])
   if (hbmin)
     bundling_threshold=atof(hbmin);  
 
-  if (!matrix_filename ||
+ 
+
+  const char* matrix = "/src/poa-graph/blosum80.mat";
+  char* fullPath;
+  fullPath = malloc(strlen(matrix_filename) + strlen(matrix) + 1); /* make space for the new string (should check the return value ...) */
+  strcpy(fullPath, matrix_filename); 
+  strcat(fullPath, matrix);
+  matrix_filename = fullPath;
+
+   if (!matrix_filename ||
       read_score_matrix(matrix_filename,&score_matrix)<=0){/* READ MATRIX */
     WARN_MSG(USERR,(ERRTXT,"Error reading matrix file %s.\nExiting",
 		    matrix_filename ? matrix_filename: "because none specified"),"$Revision: 1.2.2.9 $");
@@ -258,6 +268,8 @@ int main(int argc,char *argv[])
  
   if (nseq>0) FREE (seq);
   exit (exit_code);
+
+  free(fullPath);
 }
 
 void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_input_seqs){
