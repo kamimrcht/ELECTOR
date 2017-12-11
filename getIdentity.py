@@ -20,9 +20,8 @@ def getTotalLength(reference):
 	f = open(reference)
 	line = f.readline()
 	while line != '':
-		line = f.readline()
 		if line[0] != '>':
-			totalLength = totalLength + len(line)
+			totalLength = totalLength + len(line[:-1])
 		line = f.readline()
 	f.close()
 	return totalLength
