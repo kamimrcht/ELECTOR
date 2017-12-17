@@ -168,9 +168,10 @@ def outputRecallPrecision(beg=0, end=0, soft=None):
 
 def getMissingSize(reference, positionsToRemove):
 	size = 0
-	for position in range(positionsToRemove[0], positionsToRemove[1]+1):
-		if reference[position] != ".":
-			size += 1
+	for interv in positionsToRemove:
+		for position in range(interv[0], interv[1]+1):
+			if reference[position] != ".":
+				size += 1
 	print(size)
 	return size
 
@@ -200,43 +201,53 @@ def computeMetrics(fileName, outfile):
 			
 			if len(stretches.keys()) > 0:
 				if len(stretches.keys()) == 1:
-					positionsToRemove = [next(iter(stretches.items()))[0], next(iter(stretches.items()))[1]]
+					positionsToRemove = [[next(iter(stretches.items()))[0], next(iter(stretches.items()))[1]]]
 					missing= getMissingSize(reference, positionsToRemove)
-				else: #strange case, don't take read into account
-					continue
+				else:
+					for pos in stretches.keys():
+						positionsToRemove.append([pos, stretches[pos]])
+						missing += getMissingSize(reference, positionsToRemove[-1])
 			FN = 0 #code M
 			FP = 0 #code !
 			TP = 0 #code *
 			position = 0
+			intervalInPositionToRemove = 0
 			for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
-				if len(positionsToRemove) == 0 or (position < positionsToRemove[0] or position > positionsToRemove[1]):
-					if ntRef == ntUnco == ntResult:
-						toW += " "
-					else:
-						if ntRef == ntUnco:  #no error
-							if ntUnco != ntResult: #FP
-								FP += 1
-								toW += "!"
-							# else good nt not corrected = ok
-						else: #error
-							if ntRef == ntResult: #error corrected
-								TP += 1
-								toW += "*"
-							else:
-								if ntUnco == ntResult: # error not corrected
-									FN += 1
-									toW += "M"
-								else: #new error introduced by corrector
+				if len(positionsToRemove) < intervalInPositionToRemove or len(positionsToRemove) == 0:
+					if (len(positionsToRemove) > 0 and (position < positionsToRemove[intervalInPositionToRemove][0] or position > positionsToRemove[intervalInPositionToRemove][1])) or  len(positionsToRemove) == 0:
+						
+						if ntRef == ntUnco == ntResult:
+							toW += " "
+						else:
+							if ntRef == ntUnco:  #no error
+								if ntUnco != ntResult: #FP
 									FP += 1
 									toW += "!"
+								# else good nt not corrected = ok
+							else: #error
+								if ntRef == ntResult: #error corrected
+									TP += 1
+									toW += "*"
+								else:
+									if ntUnco == ntResult: # error not corrected
+										FN += 1
+										toW += "M"
+									else: #new error introduced by corrector
+										FP += 1
+										toW += "!"
+					elif position == positionsToRemove[intervalInPositionToRemove][1]:
+						intervalInPositionToRemove += 1
 				position += 1
+			toWRead = ">read " + str(readNo)
 			if len(positionsToRemove) > 0:
-				outfile.write(">read " + str(readNo) + " splitted_pos"+ str(positionsToRemove[0]) + ":" + str(positionsToRemove[1]) + "\n")
+				for interv in positionsToRemove:
+					toWRead += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
+				outfile.write(toWRead + "\n")
 				outfile.write(toW + "\n")
 				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
 				missingSize.append(missing)
 			else:
-				outfile.write(">read " + str(readNo) + "\n")
+				outfile.write(toWRead + "\n")
 				outfile.write(toW + "\n")
 				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
 				
