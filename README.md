@@ -31,7 +31,7 @@ Compatible tools:
 
 ## Running the benchmark
 
-	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa -threads NBTHREADS -tool TOOLNAME
+	python3 benchmark.py -reference reference_reads.fa -uncorrected uncorrected_reads.fa -corrected corrected_reads.fa -threads NBTHREADS -tool TOOLNAME
 
 * reference_reads.fa is obtained after the simulation of reads by retrieving the original sequence of each read
 
