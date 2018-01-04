@@ -19,41 +19,29 @@ Benchmark for hybrid and self long read correction
 
 Binaries are then in ./bin
 
-Any tool you wish to test must be installed and in your PATH.
-
-To add a tool in your PATH:
-
-	PATH=/path/to/tool/binary:$PATH
-
 Compatible tools:
 
-* LoRDEC
+* LoRMA
 
-* ColorMap
+* MECAT
 
-## Running the tool and simulate read files
+* daccord
 
-	python3 benchmark.py -genome yourgenome.fa -read_length READLEN -coverage COV -error_rate RATE -par PARAMETERS_FILE -threads NBTHREADS
+* PBDAGCon
 
-* the mandatory genome file must be in fasta format, with one line per sequences
+## Running the benchmark
 
-* optional read_length, coverage and error rate modify the length, coverage and error rate of long reads (for instance -read_length 10000 for size 10000, -coverage 10 for 10X, -error_rate 0.1 for 10 percent)
+	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa -threads NBTHREADS -tool TOOLNAME
 
-* the mandatory parameter file is a text file with name of the correctors to be run, one by line, in lower case
+* reference_reads.fa is obtained after the simulation of reads by retrieving the original sequence of each read
 
-* optionnally you can ask for more threads (default is 2), this will be used both for accelerating multiple alignment and correctors runs
+* uncorrected_reads.fa is the simulated reads file used to be corrected
 
-The simulation produces 3 files in the directory:
+* corrected_reads.fa is the corrected version of reads. Reads can be trimmed or not.
 
-* simulatedReads.fa is the long erroneous read file
+* the number of threads can be precised using -threads
 
-* p.simulatedReads.fa is the long genomic read file (same sequences, in same order than in simulatedReads.fa, without errors)
-
-* simulatedReads_short.fa is the short reads file
-
-## Running the tool when reference/corrected/uncorrected files are already present
-
-	python3 benchmark.py -r reference_reads.fa -u uncorrected_reads.fa -c corrected_reads.fa -threads NBTHREADS
+* a tool used for correction, in lowercase and in this list (lorma, mecat, pbdagcon, daccord) can be given. In this case the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads. If another tool is used, the user must make sure that headers in the corrected file are similar to those in the reference and uncorrected files.
 
 ## Help
 
@@ -62,14 +50,19 @@ The simulation produces 3 files in the directory:
 
 ## Output
 
-For each corrector, the program outputs two files
-
-* corrector.log
+If a corrector has been given using the -tool option, the program outputs the following:
 
 * corrector_msa_profile.txt
 
-The log of the corrector's run is printed in corrector.log file.
-The analysis of the correction per read is printed in corrector_msa_profile.txt.
+* msa.fa
+
+Else, the output files must be
+
+* msa_profile.txt
+
+* msa.fa
+
+The analysis of the correction per read is printed in corrector_msa_profile.txt or msa_profile.txt.
 For each read, this file comes in three parts:
 
 * A header with the identifier of the read, for instance:
@@ -101,15 +94,19 @@ The last lines report of summary of the results. They provide the recall and pre
 
 They also provide the number of trimmed reads and the mean size of missing subsequence in trimmed regions.
 For trimmed reads, recall and precision are only computed on the region that is actually corrected.
+If a corrected sequence is a truncated read, missing parts will also be reported in the header
+For instance:
+
+	>read 0 splitted_pos1:66 splitted_pos865:1072
+
+indicates that a first region is missing in the beginning of the read (65 nucleotides), and a second in the end (till the 1072th last nucleotide).
 
 The program also recalls precision, recall and runtime for each tool in the standard output.
 
+The multiple alignment that was used to compute these results is found in msa.fa.
+
 # Toy tests
 
-## Example 1: simulating files + bench
-
-	python3 benchmark.py -genome example/example_reference.fasta -read_length 1000 -par example/correctors.par -threads 4
-
-## Example 2: directly provide read files and skip simulation
+## Example : directly provide read files and skip simulation
 
 	python3 benchmark.py -r example/perfect_reads.fasta -c example/corrected_reads.fasta -u example/uncorrected_reads.fasta
