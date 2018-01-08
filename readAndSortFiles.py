@@ -76,9 +76,12 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 # format corrected reads headers
 def formatHeader(corrector, correctedReads):
 	if corrector is None or corrector == "lorma":
-		cmdFormatHeader = "sed -i 's/_.*//' " + correctedReads
-		subprocess.check_output(['bash','-c', cmdFormatHeader])
-	
+		#tmp: format HG-CoLoR (I'll move it later today)
+		#cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
+		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
+		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+
+
 	elif corrector == "daccord":
 		pass
 	elif corrector == "pbdagcon":
