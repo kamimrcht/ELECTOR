@@ -63,12 +63,13 @@ def averageIdentity(alignments):
 	return avId / nbReads
 
 
-readsBaseName = sys.argv[2].split(".")[0]
-cmdAlign = "bwa mem -t " + sys.argv[3] + " " + sys.argv[1] + " " + sys.argv[2]
+readsBaseName = sys.argv[1].split(".")[0]
+cmdAlign = "bwa mem -t " + sys.argv[3] + " " + sys.argv[2] + " " + sys.argv[1]
 outSam = open(readsBaseName + ".sam", 'w')
-outDevNull = open("/dev/null", 'w')
-subprocessLauncher(cmdAlign, outSam, outDevNull)
+outErr = open("/dev/null", 'w')
+subprocessLauncher(cmdAlign, outSam, outErr)
 outSam.close()
+outErr.close()
 computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
 avId = averageIdentity(readsBaseName + ".id")
 cmdConvertToBam = "samtools view -Sb " + readsBaseName + ".sam"
@@ -80,12 +81,15 @@ outCov = open(readsBaseName + ".cov", 'w')
 subprocessLauncher(cmdConvertToBam, outBam)
 outBam.close()
 subprocessLauncher(cmdSortBam, outSBam)
+outSBam.close()
 subprocessLauncher(cmdGetCov, outCov)
 outCov.close()
-refLength = getTotalLength(sys.argv[1])
+refLength = getTotalLength(sys.argv[2])
 inCov = open(readsBaseName + ".cov")
 coveredBases = sum(1 for line in inCov)
 inCov.close()
+cmdRm = "rm " + readsBaseName + ".bam " + readsBaseName + ".cov " + readsBaseName + ".id " + readsBaseName + ".sam"
+subprocessLauncher(cmdRm)
 
 print("Average identity : ", avId, "%")
 print("Genome covered : ", float(coveredBases / refLength * 100), "%")
