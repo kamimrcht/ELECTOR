@@ -137,10 +137,10 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	if corrector == "daccord":
 		formatDaccord(correctedReads, uncorrectedReads, daccordDb)
-	elif corrector = "hg-color":
+	elif corrector == "hg-color":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
-	elif if corrector is None or corrector == "lorma":
+	elif corrector is None or corrector == "lorma":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
 	elif corrector == "pbdagcon":
