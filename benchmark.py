@@ -59,6 +59,7 @@ def main():
 	parser.add_argument('-uncorrected', nargs='?', type=str,  action="store", dest="uncorrected",  help="Fasta file with uncorrected reads (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-tool', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
+	parser.add_argument('-daccordDb', nargs='?', type=str, action="store", dest="daccordDb", help="Reads database used for the correction, if the reads were corrected with Daccord")
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
@@ -70,11 +71,12 @@ def main():
 	uncorrected = args.uncorrected
 	reference = args.reference #todo : won't be necessary when a real simulator will be used
 	soft = None
+	daccordDb = args.daccordDb
 	if args.soft is not None:
 		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
-	readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft)
+	readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, daccordDb)
 	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 

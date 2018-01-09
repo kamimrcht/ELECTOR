@@ -29,6 +29,66 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re 
 
+#Launches subprocess
+def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
+        args = shlex.split(cmd)
+        p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
+        return p
+
+# format daccord headers
+def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
+	#dump database
+	cmdDumpDb = "DBdump -rh " + daccordDb
+	dumpedDb = open("daccord_dumpedDb", 'w')
+	subprocessLauncher(cmdDumpDb, dumpedDb)
+	fCor = open(correctedReads)
+	dumpedDb.close()
+
+	fDump = open("daccord_dumpedDb")
+	lDump = fDump.readline()
+	while lDump != "" and (lDump[0] == '+' or lDump[0] == '@'):
+		lDump = fDump.readline()
+	fUnco = open(uncorrectedReads)
+	newCorrectedReads = open("tmp_" + correctedReads, 'w')
+	curRead = 0
+	hUnco = fUnco.readline()
+	sUnco = fUnco.readline()
+
+	hCor = fCor.readline()
+	if hCor != '':
+		hCor = hCor.split("/")[0].split(">")[1]
+	while hCor != '':
+		sCor = fCor.readline()
+		while lDump != '' and lDump.split(" ")[1][:-1] != hCor:
+			lDump = fDump.readline()
+			lDump = fDump.readline()
+			lDump = fDump.readline()
+		lDump = fDump.readline()
+		lDump = fDump.readline()
+		readId = int(lDump.split(" ")[1])
+		while curRead != readId:
+			hUnco = fUnco.readline()
+			sUnco = fUnco.readline()
+			curRead = curRead + 1
+		newCorrectedReads.write(hUnco + sCor)
+		newHCor = fCor.readline()
+		if newHCor != '':
+			newHCor = newHCor.split("/")[0].split(">")[1]
+		while newHCor == hCor:
+			sCor = fCor.readline()
+			newCorrectedReads.write(hUnco + sCor)
+			newHCor = fCor.readline()
+			if newHCor != '':
+				newHCor = newHCor.split("/")[0].split(">")[1]
+		hCor = newHCor
+		lDump = fDump.readline()
+	cmdMv = "mv tmp_" + correctedReads + " " + correctedReads
+	subprocess.check_output(['bash', '-c', cmdMv])
+	fCor.close()
+	fUnco.close()
+	fDump.close()
+
+
 # sort read file by increasing order of headers, return occurrence of each corrected read
 def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
@@ -74,16 +134,15 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		return reference, uncorrected
 
 # format corrected reads headers
-def formatHeader(corrector, correctedReads):
-	if corrector is None or corrector == "lorma":
-		#tmp: format HG-CoLoR (I'll move it later today)
-		#cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
+def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
+	if corrector == "daccord":
+		formatDaccord(correctedReads, uncorrectedReads, daccordDb)
+	elif corrector = "hg-color":
+		cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
+		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+	elif if corrector is None or corrector == "lorma":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
-
-
-	elif corrector == "daccord":
-		pass
 	elif corrector == "pbdagcon":
 		pass
 	elif corrector == "mecat":
@@ -95,10 +154,9 @@ def convertSimulationOutputToRefFile():
 	#todo : get output of the simulator and retrieve the references sequences to compare with
 
 # main function
-def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft):
+def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, daccordDb):
 	#1- correctly format the headers to be able to identify and sort the corrected reads
-	print(corrected)
-	formatHeader(corrector, corrected)
+	formatHeader(corrector, corrected, uncorrected, daccordDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if soft is not None:
 		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
