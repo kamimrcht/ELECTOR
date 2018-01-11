@@ -146,9 +146,15 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	elif corrector == "pbdagcon":
 		pass
 	elif corrector == "mecat":
-		pass
+		if uncorrectedReads.endswith(".fastq"):
+			cmdFormatHeader = "paste -d '\n' <(grep -i '^@' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
+		elif uncorrectedReads.endswith(".fasta") or uncorrectedReads.endswith(".fa"):
+			cmdFormatHeader = "paste -d '\n' <(grep -i '^>' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads	
+		subprocess.check_output(['bash', '-c', cmdFormatHeader])
 
 
+
+	
 def convertSimulationOutputToRefFile():
 	pass
 	#todo : get output of the simulator and retrieve the references sequences to compare with
