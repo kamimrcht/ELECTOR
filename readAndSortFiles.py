@@ -146,7 +146,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	elif corrector == "pbdagcon":
 		pass
 	elif corrector == "mecat":
-		if uncorrectedReads.endswith(".fastq"):
+		if uncorrectedReads.endswith(".fastq") or uncorrectedReads.endswith("fq"):
 			cmdFormatHeader = "paste -d '\n' <(grep -i '^@' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
 		elif uncorrectedReads.endswith(".fasta") or uncorrectedReads.endswith(".fa"):
 			cmdFormatHeader = "paste -d '\n' <(grep -i '^>' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads	
