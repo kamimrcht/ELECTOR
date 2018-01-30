@@ -77,8 +77,19 @@ def main():
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, daccordDb)
-	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
-	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
+	#TOVERIFY
+	if soft is not None:
+		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
+		newUncoFileName =  "uncorrected_duplicated_" + soft + ".fa"
+		newRefFileName =  "reference_duplicated_" + soft + ".fa"
+	else:
+		newCorrectedFileName = "corrected_sorted.fa"
+		newUncoFileName =  "uncorrected_duplicated.fa"
+		newRefFileName =  "reference_duplicated.fa"
+	alignment.getPOA(newCorrectedFileName, newRefFileName, newUncoFileName, args.threads, installDirectory, soft)
+#	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
+#	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
+	computeStats.outputRecallPrecision(newCorrectedFileName, 0, 0, soft)
 
 
 if __name__ == '__main__':

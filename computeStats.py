@@ -36,11 +36,13 @@ THRESH2 = 20
 
 # store corrected reads in a list of tuples [(header, sequence)]
 def getCorrectedReads(correctedReadsFileName):
+	#TOVERIFY
 	handle = open(correctedReadsFileName, "rU")
 	l = SeqIO.parse(handle, "fasta")
-	fastaTuple = []
+	fastaTuple = {}
 	for record in l:
-		fastaTuple.append((record.description, str(record.seq)))
+		#fastaTuple.append((record.description, str(record.seq)))
+		fastaTuple[record.description] = str(record.seq)
 	return fastaTuple
 
 
@@ -117,7 +119,9 @@ def computeMetrics(fileName, outfile, correctedFileName):
 	lines = msa.readlines()
 	readNo = 0
 	headerNo = 0
-	correctedReadsList = getCorrectedReads("corrected_sorted.fa")
+	#TOVERIFY
+#	correctedReadsList = getCorrectedReads("corrected_sorted.fa")
+	correctedReadsList = getCorrectedReads(correctedFileName)
 	upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
 	while nbLines < len(lines) - 3:
 		toW = ""
@@ -182,12 +186,14 @@ def computeMetrics(fileName, outfile, correctedFileName):
 	return (precision, recall, missingSize)
 
 
+#TODO
 # compute length missed in trimmed/split reads
 def getMissingSize(reference, positionsToRemove):
 	size = 0
-	for position in range(positionsToRemove[0], positionsToRemove[1]+1):
-			if reference[position] != ".":
-				size += 1
+#	print(positionsToRemove)
+#	for position in range(positionsToRemove[0], positionsToRemove[1]+1):
+#			if reference[position] != ".":
+#				size += 1
 	return size
 
 
@@ -199,7 +205,9 @@ def getUpperCasePositions(correctedReadsList, lines):
 	while nbLines < len(lines):
 		headerNo = lines[nbLines - 1].split(">")[1].split(" ")[0]
 		correctedMsa = lines[nbLines].rstrip()
-		correctedReadSequence = correctedReadsList[int(headerNo)][1]
+		#TOVERIFY
+		#correctedReadSequence = correctedReadsList[int(headerNo)][1]
+		correctedReadSequence = correctedReadsList[headerNo]
 		posiNt = 0
 		posiNtSeq = 0
 		inUpper = False

@@ -35,6 +35,31 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
         p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
         return p
 
+# format MECAT headers
+def formatMecat(correctedReads, uncorrectedReads):
+	fCor = open(correctedReads)
+	fUnco = open(uncorrectedReads)
+	fNewCor = open(correctedReads + "_tmp", 'w')
+
+	i = 0
+	hCor = fCor.readline().split("_")[0]
+	hUnco = fUnco.readline()
+	while hCor != "":
+		sCor = fCor.readline()
+		id = int(hCor.split(">")[1])
+		while i != id:
+			sUnco = fUnco.readline()
+			hUnco = fUnco.readline()
+			i = i + 1
+		hCor = fCor.readline().split("_")[0]
+		fNewCor.write(hUnco + sCor)
+
+	cmdMv = "mv " + correctedReads + "_tmp " + correctedReads
+	subprocess.check_output(['bash', '-c', cmdMv])
+	fCor.close()
+	fUnco.close()
+	fNewCor.close()
+
 # format daccord headers
 def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 	#dump database
@@ -49,7 +74,7 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 	while lDump != "" and (lDump[0] == '+' or lDump[0] == '@'):
 		lDump = fDump.readline()
 	fUnco = open(uncorrectedReads)
-	newCorrectedReads = open("tmp_" + correctedReads, 'w')
+	newCorrectedReads = open(correctedReads + "_tmp", 'w')
 	curRead = 0
 	hUnco = fUnco.readline()
 	sUnco = fUnco.readline()
@@ -82,11 +107,12 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 				newHCor = newHCor.split("/")[0].split(">")[1]
 		hCor = newHCor
 		lDump = fDump.readline()
-	cmdMv = "mv tmp_" + correctedReads + " " + correctedReads
+	cmdMv = "mv " + correctedReads + "_tmp " + correctedReads
 	subprocess.check_output(['bash', '-c', cmdMv])
 	fCor.close()
 	fUnco.close()
 	fDump.close()
+	newCorrectedReads.close()
 
 
 # sort read file by increasing order of headers, return occurrence of each corrected read
@@ -120,15 +146,18 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		i = 0
 		for unco,ref in zip(uncoLines, refLines):
 			if not ">" in ref:
+				#Pierre: qq commentaires pour les headers en strings
 				if str(i) in occurrenceEachRead.keys():
 					for times in range(occurrenceEachRead[str(i)]):
-						newRef.write(header + "_" + str(times) + "\n")
+				#if header in occurrenceEachRead.keys():
+					#for times in range(occurrenceEachRead[header]):
+						newRef.write(header + "_" + str(times) + "\n") #+>
 						newRef.write(ref.rstrip() + "\n" )
-						newUnco.write(header + "_" + str(times) + "\n")
+						newUnco.write(header + "_" + str(times) + "\n") #+>
 						newUnco.write(unco.rstrip() + "\n")
 				i += 1
 			else:
-				header = ref.rstrip()
+				header = ref.rstrip() #[1:]
 		return newRefName, newUncoName
 	else:
 		return reference, uncorrected
@@ -146,11 +175,13 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	elif corrector == "pbdagcon":
 		pass
 	elif corrector == "mecat":
-		if uncorrectedReads.endswith(".fastq") or uncorrectedReads.endswith("fq"):
-			cmdFormatHeader = "paste -d '\n' <(grep -i '^@' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
-		elif uncorrectedReads.endswith(".fasta") or uncorrectedReads.endswith(".fa"):
-			cmdFormatHeader = "paste -d '\n' <(grep -i '^>' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads	
-		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+		#TOVERIFY
+		#if uncorrectedReads.endswith(".fastq") or uncorrectedReads.endswith("fq"):
+		#	cmdFormatHeader = "paste -d '\n' <(grep -i '^@' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
+		#elif uncorrectedReads.endswith(".fasta") or uncorrectedReads.endswith(".fa"):
+		#	cmdFormatHeader = "paste -d '\n' <(grep -i '^>' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
+		#subprocess.check_output(['bash', '-c', cmdFormatHeader])
+		formatMecat(correctedReads, uncorrectedReads)
 
 
 
