@@ -93,7 +93,7 @@ typedef struct LPOLetter_S LPOLetter_T;
 
 
 /** maximum length of a sequence name */
-#define SEQUENCE_NAME_MAX 32
+#define SEQUENCE_NAME_MAX 512
 /** buffer chunk size for expanding a block of seq storage */
 #define SEQUENCE_BUFFER_CHUNK 8
 

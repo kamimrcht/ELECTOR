@@ -119,7 +119,9 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
 	l = SeqIO.parse(handle, "fasta")
-	sortedList = [f for f in sorted(l, key=lambda x : int(x.id))]
+	#TOVERIFY
+	#sortedList = [f for f in sorted(l, key=lambda x : int(x.description))]
+	sortedList = [f for f in sorted(l, key=lambda x : (x.description))]
 	occurrenceEachRead = dict()
 	outfile = open(outfileName, 'w')
 	prevHeader = ""
@@ -143,21 +145,21 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		uncoLines = uncorr.readlines()
 		newUnco = open(newUncoName, 'w')
 		newRef = open(newRefName, 'w')
-		i = 0
+		#TOVERIFY
+		#i = 0
 		for unco,ref in zip(uncoLines, refLines):
 			if not ">" in ref:
-				#Pierre: qq commentaires pour les headers en strings
-				if str(i) in occurrenceEachRead.keys():
-					for times in range(occurrenceEachRead[str(i)]):
-				#if header in occurrenceEachRead.keys():
-					#for times in range(occurrenceEachRead[header]):
-						newRef.write(header + "_" + str(times) + "\n") #+>
+			#if str(i) in occurrenceEachRead.keys():
+			#		for times in range(occurrenceEachRead[str(i)]):
+				if header in occurrenceEachRead.keys():
+					for times in range(occurrenceEachRead[header]):
+						newRef.write(">" + header + "_" + str(times) + "\n")
 						newRef.write(ref.rstrip() + "\n" )
-						newUnco.write(header + "_" + str(times) + "\n") #+>
+						newUnco.write(">" + header + "_" + str(times) + "\n")
 						newUnco.write(unco.rstrip() + "\n")
-				i += 1
+				#i += 1
 			else:
-				header = ref.rstrip() #[1:]
+				header = ref.rstrip()[1:]
 		return newRefName, newUncoName
 	else:
 		return reference, uncorrected
@@ -169,7 +171,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	elif corrector == "hg-color":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
-	elif corrector is None or corrector == "lorma":
+	elif corrector == "lorma":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
 	elif corrector == "pbdagcon":
@@ -195,15 +197,22 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	formatHeader(corrector, corrected, uncorrected, daccordDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
+	#TOVERIFY
 	if soft is not None:
 		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
-		newUncoFileName =  "uncorrected_duplicated_" + soft + ".fa"
-		newRefFileName =  "reference_duplicated_" + soft + ".fa"
+		sortedUncoFileName = "uncorrected_sorted_" + soft + ".fa"
+		newUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
+		sortedRefFileName = "reference_sorted_" + soft + ".fa"
+		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
 	else:
 		newCorrectedFileName = "corrected_sorted.fa"
-		newUncoFileName =  "uncorrected_duplicated.fa"
-		newRefFileName =  "reference_duplicated.fa"
+		sortedUncoFileName = "uncorrected_sorted.fa"
+		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
+		sortedRefFileName = "reference_sorted.fa"
+		newRefFileName =  "reference_sorted_duplicated.fa"
+	readAndSortFasta(uncorrected, sortedUncoFileName)
+	readAndSortFasta(reference, sortedRefFileName)
 	occurrenceEachRead = readAndSortFasta(corrected, newCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
-	duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoFileName, newRefFileName)
+	duplicateRefReads(sortedRefFileName, sortedUncoFileName, occurrenceEachRead, size, newUncoFileName, newRefFileName)
 
