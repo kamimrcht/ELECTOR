@@ -73,7 +73,7 @@ def main():
 	soft = None
 	daccordDb = args.daccordDb
 	if args.soft is not None:
-		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord":
+		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord" or args.soft == "hg-color" or args.soft == "lordec":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, daccordDb)

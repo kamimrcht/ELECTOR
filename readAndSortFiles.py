@@ -169,9 +169,12 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	if corrector == "daccord":
 		formatDaccord(correctedReads, uncorrectedReads, daccordDb)
 	elif corrector == "hg-color":
-		cmdFormatHeader = "sed -i 's/_[0-9]*$\|_[0-9]*_[0-9]*$//g' " + correctedReads
+		cmdFormatHeader = "sed -i 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
 	elif corrector == "lorma":
+		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
+		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+	elif corrector == "lordec":
 		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
 		subprocess.check_output(['bash', '-c', cmdFormatHeader])
 	elif corrector == "pbdagcon":
