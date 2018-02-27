@@ -27,17 +27,18 @@ def getTotalLength(reference):
         f.close()
         return totalLength
 
-#Assemble the reads contained in the file readsF, with nbThreads threads
+#Assemble the reads contained in the file readsF, with nbThreads threads,
+#and return the number of contigs
 def runAssembly(readsF, nbThreads):
 	#align and assemble the reads
 	reFile = basename(os.path.splitext(readsF)[0])
-	cmdAl = "minimap -Sw5 -L100 -m0 -t " + nbThreads + " "  + readsF + " " + readsF
+	cmdAl = "./minimap2/minimap2 -x ava-ont -t " + nbThreads + " "  + readsF + " " + readsF
 	outErr = open("/dev/null", 'w')
 	alFile = reFile + ".paf"
 	outAl = open(alFile, 'w')
 	subprocessLauncher(cmdAl, outAl, outErr)
 	outAl.close()
-	cmdAs = "miniasm -f " + readsF + " " + alFile
+	cmdAs = "./miniasm/miniasm -f " + readsF + " " + alFile
 	asFile = reFile + ".gfa"
 	outAs = open(asFile, 'w')
 	subprocessLauncher(cmdAs, outAs, outErr)
@@ -61,66 +62,69 @@ def runAssembly(readsF, nbThreads):
 	outContigs.close()
 	cmdRm = "rm " + alFile + " " + asFile
 	subprocessLauncher(cmdRm)
+	return nbContigs - 1
 
-#Compute the number of contigs and the NG50 of the assembly contained
+#Align the contigs to the reference genome
+def alignContigs(contigs, reference, nbThreads):
+	cmdAl = "./bwa/bwa mem -t " + nbThreads + " " + reference + " " + contigs + ".contigs.fa"
+	outAl = open(contigs + ".contigs.sam", 'w')
+	outEr = open("/dev/null", 'w')
+	subprocessLauncher(cmdAl, outAl, outEr)
+	outAl.close()
+
+
+#Compute the number of aligned contigs and the NGA50 and NGA75 of the aligned contigs contained
 #in the file contigs, based on the provided genome size genSize.
 def computeContigsNbAndNG50(contigs, genSize):
 	f = open(contigs)
 	sizes = []
 	line = f.readline()
+	while line != '' and line[0] == "@":
+		line = f.readline()
 	while line != '':
-		line = f.readline()[:-1]
-		sizes.append(len(line))
+		fields = line.split("\t")
+		if fields[1] == "0" or fields[1] == "16":
+			sizes.append(len(fields[9]))
 		line = f.readline()
 	f.close()
 	sortedSizes = [f for f in sorted(sizes, key=lambda x : int(x), reverse=True)]
-	ng50 = 0
+	nga50s = 0
+	nga75s = 0
 	i = 0
-	while i < len(sortedSizes) and ng50 < 1 / 2 * genSize:
-		ng50 = ng50 + sortedSizes[i]
+	while i < len(sortedSizes) and nga50s < 1 / 2 * genSize:
+		nga50s = nga50s + sortedSizes[i]
+		nga75s = nga75s + sortedSizes[i]
 		i = i + 1
-	return [len(sortedSizes),sortedSizes[i-1]]
+	nga50 = i - 1
+	while i < len(sortedSizes) and nga75s < 75 / 100 * genSize:
+		nga75s = nga75s + sortedSizes[i]
+		i = i + 1
+	nga75 = i - 1
+	return [len(sortedSizes),sortedSizes[nga50],sortedSizes[nga75]]
 
-def computeCovAndId(contigs, reference):
-	cmdAl = "dnadiff " + reference + " " + contigs
-	out = open("/dev/null", 'w')
-	subprocessLauncher(cmdAl, out, out)
+#Computes the number of breakpoints in the assembly.
+def computeNbBreakpoints(file):
+	cmd = "./samtools/samtools flagstat " + file + ".contigs.sam"
+	out = open(file + ".contigs.fs", 'w')
+	subprocessLauncher(cmd, out)
 	out.close()
-	f = open("out.report")
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	cov = line.split("(")[1].split(")")[0]
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	line = f.readline()
-	id = line.split(" ")[-1:][0][:-1]
-	cmdRm = "rm out.1coords out.1delta out.delta out.mcoords out.mdelta out.qdiff out.rdiff out.report out.snps"
-	subprocessLauncher(cmdRm)
-	f.close()
-	return [cov,id]
+	fs = open(file + ".contigs.fs")
+	l = fs.readline()
+	l = fs.readline()
+	l = fs.readline().split(" ")
+	bp = int(l[0]) + int(l[2])
+	return bp
 
-#runAssembly(sys.argv[1], sys.argv[3])
-nbContigsNG50 = computeContigsNbAndNG50(basename(os.path.splitext(sys.argv[1])[0]) + ".contigs.fa", getTotalLength(sys.argv[2]))
-nbContigs = nbContigsNG50[0]
-NG50 = nbContigsNG50[1]
-covId = computeCovAndId(sys.argv[1], sys.argv[2])
-cov = covId[0]
-id = covId[1]
+nbContigs = runAssembly(sys.argv[1], sys.argv[3])
+alignContigs(basename(os.path.splitext(sys.argv[1])[0]), sys.argv[2], sys.argv[3])
+nbContigsNGs = computeContigsNbAndNG50(basename(os.path.splitext(sys.argv[1])[0]) + ".contigs.sam", getTotalLength(sys.argv[2]))
+nbAlContigs = nbContigsNGs[0]
+NG50 = nbContigsNGs[1]
+NG75 = nbContigsNGs[2]
+nbBreakpoints = computeNbBreakpoints(basename(os.path.splitext(sys.argv[1])[0]))
+
 print("Number of contigs : " + str(nbContigs))
-print("NG50 : " + str(NG50))
-print("Genome coverage : " + cov)
-print("Identity : " + str(id) + "%")
+print("Number of aligned contigs : " + str(nbAlContigs))
+print("Number of breakpoints : " + str(nbBreakpoints))
+print("NGA50 : " + str(NG50))
+print("NGA75 : " + str(NG75))
