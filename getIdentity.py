@@ -64,7 +64,7 @@ def averageIdentity(alignments):
 
 
 readsBaseName = sys.argv[1].split(".")[0]
-cmdAlign = "bwa mem -t " + sys.argv[3] + " " + sys.argv[2] + " " + sys.argv[1]
+cmdAlign = "./bwa/bwa mem -t " + sys.argv[3] + " " + sys.argv[2] + " " + sys.argv[1]
 outSam = open(readsBaseName + ".sam", 'w')
 outErr = open("/dev/null", 'w')
 subprocessLauncher(cmdAlign, outSam, outErr)
@@ -72,11 +72,11 @@ outSam.close()
 outErr.close()
 computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
 avId = averageIdentity(readsBaseName + ".id")
-cmdConvertToBam = "samtools view -Sb " + readsBaseName + ".sam"
+cmdConvertToBam = "./samtools/samtools view -Sb " + readsBaseName + ".sam"
 outBam = open(readsBaseName + ".bam", 'w')
-cmdSortBam = "samtools sort " + readsBaseName + ".bam"
+cmdSortBam = "./samtools/samtools sort " + readsBaseName + ".bam"
 outSBam = open("sorted_" + readsBaseName + ".bam", 'w')
-cmdGetCov = "samtools depth sorted_" + readsBaseName + ".bam"
+cmdGetCov = "./samtools/samtools depth sorted_" + readsBaseName + ".bam"
 outCov = open(readsBaseName + ".cov", 'w')
 subprocessLauncher(cmdConvertToBam, outBam)
 outBam.close()
