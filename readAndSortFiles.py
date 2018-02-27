@@ -57,6 +57,17 @@ def formatMecat(correctedReads, uncorrectedReads, formattedReads):
 	fCor.close()
 	fUnco.close()
 	fNewCor.close()
+	
+# sort read file by increasing order of integer headers
+def sortPBDCHeaders(infileName, outfileName):
+	handle = open(infileName, "rU")
+	l = SeqIO.parse(handle, "fasta")
+	sortedList = [f for f in sorted(l, key=lambda x : int(x.id.split("/")[0]))]
+	outfile = open(outfileName, 'w')
+	for record in sortedList:
+		outfile.write(">" + record.description+"\n")
+		outfile.write(str(record.seq)+"\n")
+	outfile.close()
 
 # format daccord headers
 def formatDaccord(correctedReads, uncorrectedReads, daccordDb, formattedReads):
@@ -127,6 +138,7 @@ def readAndSortFasta(infileName, outfileName):
 		else:
 			occurrenceEachRead[record.description] = 1
 			prevHeader = record.description
+	outfile.close()
 	return occurrenceEachRead
 
 
@@ -173,8 +185,9 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "pbdagcon":
-		pass
-		#formatDaccord(correctedReads, uncorrectedReads, daccordDb, "corrected_format_pbdagcon.fa")
+		#pass
+		sortPBDCHeaders(correctedReads, "tmp_sorted_pbdagcon.fa")
+		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, daccordDb, "corrected_format_pbdagcon.fa")
 	elif corrector == "mecat":
 		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 
