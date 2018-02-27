@@ -36,10 +36,10 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
         return p
 
 # format MECAT headers
-def formatMecat(correctedReads, uncorrectedReads):
+def formatMecat(correctedReads, uncorrectedReads, formattedReads):
 	fCor = open(correctedReads)
 	fUnco = open(uncorrectedReads)
-	fNewCor = open(correctedReads + "_tmp", 'w')
+	fNewCor = open(formattedReads, 'w')
 
 	i = 0
 	hCor = fCor.readline().split("_")[0]
@@ -54,14 +54,12 @@ def formatMecat(correctedReads, uncorrectedReads):
 		hCor = fCor.readline().split("_")[0]
 		fNewCor.write(hUnco + sCor)
 
-	cmdMv = "mv " + correctedReads + "_tmp " + correctedReads
-	subprocess.check_output(['bash', '-c', cmdMv])
 	fCor.close()
 	fUnco.close()
 	fNewCor.close()
 
 # format daccord headers
-def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
+def formatDaccord(correctedReads, uncorrectedReads, daccordDb, formattedReads):
 	#dump database
 	cmdDumpDb = "DBdump -rh " + daccordDb
 	dumpedDb = open("daccord_dumpedDb", 'w')
@@ -74,7 +72,7 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 	while lDump != "" and (lDump[0] == '+' or lDump[0] == '@'):
 		lDump = fDump.readline()
 	fUnco = open(uncorrectedReads)
-	newCorrectedReads = open(correctedReads + "_tmp", 'w')
+	newCorrectedReads = open(formattedReads, 'w')
 	curRead = 0
 	hUnco = fUnco.readline()
 	sUnco = fUnco.readline()
@@ -107,8 +105,6 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 				newHCor = newHCor.split("/")[0].split(">")[1]
 		hCor = newHCor
 		lDump = fDump.readline()
-	cmdMv = "mv " + correctedReads + "_tmp " + correctedReads
-	subprocess.check_output(['bash', '-c', cmdMv])
 	fCor.close()
 	fUnco.close()
 	fDump.close()
@@ -119,8 +115,6 @@ def formatDaccord(correctedReads, uncorrectedReads, daccordDb):
 def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
 	l = SeqIO.parse(handle, "fasta")
-	#TOVERIFY
-	#sortedList = [f for f in sorted(l, key=lambda x : int(x.description))]
 	sortedList = [f for f in sorted(l, key=lambda x : (x.description))]
 	occurrenceEachRead = dict()
 	outfile = open(outfileName, 'w')
@@ -145,19 +139,14 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		uncoLines = uncorr.readlines()
 		newUnco = open(newUncoName, 'w')
 		newRef = open(newRefName, 'w')
-		#TOVERIFY
-		#i = 0
 		for unco,ref in zip(uncoLines, refLines):
 			if not ">" in ref:
-			#if str(i) in occurrenceEachRead.keys():
-			#		for times in range(occurrenceEachRead[str(i)]):
 				if header in occurrenceEachRead.keys():
 					for times in range(occurrenceEachRead[header]):
 						newRef.write(">" + header + "_" + str(times) + "\n")
 						newRef.write(ref.rstrip() + "\n" )
 						newUnco.write(">" + header + "_" + str(times) + "\n")
 						newUnco.write(unco.rstrip() + "\n")
-				#i += 1
 			else:
 				header = ref.rstrip()[1:]
 		return newRefName, newUncoName
@@ -167,30 +156,30 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 # format corrected reads headers
 def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	if corrector == "daccord":
-		formatDaccord(correctedReads, uncorrectedReads, daccordDb)
+		formatDaccord(correctedReads, uncorrectedReads, daccordDb, "corrected_format_daccord.fa")
 	elif corrector == "hg-color":
-		cmdFormatHeader = "sed -i 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
-		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+		cmdFormatHeader = "sed 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
+		formattedReads = open("corrected_format_hg-color.fa", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "lorma":
-		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
-		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+		cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
+		formattedReads = open("corrected_format_lorma.fa", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "lordec":
-		cmdFormatHeader = "sed -i 's/_[0-9]*$//g' " + correctedReads
-		subprocess.check_output(['bash', '-c', cmdFormatHeader])
+		cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
+		formattedReads = open("corrected_format_lordec.fa", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "pbdagcon":
 		pass
+		#formatDaccord(correctedReads, uncorrectedReads, daccordDb, "corrected_format_pbdagcon.fa")
 	elif corrector == "mecat":
-		#TOVERIFY
-		#if uncorrectedReads.endswith(".fastq") or uncorrectedReads.endswith("fq"):
-		#	cmdFormatHeader = "paste -d '\n' <(grep -i '^@' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
-		#elif uncorrectedReads.endswith(".fasta") or uncorrectedReads.endswith(".fa"):
-		#	cmdFormatHeader = "paste -d '\n' <(grep -i '^>' " + uncorrectedReads + ") <(grep -v '^>' " + correctedReads + ") > output && mv output " + correctedReads
-		#subprocess.check_output(['bash', '-c', cmdFormatHeader])
-		formatMecat(correctedReads, uncorrectedReads)
+		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 
 
 
-	
 def convertSimulationOutputToRefFile():
 	pass
 	#todo : get output of the simulator and retrieve the references sequences to compare with
@@ -200,14 +189,15 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	formatHeader(corrector, corrected, uncorrected, daccordDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	#TOVERIFY
 	if soft is not None:
+		corrected = "corrected_format_" + soft + ".fa"
 		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + soft + ".fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
 		sortedRefFileName = "reference_sorted_" + soft + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
 	else:
+		corrected = "corrected_format.fa"
 		newCorrectedFileName = "corrected_sorted.fa"
 		sortedUncoFileName = "uncorrected_sorted.fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
@@ -218,4 +208,3 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	occurrenceEachRead = readAndSortFasta(corrected, newCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
 	duplicateRefReads(sortedRefFileName, sortedUncoFileName, occurrenceEachRead, size, newUncoFileName, newRefFileName)
-
