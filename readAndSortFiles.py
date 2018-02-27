@@ -197,7 +197,6 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 		sortedRefFileName = "reference_sorted_" + soft + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
 	else:
-		corrected = "corrected_format.fa"
 		newCorrectedFileName = "corrected_sorted.fa"
 		sortedUncoFileName = "uncorrected_sorted.fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
