@@ -30,6 +30,8 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import copy
 
+SIZE_CORRECTED_READ_THRESHOLD = 0.1
+
 THRESH = 5
 THRESH2 = 20
 
@@ -89,10 +91,10 @@ def findGapStretches(correctedSequence):
 def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(soft + "_msa_profile.txt", 'w')
-		precision, recall, missingSize = computeMetrics("msa_" + soft + ".fa", outProfile, correctedFileName)
+		precision, recall, missingSize, smallReadNumber = computeMetrics("msa_" + soft + ".fa", outProfile, correctedFileName)
 	else:
 		outProfile = open("msa_profile.txt", 'w')
-		precision, recall, missingSize = computeMetrics("msa.fa", outProfile, correctedFileName)
+		precision, recall, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	meanMissingSize = 0
 	if len(missingSize) > 0:
@@ -105,7 +107,12 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	else:
 		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
 		print("Recall ", round(recall,5), "Precision ", round(precision,5) , "Number of trimmed reads " , str(len(missingSize)), "Mean missing size in trimmed reads " , str(meanMissingSize))
+	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
 
+
+
+def getLen(sequenceMsa):
+	return len(sequenceMsa) - sequenceMsa.count('.')
 
 
 # main function, compute false positives, false negatives, true positives for a msa
@@ -123,6 +130,7 @@ def computeMetrics(fileName, outfile, correctedFileName):
 #	correctedReadsList = getCorrectedReads("corrected_sorted.fa")
 	correctedReadsList = getCorrectedReads(correctedFileName)
 	upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
+	smallReadNumber = 0
 	while nbLines < len(lines) - 3:
 		toW = ""
 		if not ">" in lines[nbLines]:
@@ -132,58 +140,65 @@ def computeMetrics(fileName, outfile, correctedFileName):
 			nbLines += 2
 			corrected = lines[nbLines].rstrip()
 			nbLines += 2
-			stretches = findGapStretches(corrected)
-			correctedPositions, missing, positionsToRemove = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
-			FN = 0 #code M
-			FP = 0 #code !
-			TP = 0 #code *
-			position = 0
-			intervalInPositionToRemove = 0
-			for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
-				if correctedPositions[position]:
-						if ntRef == ntUnco == ntResult:
-							toW += " "
-						else:
-							if ntRef == ntUnco:  #no error
-								if ntUnco != ntResult: #FP
-									FP += 1
-									toW += "!"
-								# else good nt not corrected = ok
-							else: #error
-								if ntRef == ntResult: #error corrected
-									TP += 1
-									toW += "*"
-								else:
-									if ntUnco == ntResult: # error not corrected
-										FN += 1
-										toW += "M"
-									else: #new error introduced by corrector
+			lenCorrected = getLen(corrected)
+			lenReference = getLen(reference)
+			print("************************", lenCorrected*1.0/lenReference)
+			if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
+				stretches = findGapStretches(corrected)
+				correctedPositions, missing, positionsToRemove = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
+				FN = 0 #code M
+				FP = 0 #code !
+				TP = 0 #code *
+				position = 0
+				intervalInPositionToRemove = 0
+				for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
+					if correctedPositions[position]:
+							if ntRef == ntUnco == ntResult:
+								toW += " "
+							else:
+								if ntRef == ntUnco:  #no error
+									if ntUnco != ntResult: #FP
 										FP += 1
 										toW += "!"
-				position += 1
-			toWRead = ">read " + str(readNo)
-			if len(positionsToRemove) > 0:
-				for interv in positionsToRemove:
-					toWRead += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-				outfile.write(toWRead + "\n")
-				outfile.write(toW + "\n")
-				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
-				missingSize.append(missing)
+									# else good nt not corrected = ok
+								else: #error
+									if ntRef == ntResult: #error corrected
+										TP += 1
+										toW += "*"
+									else:
+										if ntUnco == ntResult: # error not corrected
+											FN += 1
+											toW += "M"
+										else: #new error introduced by corrector
+											FP += 1
+											toW += "!"
+					position += 1
+				toWRead = ">read " + str(readNo)
+				if len(positionsToRemove) > 0:
+					for interv in positionsToRemove:
+						toWRead += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
+					outfile.write(toWRead + "\n")
+					outfile.write(toW + "\n")
+					outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
+					missingSize.append(missing)
+				else:
+					outfile.write(toWRead + "\n")
+					outfile.write(toW + "\n")
+					outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
+					
+				sumFN.append(FN)
+				sumFP.append(FP)
+				sumTP.append(TP)
+				#~ readNo += 1
 			else:
-				outfile.write(toWRead + "\n")
-				outfile.write(toW + "\n")
-				outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
-				
-			sumFN.append(FN)
-			sumFP.append(FP)
-			sumTP.append(TP)
+				smallReadNumber += 1
 			readNo += 1
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
 			nbLines += 1
 	precision = sum(sumTP)/(sum(sumTP)+sum(sumFP)) if sum(sumTP)+sum(sumFP) != 0 else 0
 	recall = sum(sumTP)/(sum(sumTP)+sum(sumFN)) if  sum(sumTP)+sum(sumFN) != 0 else 0
-	return (precision, recall, missingSize)
+	return (precision, recall, missingSize, smallReadNumber)
 
 
 #TODO
