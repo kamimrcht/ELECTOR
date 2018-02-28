@@ -99,7 +99,7 @@ def main():
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
-	plotResults.generateResults(currentDirectory, installDirectory)
+	plotResults.generateResults(currentDirectory, installDirectory, soft)
 
 
 if __name__ == '__main__':

@@ -31,20 +31,49 @@ import re
 import alignment
 
 
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
+
+
 
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
-	p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
+	#~ p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
+	p = subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = argstderr).communicate()
 	return p
 
-# do the msa
+#~ # do the msa
+#~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
+
+
 def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
-	cmdPOA = installDirectory + "/bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + " -pathMatrix " + installDirectory
-	#~ cmdPOA = "./bin/poa -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected
-	subprocessLauncher(cmdPOA)
-	if soft is not None:
-		cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+	#~ oldMode=False
+	oldMode=True
+	if(oldMode):
+		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory
+		subprocessLauncher(cmdPOA)
+		if soft is not None:
+			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+		else:
+			cmdMv = "mv default_output_msa.fasta msa.fa"
+		subprocess.check_output(['bash','-c', cmdMv])
 	else:
-		cmdMv = "mv default_output_msa.fasta msa.fa"
-	subprocess.check_output(['bash','-c', cmdMv])
+		cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 15 100"
+		subprocessLauncher(cmdSplitter)
+		for i in range(0, 100):
+			print(str(i)+"%")
+			cmdPOA = installDirectory + "/bin/poa -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
+			cmdMerger = installDirectory + "/bin/Donatello default_output_msa.fasta  outputMerger"
+			subprocessLauncher(cmdPOA)
+			subprocessLauncher(cmdMerger)
+		if soft is not None:
+			cmdMv = "mv outputMerger msa_" + soft + ".fa"
+		else:
+			cmdMv = "mv outputMerger msa.fa"
+		subprocess.check_output(['bash','-c', cmdMv])
+		cmdRM = "rm out*"
+		subprocess.check_output(['bash','-c', cmdRM])

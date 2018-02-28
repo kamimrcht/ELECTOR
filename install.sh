@@ -26,6 +26,7 @@ autoheader:
 autoconf -Wno-syntax;
 ./configure;
 make;
-cd ../split;
+cd ../src/split;
+make;
 mv masterSplitter ../../bin;
 mv Donatello ../../bin;
