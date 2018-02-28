@@ -74,6 +74,7 @@ def main():
 	reference = args.reference #todo : won't be necessary when a real simulator will be used
 	soft = None
 	dazzDb = args.dazzDb
+	simulator = args.simulator
 	if args.soft is not None:
 		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord" or args.soft == "hg-color" or args.soft == "lordec":
 			soft = args.soft
@@ -94,7 +95,7 @@ def main():
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 	computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
-	computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
+	computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
 	plotResults.generateResults(currentDirectory, installDirectory)
 
 

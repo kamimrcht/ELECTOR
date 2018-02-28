@@ -263,7 +263,7 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 #Generates reference reads file (only supported for nanosim and simlord)
 def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
 	if simulator == "nanosim":
-		generateRefReadsNanosim(simulatedPrefix + ".fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
+		generateRefReadsNanosim(simulatedPrefix + "_reads.fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
 	else:
 		cmdConv = "./bin/fq2fa " + simulatedPrefix + ".fastq"
 		outFa = open(simulatedPrefix + ".fasta", 'w')
@@ -273,10 +273,12 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 
 # main function
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, simulator, dazzDb):
-	#os.path.splitext(corrected)[0])
 	convertSimulationOutputToRefFile(uncorrected, reference, simulator)
 	#1- correctly format the headers to be able to identify and sort the corrected reads
-	formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb)
+	if simulator == "nanosim":
+		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb)
+	else:
+		formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if soft is not None:
 		newCorrectedFileName = "corrected_format_" + soft + ".fa"
@@ -292,7 +294,10 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		sortedRefFileName = "reference_sorted.fa"
 		newRefFileName =  "reference_sorted_duplicated.fa"
-	readAndSortFasta(uncorrected + ".fasta", sortedUncoFileName)
+	if simulator == "nanosim":
+		readAndSortFasta(uncorrected + "_reads.fasta", sortedUncoFileName)
+	else:
+		readAndSortFasta(uncorrected + ".fasta", sortedUncoFileName)
 	readAndSortFasta(uncorrected + "_reference.fasta", sortedRefFileName)
 	occurrenceEachRead = readAndSortFasta(newCorrectedFileName, sortedCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
