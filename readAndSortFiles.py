@@ -21,13 +21,16 @@
 *****************************************************************************"""
 
 from Bio import SeqIO
+from Bio.Seq import Seq
 import time
 import argparse
 import sys
 import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
-import re 
+import re
+from os.path import basename
+
 
 #Launches subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
@@ -70,9 +73,9 @@ def sortPBDCHeaders(infileName, outfileName):
 	outfile.close()
 
 # format daccord headers
-def formatDaccord(correctedReads, uncorrectedReads, daccordDb, formattedReads):
+def formatDaccord(correctedReads, uncorrectedReads, dazzDb, formattedReads):
 	#dump database
-	cmdDumpDb = "DBdump -rh " + daccordDb
+	cmdDumpDb = "DBdump -rh " + dazzDb
 	dumpedDb = open("daccord_dumpedDb", 'w')
 	subprocessLauncher(cmdDumpDb, dumpedDb)
 	fCor = open(correctedReads)
@@ -166,9 +169,9 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		return reference, uncorrected
 
 # format corrected reads headers
-def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
+def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb):
 	if corrector == "daccord":
-		formatDaccord(correctedReads, uncorrectedReads, daccordDb, "corrected_format_daccord.fa")
+		formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
 	elif corrector == "hg-color":
 		cmdFormatHeader = "sed 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
 		formattedReads = open("corrected_format_hg-color.fa", 'w')
@@ -187,36 +190,110 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, daccordDb):
 	elif corrector == "pbdagcon":
 		#pass
 		sortPBDCHeaders(correctedReads, "tmp_sorted_pbdagcon.fa")
-		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, daccordDb, "corrected_format_pbdagcon.fa")
+		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
 	elif corrector == "mecat":
 		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 
+def loadReference(fRef, tool):
+	f = open(fRef)
+	refSeqs = {}
 
+	if tool == "nanosim":
+		id = f.readline()[1:-1].strip().split(" ")[0].replace("_", "-")
+	else:
+		id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
+	while id != "":
+		seq = f.readline()[:-1]
+		refSeqs[id] = seq
+		id = f.readline()[1:-1].split(" ")[0]
+	f.close()
+	return refSeqs
 
-def convertSimulationOutputToRefFile():
-	pass
-	#todo : get output of the simulator and retrieve the references sequences to compare with
+def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
+	fSeqs = loadReference(referenceGenome, "nanosim")
+	f = open(simulatedReads)
+	out = open(referenceReads, 'w')
+	header = f.readline()[1:-1]
+	while header != "":
+		seq = f.readline()[:-1]
+		id = header.split("_")
+		refId = id[0]
+		pos = int(id[1])
+		strand = id[4]
+		head = int(id[5])
+		mid = int(id[6])
+		tail = int(id[7])
+		seq = fSeqs[refId][pos:+pos+mid]
+		if strand == "R":
+			seq = str(Seq(seq).reverse_complement())
+#		print(">" + header + "\n" + seq)
+		out.write(">" + header + "\n" + seq + "\n")
+		header = f.readline()[1:-1]
+	f.close()
+	out.close()
+
+def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
+	fSeqs = loadReference(referenceGenome, "simlord")
+	f = open(simulatedReads)
+	out = open(referenceReads, 'w')
+	line = f.readline()
+	while line != '' and line[0] == "@":
+		line = f.readline()
+
+	line = line.split("\t")
+	while line != ['']:
+		header = line[0]
+		strand = int(line[1])
+		refId = line[2].replace("_", "-")
+		pos = int(line[3]) - 1 #TODO strange
+		cigar = line[5]
+		len = int(line[8])
+		nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
+		nbI = sum([int(i.split("I")[0]) for i in (re.findall('\d+I', cigar))])
+		len = len + nbD - nbI
+		seq = fSeqs[refId][pos:pos+len]
+		if strand == 16:
+			seq = str(Seq(seq).reverse_complement())
+		#print(">" + header + "\n" + seq)
+		out.write(">" + header + "\n" + seq + "\n")
+		line = f.readline().split("\t")
+	f.close()
+	out.close()
+
+#Generates reference reads file (only supported for nanosim and simlord)
+def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
+	if simulator == "nanosim":
+		generateRefReadsNanosim(simulatedPrefix + ".fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
+	else:
+		cmdConv = "./bin/fq2fa " + simulatedPrefix + ".fastq"
+		outFa = open(simulatedPrefix + ".fasta", 'w')
+		subprocessLauncher(cmdConv, outFa)
+		outFa.close()
+		generateRefReadsSimLord(simulatedPrefix + ".fastq.sam", referenceGenome, simulatedPrefix + "_reference.fasta")
 
 # main function
-def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, daccordDb):
+def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, simulator, dazzDb):
+	#os.path.splitext(corrected)[0])
+	convertSimulationOutputToRefFile(uncorrected, reference, simulator)
 	#1- correctly format the headers to be able to identify and sort the corrected reads
-	formatHeader(corrector, corrected, uncorrected, daccordDb)
+	formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if soft is not None:
-		corrected = "corrected_format_" + soft + ".fa"
-		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
+		newCorrectedFileName = "corrected_format_" + soft + ".fa"
+		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + soft + ".fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
 		sortedRefFileName = "reference_sorted_" + soft + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
 	else:
-		newCorrectedFileName = "corrected_sorted.fa"
+		newCorrectedFileName = corrected
+		sortedCorrectedFileName = "corrected_sorted.fa"
 		sortedUncoFileName = "uncorrected_sorted.fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		sortedRefFileName = "reference_sorted.fa"
 		newRefFileName =  "reference_sorted_duplicated.fa"
-	readAndSortFasta(uncorrected, sortedUncoFileName)
-	readAndSortFasta(reference, sortedRefFileName)
-	occurrenceEachRead = readAndSortFasta(corrected, newCorrectedFileName)
+	readAndSortFasta(uncorrected + ".fasta", sortedUncoFileName)
+	readAndSortFasta(uncorrected + "_reference.fasta", sortedRefFileName)
+	occurrenceEachRead = readAndSortFasta(newCorrectedFileName, sortedCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
 	duplicateRefReads(sortedRefFileName, sortedUncoFileName, occurrenceEachRead, size, newUncoFileName, newRefFileName)
