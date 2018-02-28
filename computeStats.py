@@ -138,6 +138,34 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 	cor.close()
 	out.close()
 
+
+def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions):
+	position = 0
+	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
+		if correctedPositions[position]:
+				if ntRef == ntUnco == ntResult:
+					toW += " "
+				else:
+					if ntRef == ntUnco:  #no error
+						if ntUnco != ntResult: #FP
+							FP += 1
+							toW += "!"
+						# else good nt not corrected = ok
+					else: #error
+						if ntRef == ntResult: #error corrected
+							TP += 1
+							toW += "*"
+						else:
+							if ntUnco == ntResult: # error not corrected
+								FN += 1
+								toW += "M"
+							else: #new error introduced by corrector
+								FP += 1
+								toW += "!"
+		position += 1
+	return (FP, TP, FN, toW)
+
+
 # main function, compute false positives, false negatives, true positives for a msa
 def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName):
 	msa = open(fileName, 'r')
@@ -168,7 +196,6 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			nbLines += 2
 			lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
-			print("************************", lenCorrected*1.0/lenReference)
 			if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
 				stretches = findGapStretches(corrected)
 				correctedPositions, missing, positionsToRemove = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
@@ -177,6 +204,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 				TP = 0 #code *
 				position = 0
 				intervalInPositionToRemove = 0
+				FP, TP, FN, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions)
 				for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
 					if correctedPositions[position]:
 							if ntRef == ntUnco == ntResult:
