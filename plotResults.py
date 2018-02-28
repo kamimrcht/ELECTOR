@@ -33,23 +33,24 @@ from utils import *
 #todo
 def launchRscripts(installDirectory, soft):
 	# recall and precision figure
+	#~ print("uuu", installDirectory)
 	if soft is not None:
 		if checkIfFile( installDirectory + "/" + soft + "_per_read_metrics.txt"):
-			cmdRecallPrecision = installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt ."
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt ."
 			subprocessLauncher(cmdRecallPrecision)
 	else:
 		if checkIfFile( installDirectory + "/per_read_metrics.txt"):
-			cmdRecallPrecision = installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt ."
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt ."
 			subprocessLauncher(cmdRecallPrecision)
-
+	
 	# sizes distribution
 	if soft is not None:
 		if checkIfFile( installDirectory + "/" + soft + "read_size_distribution.txt"):
-			cmdSizesDistr = installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt ."
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt ."
 			subprocessLauncher(cmdSizesDistr)
 	else:
 		if checkIfFile( installDirectory + "/read_size_distribution.txt"):
-			cmdSizesDistr = installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt ."
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt ."
 			subprocessLauncher(cmdSizesDistr)
 
 def generateLatexFigures( outDir, outputPDFName, filesDict):
@@ -82,6 +83,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	proc.communicate()
 
 
-def generateResults(outDir, installDirectory):
-	filesDict = {"recall_precision": installDirectory + "Rscripts/plot_recall_precision.png", "size_distribution": installDirectory + "Rscripts/plot_size_distribution.png"}
+def generateResults(outDir, installDirectory, soft):
+	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png"}
+	launchRscripts(installDirectory, soft)
 	generateLatexFigures(outDir, "summary", filesDict)
