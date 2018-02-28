@@ -185,6 +185,12 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	recall = 0
 	precision = 0
 	outPerReadMetrics.write("score metrics\n")
+	prevHeader = ""
+	FPlistForARead = []
+	TPlistForARead = []
+	FNlistForARead = []
+	toWPrevList = []
+	sameLastHeader = False
 	while nbLines < len(lines) - 3:
 		toW = ""
 		if not ">" in lines[nbLines]:
@@ -196,80 +202,92 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			nbLines += 2
 			lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
-			if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
-				stretches = findGapStretches(corrected)
-				correctedPositions, missing, positionsToRemove = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
-				FN = 0 #code M
-				FP = 0 #code !
-				TP = 0 #code *
-				position = 0
-				intervalInPositionToRemove = 0
-				FP, TP, FN, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions)
-				for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
-					if correctedPositions[position]:
-							if ntRef == ntUnco == ntResult:
-								toW += " "
-							else:
-								if ntRef == ntUnco:  #no error
-									if ntUnco != ntResult: #FP
-										FP += 1
-										toW += "!"
-									# else good nt not corrected = ok
-								else: #error
-									if ntRef == ntResult: #error corrected
-										TP += 1
-										toW += "*"
-									else:
-										if ntUnco == ntResult: # error not corrected
-											FN += 1
-											toW += "M"
-										else: #new error introduced by corrector
-											FP += 1
-											toW += "!"
-					position += 1
-				toWRead = ">read " + str(readNo)
-				if len(positionsToRemove) > 0:
-					for interv in positionsToRemove:
-						toWRead += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-					outMSAProfile.write(toWRead + "\n")
-					outMSAProfile.write(toW + "\n")
-					outMSAProfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
-					missingSize.append(missing)
-				else:
-					outMSAProfile.write(toWRead + "\n")
-					outMSAProfile.write(toW + "\n")
-					outMSAProfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
-					
-				sumFN.append(FN)
-				sumFP.append(FP)
-				sumTP.append(TP)
-				rec = TP / (TP + FN) if TP + FN != 0 else 0
-				outPerReadMetrics.write(str(rec) + " recall\n")
-				prec = TP / (TP + FP) if TP + FP != 0 else 0
-				outPerReadMetrics.write(str(prec) + " precision\n")
-				recall = recall + rec
-				precision = precision + prec
-				#outPerReadMetrics.write(str(perBaseErrorRate) + " correct_rate")
+			#~ if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
+			stretches = findGapStretches(corrected)
+			correctedPositions, positionsToRemove, positionsToRemoveBool = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
+			#~ print("corrected positions", correctedPositions)
+			FN = 0 #code M
+			FP = 0 #code !
+			TP = 0 #code *
+			position = 0
+			intervalInPositionToRemove = 0
+			FP, TP, FN, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions)
+			if headerNo == prevHeader:
+				sameLastHeader = True
+				FPlistForARead.append(FP)
+				TPlistForARead.append(TP)
+				FNlistForARead.append(FN)
+				toWPrevList.append(toW)
+				#todo change
+				toWPrev = toWPrevList[-1]
+				positionsToRemovePrev = positionsToRemove
+				positionsToRemoveBoolPrev = [any(tup) for tup in zip(positionsToRemoveBoolPrev, positionsToRemoveBool)] #logical OR
+				prevCorrectedPositions = [any(tup) for tup in zip(prevCorrectedPositions, correctedPositions)] #logical OR
+				#~ missingPrev = positionsToRemoveBoolPrev.count(False)
+				missingPrevPositions = [i for i,x in enumerate(positionsToRemoveBoolPrev) if x == False]
+				missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 			else:
-				smallReadNumber += 1
+				prevCorrectedPositions = correctedPositions
+				if prevCorrectedPositions.count(True)*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
+					if prevHeader != "":
+						FNPrev = sum(FNlistForARead)*1.0/len(FNlistForARead) if len(FNlistForARead) > 0 else 0
+						FPPrev = sum(FPlistForARead)*1.0/len(FPlistForARead) if len(FPlistForARead) > 0 else 0
+						TPPrev = sum(TPlistForARead)*1.0/len(TPlistForARead) if len(TPlistForARead) > 0 else 0
+						toWReadPrev = ">read " + str(readNoPrev)
+						#todo change
+						#~ if len(positionsToRemovePrev) > 0:
+							#~ for interv in positionsToRemovePrev:
+								#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
+							
+						missingSize.append(missingPrev)
+						sumFN.append(FNPrev)
+						sumFP.append(FPPrev)
+						sumTP.append(TPPrev)
+				else:
+					smallReadNumber += 1
+				FPlistForARead = [FP]
+				TPlistForARead = [TP]
+				FNlistForARead = [FN]
+				toWPrevList = [toW]
+				positionsToRemovePrev = positionsToRemove
+				positionsToRemoveBoolPrev = positionsToRemoveBool
+				prevCorrectedPositions = correctedPositions
+			sumFN.append(FN)
+			sumFP.append(FP)
+			sumTP.append(TP)
+			rec = TP / (TP + FN) if TP + FN != 0 else 0
+			outPerReadMetrics.write(str(rec) + " recall\n")
+			prec = TP / (TP + FP) if TP + FP != 0 else 0
+			outPerReadMetrics.write(str(prec) + " precision\n")
+			recall = recall + rec
+			precision = precision + prec
+			prevHeader = headerNo
+			readNoPrev = readNo
 			readNo += 1
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
 			nbLines += 1
+	if sameLastHeader:
+		if prevCorrectedPositions.count(True)*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
+			FNPrev = round(sum(FNlistForARead)*1.0/len(FNlistForARead),1) if len(FNlistForARead) > 0 else 0
+			FPPrev = round(sum(FPlistForARead)*1.0/len(FPlistForARead),1) if len(FPlistForARead) > 0 else 0
+			TPPrev = round(sum(TPlistForARead)*1.0/len(TPlistForARead),1) if len(TPlistForARead) > 0 else 0
+			toWReadPrev = ">read " + str(readNoPrev)
+			#todo change
+			#~ if len(positionsToRemovePrev) > 0:
+				#~ for interv in positionsToRemovePrev:
+					#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
+			missingSize.append(missingPrev)
+			sumFN.append(FNPrev)
+			sumFP.append(FPPrev)
+			sumTP.append(TPPrev)
+		else:
+			smallReadNumber += 1
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
 	return (precision, recall, missingSize, smallReadNumber)
 
 
-#TODO
-# compute length missed in trimmed/split reads
-def getMissingSize(reference, positionsToRemove):
-	size = 0
-#	print(positionsToRemove)
-#	for position in range(positionsToRemove[0], positionsToRemove[1]+1):
-#			if reference[position] != ".":
-#				size += 1
-	return size
 
 
 # get the position of nt in uppercase to compute recall and precision only at these positions
@@ -316,16 +334,17 @@ def getUpperCasePositions(correctedReadsList, lines):
 # add to the uppercase positions the positions where there is no stretch of "." , i.e. all positions where recall and precision are actually computed
 def getCorrectedPositions(stretches, msaLineLen, readNo, upperCasePositions, reference):
 	correctedPositions = copy.copy(upperCasePositions[readNo])
+	positionsToRemoveBool = [True] * len(correctedPositions)
 	positionsToRemove = []
-	missing = 0
+	#~ missing = 0
 	if len(stretches.keys()) > 0:
 		if len(stretches.keys()) == 1:
 			positionsToRemove = [[next(iter(stretches.items()))[0], next(iter(stretches.items()))[1]]]
-			missing= getMissingSize(reference, positionsToRemove)
+			#~ missing= getMissingSize(reference, positionsToRemove)
 		else:
 			for pos in stretches.keys():
 				positionsToRemove.append([pos, stretches[pos]])
-				missing += getMissingSize(reference, positionsToRemove[-1])
+				#~ missing += getMissingSize(reference, positionsToRemove[-1])
 		interval = 0
 		l = positionsToRemove[interval][0]
 		while l  < msaLineLen:
@@ -338,4 +357,7 @@ def getCorrectedPositions(stretches, msaLineLen, readNo, upperCasePositions, ref
 			else:
 				correctedPositions[l] = False
 			l += 1
-	return (correctedPositions, missing, positionsToRemove)
+	for interv in positionsToRemove:
+		for i in range(interv[0], interv[1] + 1):
+			positionsToRemoveBool[i] = False
+	return (correctedPositions, positionsToRemove, positionsToRemoveBool)
