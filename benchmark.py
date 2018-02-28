@@ -83,14 +83,17 @@ def main():
 		newCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
+		readSizeDistribution = soft + "_read_size_distribution.txt"
 	else:
 		newCorrectedFileName = "corrected_sorted.fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		newRefFileName =  "reference_sorted_duplicated.fa"
+		readSizeDistribution = "read_size_distribution.txt"
 	alignment.getPOA(newCorrectedFileName, newRefFileName, newUncoFileName, args.threads, installDirectory, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 	computeStats.outputRecallPrecision(newCorrectedFileName, 0, 0, soft)
+	computeStats.outputReadSizeDistribution(uncorrected, newCorrectedFileName, readSizeDistribution)
 	plotResults.generateResults(currentDirectory)
 
 

@@ -118,6 +118,25 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 def getLen(sequenceMsa):
 	return len(sequenceMsa) - sequenceMsa.count('.')
 
+# Compute the length distribution of uncorrected and corrected reads
+def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileName):
+	unco = open(uncorrectedFileName)
+	cor = open(correctedFileName)
+	out = open(outFileName, 'w')
+	out.write("size type\n")
+	l = unco.readline()
+	while l != "":
+		l = unco.readline()[:-1]
+		out.write(str(len(l)) + " uncorrected\n")
+		l = unco.readline()
+	l = cor.readline()
+	while l != "":
+		l = cor.readline()[:-1]
+		out.write(str(len(l)) + " corrected\n")
+		l = cor.readline()
+	unco.close()
+	cor.close()
+	out.close()
 
 # main function, compute false positives, false negatives, true positives for a msa
 def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName):
