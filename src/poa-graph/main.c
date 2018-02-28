@@ -51,18 +51,18 @@ void* doThreadJob(void* params) {
 		buildAndAnalysePOMSA (n_input_seqs, lpo_out, input_seqs, score_matrix, seq_ifile);
 		n_input_seqs++;
 	}
-	
+
 	for (i = 0; i < n_input_seqs; i++) {
 		free_lpo_sequence(p->in_seqs[i],0);
 	}
-	FREE(p->in_seqs);
+	free(p->in_seqs);
 	free(lpo_out);
 	free(params);
 }
 
 int main(int argc,char *argv[])
 {
-  int i,j,nframe_seq=0,use_reverse_complement=0;
+  int i,j,nframe_seq=0,use_reverse_complement=1;
   int do_switch_case=dont_switch_case,do_analyze_bundles=0;
   int nseq_in_list=0,n_input_seqs=0;
   char score_file[256],seq_file[256],po_list_entry_filename[256],*al_name="test align";
@@ -264,12 +264,28 @@ int main(int argc,char *argv[])
 
   }
 
- free_memory_and_exit: /* FREE ALL DYNAMICALLY ALLOCATED DATA!!!! */
- 
-  if (nseq>0) FREE (seq);
-  exit (exit_code);
+  free_memory_and_exit: /* FREE ALL DYNAMICALLY ALLOCATED DATA!!!! */
+
+  if (dna_lpo) {
+    free_lpo_sequence(dna_lpo,TRUE);
+  }
+
+  /*
+    Free array data for threads
+  */
+  for (i = 0; i < nThreads; i++) {
+    free(seqArray[i]);
+  }
+  free(seqArray);
+  free(sizeArray);
+
+  if (nseq>0) {
+    FREE (seq);
+  }
 
   free(fullPath);
+
+  exit (exit_code);
 }
 
 void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_input_seqs){
