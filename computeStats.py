@@ -96,7 +96,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	else:
 		outProfile = open("msa_profile.txt", 'w')
 		outMetrics = open("per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	meanMissingSize = 0
 	if len(missingSize) > 0:
@@ -108,7 +108,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 	else:
 		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
-		print("Recall ", round(recall,5), "Precision ", round(precision,5) , "Number of trimmed reads " , str(len(missingSize)), "Mean missing size in trimmed reads " , str(meanMissingSize))
+		print("Recall ", round(recall,5), "Precision ", round(precision,5), "Correct bases rate ", round(corBasesRate,5), "Number of trimmed reads " , str(len(missingSize)), "Mean missing size in trimmed reads " , str(meanMissingSize))
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
 	outProfile.close()
 	outMetrics.close()
@@ -139,22 +139,30 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 	out.close()
 
 
-def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions):
+def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW, correctedPositions):
 	position = 0
+	corBases = 0
+	totBases = 0
 	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
 		if correctedPositions[position]:
 				if ntRef == ntUnco == ntResult:
 					toW += " "
+					corBases += 1
 				else:
 					if ntRef == ntUnco:  #no error
+						#TODO: if inutile?
 						if ntUnco != ntResult: #FP
 							FP += 1
 							toW += "!"
 						# else good nt not corrected = ok
+						else:
+							print("xptdr")
+							corBases +=1
 					else: #error
 						if ntRef == ntResult: #error corrected
 							TP += 1
 							toW += "*"
+							corBases += 1
 						else:
 							if ntUnco == ntResult: # error not corrected
 								FN += 1
@@ -162,13 +170,16 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPosit
 							else: #new error introduced by corrector
 								FP += 1
 								toW += "!"
+		else:
+			corBases += 1
 		position += 1
-	return (FP, TP, FN, toW)
+	return (FP, TP, FN, corBases / len(reference), toW)
 
 
 # main function, compute false positives, false negatives, true positives for a msa
 def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName):
 	msa = open(fileName, 'r')
+	#TODO inutile ?
 	sumFP = []
 	sumFN = []
 	sumTP = []
@@ -184,6 +195,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	smallReadNumber = 0
 	recall = 0
 	precision = 0
+	corBasesRate = 0
 	outPerReadMetrics.write("score metrics\n")
 	prevHeader = ""
 	FPlistForARead = []
@@ -209,9 +221,10 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			FN = 0 #code M
 			FP = 0 #code !
 			TP = 0 #code *
+			corBasesRateForARead = 0
 			position = 0
 			intervalInPositionToRemove = 0
-			FP, TP, FN, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, toW, correctedPositions)
+			FP, TP, FN, corBasesRateForARead, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRateForARead, toW, correctedPositions)
 			if headerNo == prevHeader:
 				sameLastHeader = True
 				FPlistForARead.append(FP)
@@ -259,8 +272,10 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			outPerReadMetrics.write(str(rec) + " recall\n")
 			prec = TP / (TP + FP) if TP + FP != 0 else 0
 			outPerReadMetrics.write(str(prec) + " precision\n")
+			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_bases\n")
 			recall = recall + rec
 			precision = precision + prec
+			corBasesRate = corBasesRate + corBasesRateForARead
 			prevHeader = headerNo
 			readNoPrev = readNo
 			readNo += 1
@@ -285,7 +300,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			smallReadNumber += 1
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
-	return (precision, recall, missingSize, smallReadNumber)
+	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
+	return (precision, recall, corBasesRate, missingSize, smallReadNumber)
 
 
 
