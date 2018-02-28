@@ -53,12 +53,14 @@ def main():
 	# Define allowed options
 	corrected = ""
 	uncorrected = ""
+	perfect = ""
 	reference = ""
 	simulator = ""
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default=2)
 	parser.add_argument('-corrected', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
 	parser.add_argument('-uncorrected', nargs='?', type=str,  action="store", dest="uncorrected",  help="Prefix of the reads simulation files")
+	parser.add_argument('-perfect', nargs='?', type=str, action="store", dest="perfect", help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference genome sequences (each sequence on one line)")
 	parser.add_argument('-simulator', nargs='?', type=str, action="store", dest="simulator", help="Tool used for the simulation of the long reads (either nanosim or simlord)")
 	parser.add_argument('-tool', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
@@ -71,15 +73,21 @@ def main():
 
 	corrected = args.corrected
 	uncorrected = args.uncorrected
-	reference = args.reference #todo : won't be necessary when a real simulator will be used
+	perfect = args.perfect
+	reference = args.reference
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
+	if perfect is not None:
+		simulator = None
 	if args.soft is not None:
 		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord" or args.soft == "hg-color" or args.soft == "lordec":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
-	readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, simulator, dazzDb)
+	if simulator is not None:
+		readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, simulator, dazzDb)
+	else:
+		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, soft, simulator, dazzDb)
 	#TOVERIFY
 	if soft is not None:
 		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
@@ -97,8 +105,10 @@ def main():
 	computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
-	else:
+	elif simulator == "simlord":
 		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
+	else:
+		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
 	plotResults.generateResults(currentDirectory, installDirectory, soft)
 
 

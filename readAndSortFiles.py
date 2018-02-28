@@ -273,12 +273,16 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 
 # main function
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, simulator, dazzDb):
-	convertSimulationOutputToRefFile(uncorrected, reference, simulator)
+	#0- generate reference reads, if needed
+	if simulator is not None:
+		convertSimulationOutputToRefFile(uncorrected, reference, simulator)
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
 		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb)
-	else:
+	elif simulator == "simlord":
 		formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb)
+	else:
+		formatHeader(corrector, corrected, uncorrected, dazzDb)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if soft is not None:
 		newCorrectedFileName = "corrected_format_" + soft + ".fa"
@@ -296,9 +300,14 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 		newRefFileName =  "reference_sorted_duplicated.fa"
 	if simulator == "nanosim":
 		readAndSortFasta(uncorrected + "_reads.fasta", sortedUncoFileName)
-	else:
+	elif simulator == "simlord":
 		readAndSortFasta(uncorrected + ".fasta", sortedUncoFileName)
-	readAndSortFasta(uncorrected + "_reference.fasta", sortedRefFileName)
+	else:
+		readAndSortFasta(uncorrected, sortedUncoFileName)
+	if simulator is not None:
+		readAndSortFasta(uncorrected + "_reference.fasta", sortedRefFileName)
+	else:
+		readAndSortFasta(reference, sortedRefFileName)
 	occurrenceEachRead = readAndSortFasta(newCorrectedFileName, sortedCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
 	duplicateRefReads(sortedRefFileName, sortedUncoFileName, occurrenceEachRead, size, newUncoFileName, newRefFileName)
