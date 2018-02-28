@@ -1,0 +1,32 @@
+#!/usr/bin/env Rscript
+library(ggplot2)
+args = commandArgs(trailingOnly=TRUE)
+# test if there is at least one argument: if not, return an error
+if (length(args)< 2) {
+  stop("At least 2 arguments must be supplied", call.=FALSE) #input file and output directory
+}
+
+ggplot_plot_distr_sizes <- function()
+{
+
+
+  yy <- read.table(args[1],h=T)
+
+  ggplot(data=yy, aes(x=yy$size, fill=yy$type)) + geom_histogram(alpha=.5, position="identity") + 
+  labs(title = "Impact of correction method on reads size distributions\n", x = "Reads sizes before and after correction", y = "Counts") +
+  guides(fill=guide_legend(title="Reads type")) + theme_bw()
+
+}
+
+outName <- paste(args[2], "/plot_recall_precision.png", sep="")
+ggsave(
+  outName,
+  ggplot_plot_distr_sizes(),
+  width = 8,
+  height = 8,
+  dpi = 250
+)
+
+
+
+
