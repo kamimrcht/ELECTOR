@@ -56,15 +56,32 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	content = r'''\documentclass{article}
 	\usepackage{graphicx}
 	\begin{document}
-	\section{Recall, precision of the correction and correct base rate in reads}
-	\end{document} '''
-	print(outDir + "/" + outputPDFName +'.tex')
+	\section{Recall, precision of the correction and correct base rate in reads}'''
+
+	#add plot recall precision
+	if checkIfFile(filesDict["recall_precision"]):
+		content += r'''
+		\begin{figure}[ht!]
+		\centering\includegraphics[width=0.7\textwidth]{%(recall_precision)s}
+		\caption{\textbf{Recall and precision computed for each read after correction.} Recall is the rate of correct bases out of bases that needed correction in the original read, precision is the rate of correct bases out of the number of bases that were modified by the correction method.}
+		\label{fig:recall_prec}
+		\end{figure}'''
+
+	# add length distribution
+	if checkIfFile(filesDict["size_distribution"]):
+		content += r'''
+		\begin{figure}[ht!]
+		\centering\includegraphics[width=0.7\textwidth]{%(size_distribution)s}
+		\caption{\textbf{Size distribution of reads before and after correction.}}
+		\label{fig:size_distr}
+		\end{figure}'''
+	content += r'''\end{document} '''
 	with open(outDir + "/" + outputPDFName +'.tex','w') as f:
 		f.write(content%filesDict)
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"])
 	proc.communicate()
 
 
-def generateResults(outDir):
-	filesDict = {"recall": "recall.png"}
+def generateResults(outDir, installDirectory):
+	filesDict = {"recall_precision": installDirectory + "Rscripts/plot_recall_precision.png", "size_distribution": installDirectory + "Rscripts/plot_size_distribution.png"}
 	generateLatexFigures(outDir, "summary", filesDict)

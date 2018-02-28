@@ -18,7 +18,7 @@ ggplot_plot_distr_sizes <- function()
 
 }
 
-outName <- paste(args[2], "/plot_recall_precision.png", sep="")
+outName <- paste(args[2], "/plot_size_distribution.png", sep="")
 ggsave(
   outName,
   ggplot_plot_distr_sizes(),
