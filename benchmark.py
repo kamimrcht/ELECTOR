@@ -95,7 +95,10 @@ def main():
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 	computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
-	computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
+	if simulator == "nanosim":
+		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
+	else:
+		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
 	plotResults.generateResults(currentDirectory, installDirectory)
 
 
