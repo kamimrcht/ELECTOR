@@ -91,10 +91,12 @@ def findGapStretches(correctedSequence):
 def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(soft + "_msa_profile.txt", 'w')
-		precision, recall, missingSize, smallReadNumber = computeMetrics("msa_" + soft + ".fa", outProfile, correctedFileName)
+		outMetrics = open(soft + "_per_read_metrics.txt", 'w')
+		precision, recall, missingSize, smallReadNumber = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open("msa_profile.txt", 'w')
-		precision, recall, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, correctedFileName)
+		outMetrics = open("per_read_metrics.txt", 'w')
+		precision, recall, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	meanMissingSize = 0
 	if len(missingSize) > 0:
@@ -108,6 +110,8 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
 		print("Recall ", round(recall,5), "Precision ", round(precision,5) , "Number of trimmed reads " , str(len(missingSize)), "Mean missing size in trimmed reads " , str(meanMissingSize))
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
+	outProfile.close()
+	outMetrics.close()
 
 
 
@@ -116,7 +120,7 @@ def getLen(sequenceMsa):
 
 
 # main function, compute false positives, false negatives, true positives for a msa
-def computeMetrics(fileName, outfile, correctedFileName):
+def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName):
 	msa = open(fileName, 'r')
 	sumFP = []
 	sumFN = []
@@ -131,6 +135,9 @@ def computeMetrics(fileName, outfile, correctedFileName):
 	correctedReadsList = getCorrectedReads(correctedFileName)
 	upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
 	smallReadNumber = 0
+	recall = 0
+	precision = 0
+	outPerReadMetrics.write("score metrics\n")
 	while nbLines < len(lines) - 3:
 		toW = ""
 		if not ">" in lines[nbLines]:
@@ -177,27 +184,33 @@ def computeMetrics(fileName, outfile, correctedFileName):
 				if len(positionsToRemove) > 0:
 					for interv in positionsToRemove:
 						toWRead += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-					outfile.write(toWRead + "\n")
-					outfile.write(toW + "\n")
-					outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
+					outMSAProfile.write(toWRead + "\n")
+					outMSAProfile.write(toW + "\n")
+					outMSAProfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+" missing_size:" + str(missing) + "\n")
 					missingSize.append(missing)
 				else:
-					outfile.write(toWRead + "\n")
-					outfile.write(toW + "\n")
-					outfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
+					outMSAProfile.write(toWRead + "\n")
+					outMSAProfile.write(toW + "\n")
+					outMSAProfile.write("FN:" + str(FN) + " FP:" + str(FP) + " TP:" + str(TP)+"\n")
 					
 				sumFN.append(FN)
 				sumFP.append(FP)
 				sumTP.append(TP)
-				#~ readNo += 1
+				rec = TP / (TP + FN) if TP + FN != 0 else 0
+				outPerReadMetrics.write(str(rec) + " recall\n")
+				prec = TP / (TP + FP) if TP + FP != 0 else 0
+				outPerReadMetrics.write(str(prec) + " precision\n")
+				recall = recall + rec
+				precision = precision + prec
+				#outPerReadMetrics.write(str(perBaseErrorRate) + " correct_rate")
 			else:
 				smallReadNumber += 1
 			readNo += 1
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
 			nbLines += 1
-	precision = sum(sumTP)/(sum(sumTP)+sum(sumFP)) if sum(sumTP)+sum(sumFP) != 0 else 0
-	recall = sum(sumTP)/(sum(sumTP)+sum(sumFN)) if  sum(sumTP)+sum(sumFN) != 0 else 0
+	recall = recall / readNo if readNo != 0 else 0
+	precision = precision / readNo if readNo != 0 else 0
 	return (precision, recall, missingSize, smallReadNumber)
 
 
