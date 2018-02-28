@@ -1,25 +1,15 @@
-#~ CC=/usr/bin/g++
 CC=g++
 CFLAGS=  -Wall -Wextra  -Ofast -std=c++11 -march=native -pthread -pipe -Isparsepp
 LDFLAGS=-pthread -Isparsepp
 
 
-ifeq ($(gprof),1)
-CFLAGS=-std=c++0x -pg -O3  -march=native
-LDFLAGS=-pg
-endif
-
-ifeq ($(valgrind),1)
-CFLAGS=-std=c++0x -O3 -g
-LDFLAGS=-g
-endif
 
 
-EXEC=fa2fq
+EXEC=fq2fa
 
 
-fa2fq:   fa2fq.o
+fq2fa:   fq2fa.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-fa2fq.o: fatofq.cpp
+fq2fa.o: fq2fa.cpp
 	$(CC) -o $@ -c $< $(CFLAGS)

@@ -9,7 +9,7 @@ make poa;
 mv poa ../../bin;
 cd ../utils;
 make;
-mv fa2fq ../../bin;
+mv fq2fa ../../bin;
 cd ../../minimap2;
 make;
 cd ../miniasm;
@@ -26,3 +26,6 @@ autoheader:
 autoconf -Wno-syntax;
 ./configure;
 make;
+cd ../split;
+mv masterSplitter ../../bin;
+mv Donatello ../../bin;
