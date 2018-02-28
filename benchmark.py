@@ -94,7 +94,7 @@ def main():
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 	computeStats.outputRecallPrecision(newCorrectedFileName, 0, 0, soft)
 	computeStats.outputReadSizeDistribution(uncorrected, newCorrectedFileName, readSizeDistribution)
-	plotResults.generateResults(currentDirectory)
+	plotResults.generateResults(currentDirectory, installDirectory)
 
 
 if __name__ == '__main__':
