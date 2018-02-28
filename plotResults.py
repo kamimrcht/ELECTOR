@@ -28,11 +28,29 @@ import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
+from utils import *
 
 #todo
-def launchRscripts():
-	pass
+def launchRscripts(installDirectory, soft):
+	# recall and precision figure
+	if soft is not None:
+		if checkIfFile( installDirectory + "/" + soft + "_per_read_metrics.txt"):
+			cmdRecallPrecision = installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt ."
+			subprocessLauncher(cmdRecallPrecision)
+	else:
+		if checkIfFile( installDirectory + "/per_read_metrics.txt"):
+			cmdRecallPrecision = installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt ."
+			subprocessLauncher(cmdRecallPrecision)
 
+	# sizes distribution
+	if soft is not None:
+		if checkIfFile( installDirectory + "/" + soft + "read_size_distribution.txt"):
+			cmdSizesDistr = installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt ."
+			subprocessLauncher(cmdSizesDistr)
+	else:
+		if checkIfFile( installDirectory + "/read_size_distribution.txt"):
+			cmdSizesDistr = installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt ."
+			subprocessLauncher(cmdSizesDistr)
 
 def generateLatexFigures( outDir, outputPDFName, filesDict):
 	content = r'''\documentclass{article}
