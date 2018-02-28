@@ -223,7 +223,9 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 				positionsToRemovePrev = positionsToRemove
 				positionsToRemoveBoolPrev = [any(tup) for tup in zip(positionsToRemoveBoolPrev, positionsToRemoveBool)] #logical OR
 				prevCorrectedPositions = [any(tup) for tup in zip(prevCorrectedPositions, correctedPositions)] #logical OR
-				missingPrev = positionsToRemoveBoolPrev.count(False)
+				#~ missingPrev = positionsToRemoveBoolPrev.count(False)
+				missingPrevPositions = [i for i,x in enumerate(positionsToRemoveBoolPrev) if x == False]
+				missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 			else:
 				prevCorrectedPositions = correctedPositions
 				if prevCorrectedPositions.count(True)*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
