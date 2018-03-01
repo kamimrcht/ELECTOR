@@ -93,5 +93,7 @@ def generateResults(reads, reference, threads):
 	coveredBases = sum(1 for line in inCov)
 	inCov.close()
 
-	print("Average identity : ", avId, "%")
-	print("Genome covered : ", float(coveredBases / refLength * 100), "%")
+	print("Average identity : " + str(round(avId, 3)) + "%")
+	cov = float(coveredBases / refLength * 100)
+	print("Genome covered : " + str(round(cov, 3)) + "%")
+	return str(avId), str(cov)

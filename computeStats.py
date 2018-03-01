@@ -168,7 +168,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 					insU += 1
 				if ntResult != ".":
 					insC += 1
-			if ntRef != ".":
+			else:
 				if ntUnco != "." :
 					if ntUnco != ntRef:
 						subsU += 1
@@ -258,10 +258,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			nbLines += 1
 			lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
-			#~ if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
 			stretches = findGapStretches(corrected)
 			correctedPositions, positionsToRemove, positionsToRemoveBool = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
-			#~ print("corrected positions", correctedPositions)
 			corBases = 0
 			FN = 0 #code M
 			FP = 0 #code !
@@ -283,18 +281,11 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 				TPlistForARead.append(TP)
 				FNlistForARead.append(FN)
 				toWPrevList.append(toW)
-				#~ indelsubsCorr[0] += insC
-				#~ indelsubsCorr[1] += deleC
-				#~ indelsubsCorr[2] += subsC
-				#~ indelsubsUncorr[0] += insU
-				#~ indelsubsUncorr[1] += deleU
-				#~ indelsubsUncorr[2] += subsU
 				#todo change
 				toWPrev = toWPrevList[-1]
 				positionsToRemovePrev = positionsToRemove
 				positionsToRemoveBoolPrev = [any(tup) for tup in zip(positionsToRemoveBoolPrev, positionsToRemoveBool)] #logical OR
 				prevCorrectedPositions = [any(tup) for tup in zip(prevCorrectedPositions, correctedPositions)] #logical OR
-				#~ missingPrev = positionsToRemoveBoolPrev.count(False)
 				missingPrevPositions = [i for i,x in enumerate(positionsToRemoveBoolPrev) if x == False]
 				missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 			else:
@@ -306,33 +297,16 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						FPPrev = sum(FPlistForARead)*1.0/len(FPlistForARead) if len(FPlistForARead) > 0 else 0
 						TPPrev = sum(TPlistForARead)*1.0/len(TPlistForARead) if len(TPlistForARead) > 0 else 0
 						toWReadPrev = ">read " + str(readNoPrev)
-						#todo change
-						#~ if len(positionsToRemovePrev) > 0:
-							#~ for interv in positionsToRemovePrev:
-								#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
 						if missingPrev != 0:
 							missingSize.append(missingPrev)
 						# append ?
 						sumFN.append(FNPrev)
 						sumFP.append(FPPrev)
 						sumTP.append(TPPrev)
-						#~ indelsubsCorr[0] = insC
-						#~ indelsubsCorr[1] = deleC
-						#~ indelsubsCorr[2] = subsC
-						#~ indelsubsUncorr[0] = insU
-						#~ indelsubsUncorr[1] = deleU
-						#~ indelsubsUncorr[2] = subsU
 					else: #first triplet
-						#~ indelsubsCorr[0] += insC
-						#~ indelsubsCorr[1] += deleC
-						#~ indelsubsCorr[2] += subsC
-						#~ indelsubsUncorr[0] += insU
-						#~ indelsubsUncorr[1] += deleU
-						#~ indelsubsUncorr[2] += subsU
 						positionsToRemovePrev = positionsToRemove
 						positionsToRemoveBoolPrev = positionsToRemoveBool
 						prevCorrectedPositions = correctedPositions
-						#~ missingPrev = positionsToRemoveBoolPrev.count(False)
 						missingPrevPositions = [i for i,x in enumerate(positionsToRemoveBoolPrev) if x == False]
 						missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 				else:
@@ -362,14 +336,6 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			sumFN.append(FN)
 			sumFP.append(FP)
 			sumTP.append(TP)
-#			rec = TP / (TP + FN) if TP + FN != 0 else 0
-#			outPerReadMetrics.write(str(rec) + " recall\n")
-#			prec = TP / (TP + FP) if TP + FP != 0 else 0
-#			outPerReadMetrics.write(str(prec) + " precision\n")
-#			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_rate\n")
-#			recall = recall + rec
-#			precision = precision + prec
-#			corBasesRate = corBasesRate + corBasesRateForARead
 			prevHeader = headerNo
 			readNoPrev = readNo
 			readNo += 1
@@ -382,10 +348,6 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			FPPrev = round(sum(FPlistForARead)*1.0/len(FPlistForARead),1) if len(FPlistForARead) > 0 else 0
 			TPPrev = round(sum(TPlistForARead)*1.0/len(TPlistForARead),1) if len(TPlistForARead) > 0 else 0
 			toWReadPrev = ">read " + str(readNoPrev)
-			#todo change
-			#~ if len(positionsToRemovePrev) > 0:
-				#~ for interv in positionsToRemovePrev:
-					#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
 			if missingPrev != 0:
 				missingSize.append(missingPrev)
 			sumFN.append(FNPrev)
@@ -412,7 +374,6 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
 	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
-	#~ print(indelsubsCorr[0],indelsubsCorr[1],indelsubsCorr[2],indelsubsUncorr[0],indelsubsUncorr[1],indelsubsUncorr[2])
 	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr)
 
 
