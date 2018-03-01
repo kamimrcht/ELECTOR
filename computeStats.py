@@ -256,8 +256,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						#~ if len(positionsToRemovePrev) > 0:
 							#~ for interv in positionsToRemovePrev:
 								#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-
-						missingSize.append(missingPrev)
+						if missingPrev != 0:
+							missingSize.append(missingPrev)
 						# append ?
 						sumFN.append(FNPrev)
 						sumFP.append(FPPrev)
@@ -276,8 +276,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 					FNsum = sum(FNlistForARead)
 					TPsum = sum(TPlistForARead)
 					FPsum = sum (FPlistForARead)
-					rec = TPsum / (TPsum + FNsum)
-					prec = TPsum / (TPsum + FPsum)
+					rec = TPsum / (TPsum + FNsum) if (TPsum + FNsum) != 0 else 0
+					prec = TPsum / (TPsum + FPsum) if (TPsum + FPsum) != 0 else 0
 					corBRate = corBasesSum / len(prevRef)
 					outPerReadMetrics.write(str(rec) + " recall\n")
 					outPerReadMetrics.write(str(prec) + " precision\n")
@@ -320,7 +320,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			#~ if len(positionsToRemovePrev) > 0:
 				#~ for interv in positionsToRemovePrev:
 					#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-			missingSize.append(missingPrev)
+			if missingPrev != 0:
+				missingSize.append(missingPrev)
 			sumFN.append(FNPrev)
 			sumFP.append(FPPrev)
 			sumTP.append(TPPrev)
@@ -332,8 +333,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 		FNsum = sum(FNlistForARead)
 		TPsum = sum(TPlistForARead)
 		FPsum = sum (FPlistForARead)
-		rec = TPsum / (TPsum + FNsum)
-		prec = TPsum / (TPsum + FPsum)
+		rec = TPsum / (TPsum + FNsum) if (TPsum + FNsum) != 0 else 0
+		prec = TPsum / (TPsum + FPsum) if (TPsum + FPsum) != 0 else 0
 		corBRate = corBasesSum / len(reference)
 		outPerReadMetrics.write(str(rec) + " recall\n")
 		outPerReadMetrics.write(str(prec) + " precision\n")
