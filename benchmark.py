@@ -81,7 +81,6 @@ def main():
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
-	print("split : " + str(split))
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
