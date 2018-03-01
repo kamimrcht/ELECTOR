@@ -142,7 +142,6 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW, correctedPositions):
 	position = 0
 	corBases = 0
-	totBases = 0
 	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
 		if correctedPositions[position]:
 				if ntRef == ntUnco == ntResult:
@@ -173,7 +172,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 		else:
 			corBases += 1
 		position += 1
-	return (FP, TP, FN, corBases / len(reference), toW)
+	return (FP, TP, FN, corBases, toW)
 
 
 # main function, compute false positives, false negatives, true positives for a msa
@@ -198,6 +197,9 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	corBasesRate = 0
 	outPerReadMetrics.write("score metrics\n")
 	prevHeader = ""
+	reference = ""
+	prevRef = ""
+	corBasesForARead = []
 	FPlistForARead = []
 	TPlistForARead = []
 	FNlistForARead = []
@@ -206,6 +208,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	while nbLines < len(lines) - 3:
 		toW = ""
 		if not ">" in lines[nbLines]:
+			prevRef = reference
 			reference = lines[nbLines].rstrip()
 			nbLines += 2
 			uncorrected =  lines[nbLines].rstrip()
@@ -218,15 +221,17 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			stretches = findGapStretches(corrected)
 			correctedPositions, positionsToRemove, positionsToRemoveBool = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
 			#~ print("corrected positions", correctedPositions)
+			corBases = 0
 			FN = 0 #code M
 			FP = 0 #code !
 			TP = 0 #code *
 			corBasesRateForARead = 0
 			position = 0
 			intervalInPositionToRemove = 0
-			FP, TP, FN, corBasesRateForARead, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRateForARead, toW, correctedPositions)
+			FP, TP, FN, corBases, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBases, toW, correctedPositions)
 			if headerNo == prevHeader:
 				sameLastHeader = True
+				corBasesForARead.append(corBases)
 				FPlistForARead.append(FP)
 				TPlistForARead.append(TP)
 				FNlistForARead.append(FN)
@@ -243,6 +248,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 				prevCorrectedPositions = correctedPositions
 				if prevCorrectedPositions.count(True)*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
 					if prevHeader != "":
+						corBasesPrev = sum(corBasesForARead)*1.0/len(corBasesForARead) if len(corBasesForARead) > 0 else 0
 						FNPrev = sum(FNlistForARead)*1.0/len(FNlistForARead) if len(FNlistForARead) > 0 else 0
 						FPPrev = sum(FPlistForARead)*1.0/len(FPlistForARead) if len(FPlistForARead) > 0 else 0
 						TPPrev = sum(TPlistForARead)*1.0/len(TPlistForARead) if len(TPlistForARead) > 0 else 0
@@ -251,8 +257,9 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						#~ if len(positionsToRemovePrev) > 0:
 							#~ for interv in positionsToRemovePrev:
 								#~ toWReadPrev += " splitted_pos"+ str(interv[0]) + ":" + str(interv[1]) 
-							
+
 						missingSize.append(missingPrev)
+						# append ?
 						sumFN.append(FNPrev)
 						sumFP.append(FPPrev)
 						sumTP.append(TPPrev)
@@ -265,6 +272,26 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 				else:
 					smallReadNumber += 1
+				print(TPlistForARead)
+				if FPlistForARead != [] or TPlistForARead != [] or FNlistForARead != [] or corBasesForARead != []:
+					print("je passe la")
+					corBasesSum = sum(corBasesForARead)
+					FNsum = sum(FNlistForARead)
+					TPsum = sum(TPlistForARead)
+					FPsum = sum (FPlistForARead)
+					rec = TPsum / (TPsum + FNsum)
+					prec = TPsum / (TPsum + FPsum)
+					corBRate = corBasesSum / len(prevRef)
+					print("corBases : " + str(corBasesSum))
+					print("len toW : " + str(len(prevRef)))
+#					print("ref : " + reference)
+					outPerReadMetrics.write(str(rec) + " recall\n")
+					outPerReadMetrics.write(str(prec) + " precision\n")
+					outPerReadMetrics.write(str(corBRate) + " correct_rate\n")
+					recall += rec
+					precision += prec
+					corBasesRate += corBRate
+				corBasesForARead = [corBases]
 				FPlistForARead = [FP]
 				TPlistForARead = [TP]
 				FNlistForARead = [FN]
@@ -275,21 +302,23 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			sumFN.append(FN)
 			sumFP.append(FP)
 			sumTP.append(TP)
-			rec = TP / (TP + FN) if TP + FN != 0 else 0
-			outPerReadMetrics.write(str(rec) + " recall\n")
-			prec = TP / (TP + FP) if TP + FP != 0 else 0
-			outPerReadMetrics.write(str(prec) + " precision\n")
-			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_rate\n")
-			recall = recall + rec
-			precision = precision + prec
-			corBasesRate = corBasesRate + corBasesRateForARead
+#			rec = TP / (TP + FN) if TP + FN != 0 else 0
+#			outPerReadMetrics.write(str(rec) + " recall\n")
+#			prec = TP / (TP + FP) if TP + FP != 0 else 0
+#			outPerReadMetrics.write(str(prec) + " precision\n")
+#			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_rate\n")
+#			recall = recall + rec
+#			precision = precision + prec
+#			corBasesRate = corBasesRate + corBasesRateForARead
 			prevHeader = headerNo
 			readNoPrev = readNo
 			readNo += 1
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
+			print("header : " + headerNo)
 			nbLines += 1
 	if sameLastHeader:
+		print("lolololol")
 		if prevCorrectedPositions.count(True)*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
 			FNPrev = round(sum(FNlistForARead)*1.0/len(FNlistForARead),1) if len(FNlistForARead) > 0 else 0
 			FPPrev = round(sum(FPlistForARead)*1.0/len(FPlistForARead),1) if len(FPlistForARead) > 0 else 0
@@ -305,6 +334,26 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			sumTP.append(TPPrev)
 		else:
 			smallReadNumber += 1
+
+	if FPlistForARead != [] or TPlistForARead != [] or FNlistForARead != [] or corBasesForARead != []:
+		print("je passe la")
+		corBasesSum = sum(corBasesForARead)
+		FNsum = sum(FNlistForARead)
+		TPsum = sum(TPlistForARead)
+		FPsum = sum (FPlistForARead)
+		rec = TPsum / (TPsum + FNsum)
+		prec = TPsum / (TPsum + FPsum)
+		corBRate = corBasesSum / len(reference)
+		print("corBases : " + str(corBasesSum))
+		print("len toW : " + str(len(reference)))
+		outPerReadMetrics.write(str(rec) + " recall\n")
+		outPerReadMetrics.write(str(prec) + " precision\n")
+		outPerReadMetrics.write(str(corBRate) + " correct_rate\n")
+		recall += rec
+		precision += prec
+		corBasesRate += corBRate
+
+	print("readNo : " + str(readNo))
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
 	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
