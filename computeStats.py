@@ -92,11 +92,11 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(soft + "_msa_profile.txt", 'w')
 		outMetrics = open(soft + "_per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open("msa_profile.txt", 'w')
 		outMetrics = open("per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	print("*********** SUMMARY ***********")
 	meanMissingSize = 0
@@ -115,7 +115,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	outProfile.close()
 	outMetrics.close()
 	print("*******************************")
-	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize
+	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize,  indelsubsUncorr, indelsubsCorr
 
 
 
@@ -143,16 +143,41 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 	out.close()
 
 
-def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW, correctedPositions):
+def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW, correctedPositions, positionsToRemoveBool):
 	position = 0
 	corBases = 0
 	GCSumRef = 0
 	GCSumCorr = 0
+	insU = 0
+	deleU = 0
+	subsU = 0
+	insC = 0
+	deleC = 0
+	subsC = 0
 	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
 		if ntRef.upper() == "G" or ntRef.upper() == "C":
 			GCSumRef += 1
 		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
+		#insertion deletion substitution
+		if positionsToRemoveBool[position]:
+			if ntRef == ".":
+				if ntUnco != ".":
+					insU += 1
+				if ntResult != ".":
+					insC += 1
+			if ntRef != ".":
+				if ntUnco != "." :
+					if ntUnco != ntRef:
+						subsU += 1
+				else:
+					deleU += 1
+				if ntResult != "." :
+					if ntResult != ntRef:
+						subsC += 1
+				else:
+					deleC += 1
+		#FP, FN, TP
 		if correctedPositions[position]:
 				if ntRef == ntUnco == ntResult:
 					toW += " "
@@ -184,7 +209,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 
 	GCRateRef = round(GCSumRef * 1.0 / getLen(reference),3)
 	GCRateCorr = round(GCSumCorr * 1.0 / getLen(corrected),3)
-	return (FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr)
+	return (FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC)
 
 
 # main function, compute false positives, false negatives, true positives for a msa
@@ -212,6 +237,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	reference = ""
 	prevRef = ""
 	corBasesForARead = []
+	indelsubsCorr = [0,0,0] #ins del subs
+	indelsubsUncorr = [0,0,0]
 	FPlistForARead = []
 	TPlistForARead = []
 	FNlistForARead = []
@@ -240,7 +267,13 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			corBasesRateForARead = 0
 			position = 0
 			intervalInPositionToRemove = 0
-			FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBases, toW, correctedPositions)
+			FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBases, toW, correctedPositions, positionsToRemoveBool)
+			indelsubsCorr[0] += insC
+			indelsubsCorr[1] += deleC
+			indelsubsCorr[2] += subsC
+			indelsubsUncorr[0] += insU
+			indelsubsUncorr[1] += deleU
+			indelsubsUncorr[2] += subsU
 			if headerNo == prevHeader:
 				sameLastHeader = True
 				corBasesForARead.append(corBases)
@@ -248,6 +281,12 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 				TPlistForARead.append(TP)
 				FNlistForARead.append(FN)
 				toWPrevList.append(toW)
+				#~ indelsubsCorr[0] += insC
+				#~ indelsubsCorr[1] += deleC
+				#~ indelsubsCorr[2] += subsC
+				#~ indelsubsUncorr[0] += insU
+				#~ indelsubsUncorr[1] += deleU
+				#~ indelsubsUncorr[2] += subsU
 				#todo change
 				toWPrev = toWPrevList[-1]
 				positionsToRemovePrev = positionsToRemove
@@ -275,7 +314,19 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						sumFN.append(FNPrev)
 						sumFP.append(FPPrev)
 						sumTP.append(TPPrev)
+						#~ indelsubsCorr[0] = insC
+						#~ indelsubsCorr[1] = deleC
+						#~ indelsubsCorr[2] = subsC
+						#~ indelsubsUncorr[0] = insU
+						#~ indelsubsUncorr[1] = deleU
+						#~ indelsubsUncorr[2] = subsU
 					else: #first triplet
+						#~ indelsubsCorr[0] += insC
+						#~ indelsubsCorr[1] += deleC
+						#~ indelsubsCorr[2] += subsC
+						#~ indelsubsUncorr[0] += insU
+						#~ indelsubsUncorr[1] += deleU
+						#~ indelsubsUncorr[2] += subsU
 						positionsToRemovePrev = positionsToRemove
 						positionsToRemoveBoolPrev = positionsToRemoveBool
 						prevCorrectedPositions = correctedPositions
@@ -359,7 +410,8 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
 	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
-	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr)
+	#~ print(indelsubsCorr[0],indelsubsCorr[1],indelsubsCorr[2],indelsubsUncorr[0],indelsubsUncorr[1],indelsubsUncorr[2])
+	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr)
 
 
 

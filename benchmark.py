@@ -106,7 +106,7 @@ def main():
 	alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing  = computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
+	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
 
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
@@ -114,7 +114,7 @@ def main():
 		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
-	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads)
+	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr )
 
 	if reference is not None:
 		print("********** REMAPPING **********")
