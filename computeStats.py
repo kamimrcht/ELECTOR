@@ -115,6 +115,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	outProfile.close()
 	outMetrics.close()
 	print("*******************************")
+	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize
 
 
 

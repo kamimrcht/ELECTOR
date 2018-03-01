@@ -65,12 +65,33 @@ def launchRscripts(installDirectory, soft):
 def generateLatexFigures( outDir, outputPDFName, filesDict):
 	content = r'''\documentclass{article}
 	\usepackage{graphicx}
+	\usepackage{multirow}
+
 	\begin{document}
-	\section{Recall, precision of the correction and correct base rate in reads}'''
+
+	\section{Summary}
+	\begin{figure*}[ht!]
+	\begin{tabular}{|l|c|} 
+	\hline
+	Mean recall & %(meanRecall)s  \\ \hline
+	Mean precision & %(meanPrecision)s  \\ \hline
+	Mean correct bases rate & %(meanCorrectBaseRate)s \\ \hline
+   Number of trimmed/split reads & %(numberReadSplit)s \\ \hline
+      Mean missing size in trimmed/split reads & %(meanMissingSize)s \\ \hline
+    \%% GC in reference reads & %(GCRef)s \\ \hline
+    \%% GC in corrected reads & %(GCCorr)s \\ \hline
+    Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
+  is $<$ 10.0 \%% of the original read & \\ \hline
+	\end{tabular}
+	\end{figure*}'''
+
+	
+	#filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": percentGCRef, "GCCorr": percentGCCorr, "smallReads": smallReads}
 
 	#add plot recall precision
 	if checkIfFile(filesDict["recall_precision"]):
 		content += r'''
+		\section{Recall, precision of the correction and correct base rate in reads}
 		\begin{figure}[ht!]
 		\centering\includegraphics[width=0.7\textwidth]{%(recall_precision)s}
 		\caption{\textbf{Recall and precision computed for each read after correction.} Recall is the rate of correct bases out of bases that needed correction in the original read, precision is the rate of correct bases out of the number of bases that were modified by the correction method.}
@@ -92,7 +113,16 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	#~ proc.communicate()
 
 
-def generateResults(outDir, installDirectory, soft):
-	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png"}
+def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads):
+	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads}
 	launchRscripts(installDirectory, soft)
 	generateLatexFigures(outDir, "summary", filesDict)
+
+
+#Recall  0.9997 
+#Precision  1.0 
+#Correct bases rate  0.99998 
+#Number of trimmed/split reads  0 
+#Mean missing size in trimmed/split reads  0
+#%GC in reference reads: 36.1 %GC in corrected reads: 18.5
+#Number of corrected reads which length is < 10.0 % of the original read: 0
