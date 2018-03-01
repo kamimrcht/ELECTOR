@@ -29,6 +29,10 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
 import alignment
+from multiprocessing import Pool, TimeoutError
+
+
+installDirectoryGlobal=""
 
 
 try:
@@ -43,16 +47,21 @@ except ImportError:
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
 	#~ p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
-	p = subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = argstderr).communicate()
+	p = subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL).communicate()
 	return p
 
 #~ # do the msa
 #~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
 
+def f(i):
+	cmdPOA = installDirectoryGlobal + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
+	subprocessLauncher(cmdPOA)
+	return i
+
 
 def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
-	#~ oldMode=False
-	oldMode=True
+	oldMode=False
+	#~ oldMode=True
 	if(oldMode):
 		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory
 		subprocessLauncher(cmdPOA)
@@ -62,18 +71,32 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=No
 			cmdMv = "mv default_output_msa.fasta msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 	else:
+		global installDirectoryGlobal
+		installDirectoryGlobal=installDirectory
 		cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 15 100"
 		subprocessLauncher(cmdSplitter)
+		print("Wait for 100 '-' to be printed")
+		with Pool (processes=threads) as pool:
+			for i in pool.imap_unordered(f, range(100)):
+				sys.stdout.write('-')
+				sys.stdout.flush()
+		print()
+
+			#~ print(pool.map(f, range(100)))
+		#~ for i in range(0, 100):
+			#~ for(j in range(0,threads)):
+				#~ cmdPOA = installDirectory + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
+
 		for i in range(0, 100):
-			print(str(i)+"%")
-			cmdPOA = installDirectory + "/bin/poa -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
-			cmdMerger = installDirectory + "/bin/Donatello default_output_msa.fasta  outputMerger"
-			subprocessLauncher(cmdPOA)
+			cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  outputMerger"
 			subprocessLauncher(cmdMerger)
+
 		if soft is not None:
 			cmdMv = "mv outputMerger msa_" + soft + ".fa"
 		else:
 			cmdMv = "mv outputMerger msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 		cmdRM = "rm out*"
+		subprocess.check_output(['bash','-c', cmdRM])
+		cmdRM = "rm swag*"
 		subprocess.check_output(['bash','-c', cmdRM])
