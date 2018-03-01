@@ -83,6 +83,17 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
     Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
   is $<$ 10.0 \%% of the original read & \\ \hline
 	\end{tabular}
+	\end{figure*}
+
+
+	\begin{figure*}[ht!]
+	\begin{tabular}{|l|c|c|} 
+	\hline
+	 &uncorrected & corrected  \\ \hline
+	Insertions & %(insU)s& %(insC)s  \\ \hline
+	Deletions &  %(delU)s& %(delC)s  \\ \hline
+	Substitutions &  %(subsU)s& %(subsC)s  \\ \hline
+	\end{tabular}
 	\end{figure*}'''
 
 	
@@ -113,8 +124,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	#~ proc.communicate()
 
 
-def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads):
-	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads}
+def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr ):
+	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2]}
 	launchRscripts(installDirectory, soft)
 	generateLatexFigures(outDir, "summary", filesDict)
 

@@ -92,11 +92,11 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(soft + "_msa_profile.txt", 'w')
 		outMetrics = open(soft + "_per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open("msa_profile.txt", 'w')
 		outMetrics = open("per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	print("*********** SUMMARY ***********")
 	meanMissingSize = 0
@@ -115,7 +115,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	outProfile.close()
 	outMetrics.close()
 	print("*******************************")
-	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize
+	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize,  indelsubsUncorr, indelsubsCorr
 
 
 
@@ -411,7 +411,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	precision = precision / readNo if readNo != 0 else 0
 	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
 	#~ print(indelsubsCorr[0],indelsubsCorr[1],indelsubsCorr[2],indelsubsUncorr[0],indelsubsUncorr[1],indelsubsUncorr[2])
-	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr,indelsubsUncorr, indelsubsCorr)
+	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr)
 
 
 
