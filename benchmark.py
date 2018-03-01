@@ -117,8 +117,12 @@ def main():
 	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads)
 
 	if reference is not None:
+		print("********** REMAPPING **********")
 		remappingStats.generateResults(corrected, reference, args.threads)
+		print("*******************************")
+		print("********** ASSEMBLY **********")
 		assemblyStats.generateResults(corrected, reference, args.threads)
+		print("******************************")
 
 if __name__ == '__main__':
 	main()
