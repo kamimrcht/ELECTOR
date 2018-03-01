@@ -32,6 +32,11 @@ import argparse
 import glob
 
 
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
 
 ######### utils for warnings, user messages, errors ######### 
 
@@ -70,7 +75,8 @@ def checkReadFiles(readfiles):
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
-	p = subprocess.call(args, stdin = argstdin, stdout = argstdout, stderr = argstderr)
+	#~ p = subprocess.call(args, stdin = argstdin, stdout = argstdout, stderr = argstderr)
+	p = subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL).communicate()
 	return p
 
 

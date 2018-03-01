@@ -92,12 +92,13 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(soft + "_msa_profile.txt", 'w')
 		outMetrics = open(soft + "_per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open("msa_profile.txt", 'w')
 		outMetrics = open("per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
+	print("*********** SUMMARY ***********")
 	meanMissingSize = 0
 	if len(missingSize) > 0:
 		meanMissingSize = round(sum(missingSize)/len(missingSize),1)
@@ -108,10 +109,12 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 	else:
 		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
-		print("Recall ", round(recall,5), "Precision ", round(precision,5), "Correct bases rate ", round(corBasesRate,5), "Number of trimmed reads " , str(len(missingSize)), "Mean missing size in trimmed reads " , str(meanMissingSize))
+		print("Recall ", round(recall,5), "\nPrecision ", round(precision,5), "\nCorrect bases rate ", round(corBasesRate,5), "\nNumber of trimmed/split reads " , str(len(missingSize)), "\nMean missing size in trimmed/split reads " , str(meanMissingSize))
+	print("%GC in reference reads: " + str(GCRateRef * 100) + " %GC in corrected reads: " + str(GCRateCorr * 100))
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
 	outProfile.close()
 	outMetrics.close()
+	print("*******************************")
 
 
 
@@ -142,7 +145,13 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW, correctedPositions):
 	position = 0
 	corBases = 0
+	GCSumRef = 0
+	GCSumCorr = 0
 	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
+		if ntRef.upper() == "G" or ntRef.upper() == "C":
+			GCSumRef += 1
+		if ntResult.upper() ==  "G" or ntResult.upper == "C":
+			GCSumCorr += 1
 		if correctedPositions[position]:
 				if ntRef == ntUnco == ntResult:
 					toW += " "
@@ -171,7 +180,10 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 		else:
 			corBases += 1
 		position += 1
-	return (FP, TP, FN, corBases, toW)
+
+	GCRateRef = round(GCSumRef * 1.0 / getLen(reference),3)
+	GCRateCorr = round(GCSumCorr * 1.0 / getLen(corrected),3)
+	return (FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr)
 
 
 # main function, compute false positives, false negatives, true positives for a msa
@@ -227,7 +239,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			corBasesRateForARead = 0
 			position = 0
 			intervalInPositionToRemove = 0
-			FP, TP, FN, corBases, toW = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBases, toW, correctedPositions)
+			FP, TP, FN, corBases, toW, GCRateRef, GCRateCorr = getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBases, toW, correctedPositions)
 			if headerNo == prevHeader:
 				sameLastHeader = True
 				corBasesForARead.append(corBases)
@@ -346,7 +358,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	recall = recall / readNo if readNo != 0 else 0
 	precision = precision / readNo if readNo != 0 else 0
 	corBasesRate = corBasesRate / readNo if readNo != 0 else 0
-	return (precision, recall, corBasesRate, missingSize, smallReadNumber)
+	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr)
 
 
 

@@ -30,6 +30,15 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 from utils import *
 
+
+
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
+
+
 #todo
 def launchRscripts(installDirectory, soft):
 	# recall and precision figure
@@ -79,8 +88,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	content += r'''\end{document} '''
 	with open(outDir + "/" + outputPDFName +'.tex','w') as f:
 		f.write(content%filesDict)
-	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"])
-	proc.communicate()
+	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
+	#~ proc.communicate()
 
 
 def generateResults(outDir, installDirectory, soft):
