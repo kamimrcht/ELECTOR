@@ -272,7 +272,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			outPerReadMetrics.write(str(rec) + " recall\n")
 			prec = TP / (TP + FP) if TP + FP != 0 else 0
 			outPerReadMetrics.write(str(prec) + " precision\n")
-			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_bases\n")
+			outPerReadMetrics.write(str(corBasesRateForARead) + " correct_rate\n")
 			recall = recall + rec
 			precision = precision + prec
 			corBasesRate = corBasesRate + corBasesRateForARead
