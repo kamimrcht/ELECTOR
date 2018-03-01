@@ -130,7 +130,7 @@ vector<int> best_chain_from_anchor_list(const vector<anchor>& anchor_list){
 
 
 void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header){
-	cout<<"GO SPLIT"<<endl;
+	//~ cout<<"GO SPLIT"<<endl;
 	unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
 	kmer seq(str2num(ref.substr(0,k)));
 	kmer_ref[seq]=0;
@@ -145,7 +145,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			kmer_ref[seq]=-1;
 		}
 	}
-	cout<<kmer_ref.size()<<endl;
+	//~ cout<<kmer_ref.size()<<endl;
 
 	seq=str2num(S1.substr(0,k));
 	if(kmer_ref.count(seq)==1){
@@ -170,7 +170,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		}
 	}
 
-	cout<<kmer_ref_inS1.size()<<endl;
+	//~ cout<<kmer_ref_inS1.size()<<endl;
 
 	seq=str2num(S2.substr(0,k));
 	if(kmer_ref_inS1.count(seq)==1){
@@ -192,8 +192,8 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			}
 		}
 	}
-	cout<<"Kmer shared"<<endl;
-	cout<<kmer_shared.size()<<endl;
+	//~ cout<<"Kmer shared"<<endl;
+	//~ cout<<kmer_shared.size()<<endl;
 
 	//NOW KMER_SHARED CONTAIN KMER IN COMMUM IN THE THREE READ AND DUPLICATED IN NON OF THE THREE READS
 
@@ -219,8 +219,8 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	//Anchors list filled Now to find maximal chain
 	auto BL(best_chain_from_anchor_list(anchor_list));
 
-	cout<<"best chain size"<<endl;
-	cout<<BL.size()<<endl;
+	//~ cout<<"best chain size"<<endl;
+	//~ cout<<BL.size()<<endl;
 	uint pred_ref(0),pred_S1(0),pred_S2(0);
 	for(uint i(0);i<BL.size()-1;++i){
 		//~ if(get<0>(anchor_list[BL[i]])-pred_ref>1){
