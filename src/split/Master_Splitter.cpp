@@ -87,9 +87,9 @@ pair<int,int> best_chain_from_anchor(unordered_map<uint,pair<int,int>>& best_cha
 	for(uint i(anchor_indice+1);i<anchor_list.size();++i){
 		anchor next(anchor_list[i]);
 
-		if(get<0>(next)-get<0>(anchor_start)<500 and get<0>(next) > get<0>(anchor_start) ){
-			if(get<1>(next)-get<1>(anchor_start)<500 and get<1>(next) > get<1>(anchor_start) ){
-				if(get<2>(next)-get<2>(anchor_start)<500 and  get<2>(next) > get<2>(anchor_start)){
+		if(get<0>(next)-get<0>(anchor_start)<5000 and get<0>(next) > get<0>(anchor_start) ){
+			if(get<1>(next)-get<1>(anchor_start)<5000 and get<1>(next) > get<1>(anchor_start) ){
+				if(get<2>(next)-get<2>(anchor_start)<5000 and  get<2>(next) > get<2>(anchor_start)){
 					auto p=best_chain_from_anchor(best_chain_computed,anchor_list,i);
 					if(p.first>max_chain){
 						max_chain=p.first;
@@ -208,8 +208,9 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	uint last_indexed_anchor(0);
 	for(uint j(0);j+k<ref.size();++j){
 		updateK(seq,ref[j+k]);
-		if(kmer_shared.count(seq) and j-last_indexed_anchor>20){
-			if(kmer_shared[seq]!=-1){
+		if(kmer_shared.count(seq) ){
+		if(kmer_shared.count(seq) and j-last_indexed_anchor>16){
+			//~ if(kmer_shared[seq]!=-1){
 				anchor_list.push_back(make_tuple(kmer_ref[seq],kmer_ref_inS1[seq],kmer_shared[seq]));
 				last_indexed_anchor=j;
 			}
