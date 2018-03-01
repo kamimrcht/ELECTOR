@@ -131,3 +131,4 @@ def generateResults(reads, reference, threads):
 	print("Number of breakpoints : " + str(nbBreakpoints))
 	print("NGA50 : " + str(NG50))
 	print("NGA75 : " + str(NG75))
+	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75)

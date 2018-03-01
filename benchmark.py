@@ -114,15 +114,16 @@ def main():
 		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
-	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr )
 
 	if reference is not None:
 		print("********** REMAPPING **********")
-		remappingStats.generateResults(corrected, reference, args.threads)
+		avId, cov = remappingStats.generateResults(corrected, reference, args.threads)
 		print("*******************************")
 		print("********** ASSEMBLY **********")
-		assemblyStats.generateResults(corrected, reference, args.threads)
+		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads)
 		print("******************************")
+	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 )
+
 
 if __name__ == '__main__':
 	main()
