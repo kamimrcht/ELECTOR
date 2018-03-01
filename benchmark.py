@@ -59,6 +59,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-threads', nargs='?', type=int, action="store", dest="threads", help="Number of threads", default=2)
 	parser.add_argument('-corrected', nargs='?', type=str, action="store", dest="corrected", help="Fasta file with corrected reads (each read sequence on one line)")
+	parser.add_argument('-split',  dest="split", action='store_true', default=False, help="Corrected reads are split")
 	parser.add_argument('-uncorrected', nargs='?', type=str,  action="store", dest="uncorrected",  help="Prefix of the reads simulation files")
 	parser.add_argument('-perfect', nargs='?', type=str, action="store", dest="perfect", help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference genome sequences (each sequence on one line)")
@@ -75,19 +76,21 @@ def main():
 	uncorrected = args.uncorrected
 	perfect = args.perfect
 	reference = args.reference
+	split = args.split
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
+	print("split : " + str(split))
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
-		if args.soft == "lorma" or args.soft == "mecat" or args.soft == "pbdagcon" or args.soft == "daccord" or args.soft == "hg-color" or args.soft == "lordec":
+		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	if simulator is not None:
-		readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, soft, simulator, dazzDb)
+		readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, split, simulator, dazzDb)
 	else:
-		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, soft, simulator, dazzDb)
+		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, split, simulator, dazzDb)
 	#TOVERIFY
 	if soft is not None:
 		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
@@ -102,14 +105,15 @@ def main():
 	alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
+	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing  = computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
+
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
 	elif simulator == "simlord":
 		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
-	plotResults.generateResults(currentDirectory, installDirectory, soft)
+	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads)
 
 
 if __name__ == '__main__':

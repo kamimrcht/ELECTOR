@@ -115,6 +115,7 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	outProfile.close()
 	outMetrics.close()
 	print("*******************************")
+	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize
 
 
 
@@ -150,7 +151,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 	for ntRef, ntUnco, ntResult in zip(reference, uncorrected, corrected):
 		if ntRef.upper() == "G" or ntRef.upper() == "C":
 			GCSumRef += 1
-		if ntResult.upper() ==  "G" or ntResult.upper == "C":
+		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
 		if correctedPositions[position]:
 				if ntRef == ntUnco == ntResult:
