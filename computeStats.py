@@ -114,7 +114,9 @@ def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
 	outProfile.close()
 	outMetrics.close()
-	print("*******************************")
+	print("Number of insertions in uncorrected: " + str(indelsubsUncorr[0]) +" Number of insertions in corrected: " + str(indelsubsCorr[0]) )
+	print("Number of deletions in uncorrected: " + str(indelsubsUncorr[1]) +" Number of deletions in corrected: " + str(indelsubsCorr[1]) )
+	print("Number of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +" Number of substitutions in corrected: " + str(indelsubsCorr[2]) )
 	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize,  indelsubsUncorr, indelsubsCorr
 
 
