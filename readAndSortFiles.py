@@ -169,12 +169,60 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		return reference, uncorrected
 
 # format corrected reads headers
-def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb):
-	if corrector == "daccord":
-		formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
+def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
+	if corrector == "proovread":
+		cmdFormatHeader = "sed 's/\(\.[0-9]*\)* SUBSTR.*$//g' " + correctedReads
+		formattedReads = open("corrected_format_proovread.fa", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
+	elif corrector == "lordec":
+		if not split:
+			#already formatted
+			pass
+		else:
+			cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
+			formattedReads = open("corrected_format_lordec.fa", 'w')
+			subprocessLauncher(cmdFormatHeader, formattedReads)
+			formattedReads.close()
+	elif corrector == "nanocorr":
+		cmdFormatHeader = "sed 's/_consensus$//g' " + correctedReads
+		formattedReads = open("corrected_format_nanocorr.fa")
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
+	elif corrector == "nas":
+		#already formatted
+		pass
+	elif corrector == "jabba":
+		#TODO
+		pass
+	elif corrector == "colormap":
+		cmdFormatHeader = "sed 's/ [0-9]* [0-9]*$//g' " + correctedReads
+		formattedReads = open("corrected_format_colormap", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "hg-color":
-		cmdFormatHeader = "sed 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
+		if not split:
+			cmdFormatHeader = "sed 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
+		else:
+			cmdFormatHeader = "sed 's/\(_[0-9]*\)\{5\}$//g' " + correctedReads
 		formattedReads = open("corrected_format_hg-color.fa", 'w')
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
+	elif corrector == "halc":
+		if not split:
+			#already formatted
+			pass
+		else:
+			cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
+			formattedReads = open("corrected_format_halc.fa", 'w')
+			subprocessLauncher(cmdFormatHeader, formattedReads)
+			formattedReads.close()
+	elif corrector == "pbdagcon":
+		sortPBDCHeaders(correctedReads, "tmp_sorted_pbdagcon.fa")
+		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
+	elif corrector == "canu":
+		cmdFormatHeader = "sed 's/-id.*//g' " + correctedReads
+		formattedReads = open("corrected_format_canu", 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "lorma":
@@ -182,15 +230,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb):
 		formattedReads = open("corrected_format_lorma.fa", 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
-	elif corrector == "lordec":
-		cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
-		formattedReads = open("corrected_format_lordec.fa", 'w')
-		subprocessLauncher(cmdFormatHeader, formattedReads)
-		formattedReads.close()
-	elif corrector == "pbdagcon":
-		#pass
-		sortPBDCHeaders(correctedReads, "tmp_sorted_pbdagcon.fa")
-		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
+	elif corrector == "daccord":
+		formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
 	elif corrector == "mecat":
 		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 
@@ -226,7 +267,6 @@ def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
 		seq = fSeqs[refId][pos:+pos+mid]
 		if strand == "R":
 			seq = str(Seq(seq).reverse_complement())
-#		print(">" + header + "\n" + seq)
 		out.write(">" + header + "\n" + seq + "\n")
 		header = f.readline()[1:-1]
 	f.close()
@@ -272,25 +312,25 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 		generateRefReadsSimLord(simulatedPrefix + ".fastq.sam", referenceGenome, simulatedPrefix + "_reference.fasta")
 
 # main function
-def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, soft, simulator, dazzDb):
+def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
 	#0- generate reference reads, if needed
 	if simulator is not None:
 		convertSimulationOutputToRefFile(uncorrected, reference, simulator)
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
-		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb)
+		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split)
 	elif simulator == "simlord":
-		formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb)
+		formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb, split)
 	else:
-		formatHeader(corrector, corrected, uncorrected, dazzDb)
+		formatHeader(corrector, corrected, uncorrected, dazzDb, split)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	if soft is not None:
-		newCorrectedFileName = "corrected_format_" + soft + ".fa"
-		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
-		sortedUncoFileName = "uncorrected_sorted_" + soft + ".fa"
-		newUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
-		sortedRefFileName = "reference_sorted_" + soft + ".fa"
-		newRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
+	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc") or split):
+		newCorrectedFileName = "corrected_format_" + correct + ".fa"
+		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
+		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
+		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
+		sortedRefFileName = "reference_sorted_" + corrector + ".fa"
+		newRefFileName =  "reference_sorted_duplicated_" + corrector + ".fa"
 	else:
 		newCorrectedFileName = corrected
 		sortedCorrectedFileName = "corrected_sorted.fa"
