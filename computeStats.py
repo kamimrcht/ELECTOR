@@ -211,7 +211,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 			uncorrected =  lines[nbLines].rstrip()
 			nbLines += 2
 			corrected = lines[nbLines].rstrip()
-			nbLines += 2
+			nbLines += 1
 			lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
 			#~ if lenCorrected*1.0/lenReference >= SIZE_CORRECTED_READ_THRESHOLD:
@@ -256,6 +256,13 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 						sumFN.append(FNPrev)
 						sumFP.append(FPPrev)
 						sumTP.append(TPPrev)
+					else: #first triplet
+						positionsToRemovePrev = positionsToRemove
+						positionsToRemoveBoolPrev = positionsToRemoveBool
+						prevCorrectedPositions = correctedPositions
+						#~ missingPrev = positionsToRemoveBoolPrev.count(False)
+						missingPrevPositions = [i for i,x in enumerate(positionsToRemoveBoolPrev) if x == False]
+						missingPrev = sum([1 for x in missingPrevPositions if reference[x] != "."])
 				else:
 					smallReadNumber += 1
 				FPlistForARead = [FP]
