@@ -116,8 +116,9 @@ def main():
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
 	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads)
 
-	remappingStats.generateResults(corrected, reference, args.threads)
-	assemblyStats.generateResults(corrected, reference, args.threads)
+	if reference is not None:
+		remappingStats.generateResults(corrected, reference, args.threads)
+		assemblyStats.generateResults(corrected, reference, args.threads)
 
 if __name__ == '__main__':
 	main()
