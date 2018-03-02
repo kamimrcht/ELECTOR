@@ -285,7 +285,7 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 		header = line[0]
 		strand = int(line[1])
 		refId = line[2].replace("_", "-")
-		pos = int(line[3]) - 1 #TODO strange
+		pos = int(line[3])
 		cigar = line[5]
 		len = int(line[8])
 		nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
@@ -294,7 +294,6 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 		seq = fSeqs[refId][pos:pos+len]
 		if strand == 16:
 			seq = str(Seq(seq).reverse_complement())
-		#print(">" + header + "\n" + seq)
 		out.write(">" + header + "\n" + seq + "\n")
 		line = f.readline().split("\t")
 	f.close()
