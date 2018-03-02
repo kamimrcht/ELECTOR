@@ -40,26 +40,26 @@ except ImportError:
 
 
 #todo
-def launchRscripts(installDirectory, soft):
+def launchRscripts(installDirectory, soft, outDir):
 	# recall and precision figure
 	#~ print("uuu", installDirectory)
 	if soft is not None:
-		if checkIfFile( installDirectory + "/" + soft + "_per_read_metrics.txt"):
-			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt ."
+		if checkIfFile( outDir + "/" + soft + "_per_read_metrics.txt"):
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
 	else:
-		if checkIfFile( installDirectory + "/per_read_metrics.txt"):
-			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt ."
+		if checkIfFile( outDir + "/per_read_metrics.txt"):
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
 	
 	# sizes distribution
 	if soft is not None:
-		if checkIfFile( installDirectory + "/" + soft + "read_size_distribution.txt"):
-			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt ."
+		if checkIfFile( outDir + "/" + soft + "read_size_distribution.txt"):
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 	else:
-		if checkIfFile( installDirectory + "/read_size_distribution.txt"):
-			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt ."
+		if checkIfFile( outDir + "/read_size_distribution.txt"):
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 
 def generateLatexFigures( outDir, outputPDFName, filesDict):
@@ -85,7 +85,6 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	\end{tabular}
 	\end{figure*}
 
-
 	\begin{figure*}[ht!]
 	\begin{tabular}{|l|c|c|} 
 	\hline
@@ -94,7 +93,30 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	Deletions &  %(delU)s& %(delC)s  \\ \hline
 	Substitutions &  %(subsU)s& %(subsC)s  \\ \hline
 	\end{tabular}
-	\end{figure*}'''
+	\end{figure*}
+
+
+    \section{Corrected reads remapping on genome}
+	\begin{figure*}[ht!]
+	\begin{tabular}{|l|c|} 
+	\hline
+	Average identity (\%%) & %(averageId)s  \\ \hline
+	Percent genome covered & %(genomeCov)s  \\ \hline
+	\end{tabular}
+	\end{figure*}
+	
+	\section{Corrected reads assembly metrics}
+	\begin{figure*}[ht!]
+	\begin{tabular}{|l|c|} 
+	\hline
+	Contigs number & %(nbContigs)s  \\ \hline
+	Aligned contigs number & %(nbAlContig)s  \\ \hline
+	Breakpoints number & %(nbBreakpoints)s  \\ \hline
+	NG50 & %(NG50)s  \\ \hline
+	NG75 & %(NG75)s  \\ \hline
+	\end{tabular}
+	\end{figure*}
+	'''
 
 	
 	#filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": percentGCRef, "GCCorr": percentGCCorr, "smallReads": smallReads}
@@ -117,7 +139,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 		\caption{\textbf{Size distribution of reads before and after correction.}}
 		\label{fig:size_distr}
 		\end{figure}'''
-	content += r'''\end{document} '''
+	content += r'''
+	\end{document} '''
 	with open(outDir + "/" + outputPDFName +'.tex','w') as f:
 		f.write(content%filesDict)
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
@@ -125,8 +148,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 
 
 def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ):
-	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2]}
-	launchRscripts(installDirectory, soft)
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75}
+	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict)
 
 

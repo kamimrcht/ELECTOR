@@ -36,6 +36,7 @@ import readAndSortFiles
 import plotResults
 import remappingStats
 import assemblyStats
+from utils import *
 
 
 # count the number of reads in a file
@@ -65,14 +66,14 @@ def main():
 	parser.add_argument('-perfect', nargs='?', type=str, action="store", dest="perfect", help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference genome sequences (each sequence on one line)")
 	parser.add_argument('-simulator', nargs='?', type=str, action="store", dest="simulator", help="Tool used for the simulation of the long reads (either nanosim or simlord)")
-	parser.add_argument('-tool', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
+	parser.add_argument('-corrector', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
 	parser.add_argument('-dazzDb', nargs='?', type=str, action="store", dest="dazzDb", help="Reads database used for the correction, if the reads were corrected with Daccord or PBDagCon")
+	parser.add_argument('-output', nargs='?', type=str, action="store", dest="outputDirPath", help="Name for output directory", default=None)
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
 		parser.print_help()
 		return 0
-
 	corrected = args.corrected
 	uncorrected = args.uncorrected
 	perfect = args.perfect
@@ -81,6 +82,22 @@ def main():
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
+	outputDirPath = args.outputDirPath
+	if not outputDirPath is None:
+		if not os.path.exists(outputDirPath):
+			os.mkdir(outputDirPath)
+		else:
+			printWarningMsg(outputDirPath+ " directory already exists, we will use it.")
+			try:
+				cmdRm = "(cd " + outputDirPath + " && rm *)"
+				subprocess.check_output(['bash','-c', cmdRm])
+			except subprocess.CalledProcessError:
+				pass
+	else:
+		outputDirPath = currentDirectory
+	logFile = open(outputDirPath + "/log", 'w')
+	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
+	
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
@@ -102,26 +119,28 @@ def main():
 		sortedUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		sortedRefFileName =  "reference_sorted_duplicated.fa"
 		readSizeDistribution = "read_size_distribution.txt"
-	alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, soft)
+	alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, 0, 0, soft)
+	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, 0, 0, soft)
 
 	if simulator == "nanosim":
-		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution)
+		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
 	elif simulator == "simlord":
-		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution)
+		computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
 	else:
-		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution)
+		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution, outputDirPath)
 
 	if reference is not None:
 		print("********** REMAPPING **********")
-		avId, cov = remappingStats.generateResults(corrected, reference, args.threads)
-		print("*******************************")
+		logFile.write("********** REMAPPING **********\n")
+		avId, cov = remappingStats.generateResults(corrected, reference, args.threads, logFile)
+		print("*******************************\n")
 		print("********** ASSEMBLY **********")
-		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads)
+		logFile.write("********** ASSEMBLY **********\n")
+		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
-	plotResults.generateResults(currentDirectory, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 )
+	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 )
 
 
 if __name__ == '__main__':
