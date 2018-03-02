@@ -74,7 +74,6 @@ def main():
 	if (len(sys.argv) <= 1):
 		parser.print_help()
 		return 0
-
 	corrected = args.corrected
 	uncorrected = args.uncorrected
 	perfect = args.perfect
@@ -96,6 +95,9 @@ def main():
 				pass
 	else:
 		outputDirPath = currentDirectory
+	logFile = open(outputDirPath + "/log", 'w')
+	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
+	
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
@@ -131,10 +133,12 @@ def main():
 
 	if reference is not None:
 		print("********** REMAPPING **********")
-		avId, cov = remappingStats.generateResults(corrected, reference, args.threads)
-		print("*******************************")
+		logFile.write("********** REMAPPING **********\n")
+		avId, cov = remappingStats.generateResults(corrected, reference, args.threads, logFile)
+		print("*******************************\n")
 		print("********** ASSEMBLY **********")
-		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads)
+		logFile.write("********** ASSEMBLY **********\n")
+		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
 	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 )
 

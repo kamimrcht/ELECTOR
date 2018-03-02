@@ -116,7 +116,7 @@ def computeNbBreakpoints(file):
 	bp = int(l[0]) + int(l[2])
 	return bp
 
-def generateResults(reads, reference, threads):
+def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
 	nbContigs = runAssembly(reads, threads)
 	alignContigs((os.path.splitext(reads)[0]), reference, threads)
@@ -131,4 +131,5 @@ def generateResults(reads, reference, threads):
 	print("Number of breakpoints : " + str(nbBreakpoints))
 	print("NGA50 : " + str(NG50))
 	print("NGA75 : " + str(NG75))
+	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n")
 	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75)

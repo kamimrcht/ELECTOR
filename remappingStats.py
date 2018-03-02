@@ -62,7 +62,7 @@ def averageIdentity(alignments):
 	f.close()
 	return avId / nbReads
 
-def generateResults(reads, reference, threads):
+def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
 
 	readsBaseName = reads.split(".")[0]
@@ -96,4 +96,5 @@ def generateResults(reads, reference, threads):
 	print("Average identity : " + str(round(avId, 3)) + "%")
 	cov = float(coveredBases / refLength * 100)
 	print("Genome covered : " + str(round(cov, 3)) + "%")
+	logFile.write("Average identity : " + str(round(avId, 3)) + "%\nGenome covered : " + str(round(cov, 3)) + "%\n")
 	return str(avId), str(cov)
