@@ -88,7 +88,7 @@ def findGapStretches(correctedSequence):
 
 # compute recall and precision and writes output files
 # TODO remove runtime
-def outputRecallPrecision( correctedFileName, outDir, beg=0, end=0, soft=None):
+def outputRecallPrecision( correctedFileName, outDir, logFile, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
@@ -117,6 +117,8 @@ def outputRecallPrecision( correctedFileName, outDir, beg=0, end=0, soft=None):
 	print("Number of insertions in uncorrected : " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected : " + str(indelsubsCorr[0]) )
 	print("Number of deletions in uncorrected : " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected : " + str(indelsubsCorr[1]) )
 	print("Number of substitutions in uncorrected : " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected : " + str(indelsubsCorr[2]) )
+	
+	logFile.write("*********** SUMMARY ***********\nRecall :" + str(round(recall,5)) + "\nPrecision :" + str(round(precision,5)) + "\nCorrect bases rate :" + str(round(corBasesRate,5)) + "\nNumber of trimmed/split reads :" + str(len(missingSize)) + "\nMean missing size in trimmed/split reads :" + str(meanMissingSize) + "\n%GC in reference reads : " + str(GCRateRef * 100) + "\n%GC in corrected reads : " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read :" + str(smallReadNumber) + "\nNumber of insertions in uncorrected : " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected : " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected : " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected : " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected : " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected : " + str(indelsubsCorr[2]) +"\n")
 	return precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize,  indelsubsUncorr, indelsubsCorr
 
 
