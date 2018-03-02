@@ -67,6 +67,7 @@ def main():
 	parser.add_argument('-simulator', nargs='?', type=str, action="store", dest="simulator", help="Tool used for the simulation of the long reads (either nanosim or simlord)")
 	parser.add_argument('-tool', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
 	parser.add_argument('-dazzDb', nargs='?', type=str, action="store", dest="dazzDb", help="Reads database used for the correction, if the reads were corrected with Daccord or PBDagCon")
+	parser.add_argument('-output', nargs='?', type=str, action="store", dest="outputDirPath", help="Name for output directory", default=None)
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
@@ -81,6 +82,19 @@ def main():
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
+	outputDirPath = args.outputDirPath
+	if not outputDirPath is None:
+		if not os.path.exists(outputDirPath):
+			os.mkdir(outputDirPath)
+		else:
+			printWarningMsg(outputDirPath+ " directory already exists, we will use it.")
+			try:
+				cmdRm = "(cd " + outputDirPath + " && rm *)"
+				subprocess.check_output(['bash','-c', cmdRm])
+			except subprocess.CalledProcessError:
+				pass
+	else:
+		outputDirPath = currentDirectory
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
