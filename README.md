@@ -1,4 +1,4 @@
-Benchmark for hybrid and self long read correction
+ELECTOR: EvaLuation of Error Correction Tols for lOng Reads
 =================================================
 
 # Description
@@ -19,7 +19,36 @@ Benchmark for hybrid and self long read correction
 
 Binaries are then in ./bin
 
-Compatible tools:
+## Running ELECTOR
+
+ELECTOR can be run with:
+
+	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName
+
+where
+
+* referenceGenome.fa is the reference genome, with one sequence per line.
+
+* simulatedReadsPrefix is the prefix of the uncorrected reads that were simulated.
+
+* correctedReads.fa is the corrected version of the simulated reads, with one sequence per line. The corrected reads can be trimmed and/or split, or not.
+
+* nbThreads is the number of threads to use.
+
+* correctorName is the corrector that was used to correct the reads. Please see the list of compatible correctors below.
+
+* simulatorName is the simulator that was used to simulate the long reads. Please see the list of compatible simulators below.
+
+
+The reference reads can also be directly provided, with:
+
+	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
+
+## Help
+
+	python3 elector.py -h
+	
+## Compatible correctors
 
 * Proovread
 
@@ -45,28 +74,21 @@ Compatible tools:
 
 * MECAT
 
-## Running the benchmark
+If one of those tools is provided with the -corrector parameter, the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads.
+If another tool is used, please do not use the -corrector parameter, and make sure that the headers of the corrected reads are similar to those of the reference and uncorrected reads.
 
-	python3 benchmark.py -reference reference_reads.fa -uncorrected uncorrected_reads.fa -corrected corrected_reads.fa -threads NBTHREADS -tool TOOLNAME
+## Compatible simulators
 
-* reference_reads.fa is obtained after the simulation of reads by retrieving the original sequence of each read
+* SimLord
 
-* uncorrected_reads.fa is the simulated reads file used to be corrected
+* NanoSim
 
-* corrected_reads.fa is the corrected version of reads. Reads can be trimmed or not.
-
-* the number of threads can be precised using -threads
-
-* a tool used for correction, in lowercase and in this list (proovread, lordec, nanocorr, nas, colormap, hg-color, halc, pbdagcon, cau, lorma, daccord, mecat) can be given. In this case the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads. If another tool is used, the user must make sure that headers in the corrected file are similar to those in the reference and uncorrected files.
-
-## Help
-
-	python3 benchmark.py -h
+If one of those tools is provided with the -simulator parameter, the pipeline will itself generate the reference reads.
 
 
 ## Output
 
-If a corrector has been given using the -tool option, the program outputs the following:
+If a corrector has been provided using the -tool option, the program outputs the following:
 
 * corrector_msa_profile.txt
 
@@ -123,6 +145,12 @@ The multiple alignment that was used to compute these results is found in msa.fa
 
 # Toy tests
 
-## Example : directly provide read files and skip simulation
+## Example
 
-	python3 benchmark.py -r example/perfect_reads.fasta -c example/corrected_reads.fasta -u example/uncorrected_reads.fasta
+Generate reference reads:
+
+	python3 elector.py -reference example/example_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads -simulator simlord
+
+Directly provide reference reads:
+
+	python3 elector.py -perfect example/Simlord/simulatedReads_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads.fasta
