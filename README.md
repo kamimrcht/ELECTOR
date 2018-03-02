@@ -43,6 +43,8 @@ where
 The reference reads can also be directly provided, with:
 
 	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
+	
+If the corrected long reads are split, the -split option MUST be provided to ELECTOR.
 
 ## Help
 
