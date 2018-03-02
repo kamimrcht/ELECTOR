@@ -88,15 +88,15 @@ def findGapStretches(correctedSequence):
 
 # compute recall and precision and writes output files
 # TODO remove runtime
-def outputRecallPrecision( correctedFileName, beg=0, end=0, soft=None):
+def outputRecallPrecision( correctedFileName, outDir, beg=0, end=0, soft=None):
 	if soft is not None:
-		outProfile = open(soft + "_msa_profile.txt", 'w')
-		outMetrics = open(soft + "_per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics("msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
+		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
+		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
-		outProfile = open("msa_profile.txt", 'w')
-		outMetrics = open("per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics("msa.fa", outProfile, outMetrics, correctedFileName)
+		outProfile = open(outDir + "/msa_profile.txt", 'w')
+		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
+		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	print("*********** SUMMARY ***********")
 	meanMissingSize = 0
@@ -125,10 +125,10 @@ def getLen(sequenceMsa):
 	return len(sequenceMsa) - sequenceMsa.count('.')
 
 # Compute the length distribution of uncorrected and corrected reads
-def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileName):
+def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileName, outDir):
 	unco = open(uncorrectedFileName)
 	cor = open(correctedFileName)
-	out = open(outFileName, 'w')
+	out = open(outDir + "/" + outFileName, 'w')
 	out.write("size type\n")
 	l = unco.readline()
 	while l != "":

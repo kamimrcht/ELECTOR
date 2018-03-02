@@ -40,26 +40,26 @@ except ImportError:
 
 
 #todo
-def launchRscripts(installDirectory, soft):
+def launchRscripts(installDirectory, soft, outDir):
 	# recall and precision figure
 	#~ print("uuu", installDirectory)
 	if soft is not None:
-		if checkIfFile( installDirectory + "/" + soft + "_per_read_metrics.txt"):
-			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt ."
+		if checkIfFile( outDir + "/" + soft + "_per_read_metrics.txt"):
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/" + soft + "_per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
 	else:
-		if checkIfFile( installDirectory + "/per_read_metrics.txt"):
-			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt ."
+		if checkIfFile( outDir + "/per_read_metrics.txt"):
+			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + installDirectory + "/per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
 	
 	# sizes distribution
 	if soft is not None:
-		if checkIfFile( installDirectory + "/" + soft + "read_size_distribution.txt"):
-			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt ."
+		if checkIfFile( outDir + "/" + soft + "read_size_distribution.txt"):
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/" + soft + "_read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 	else:
-		if checkIfFile( installDirectory + "/read_size_distribution.txt"):
-			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt ."
+		if checkIfFile( outDir + "/read_size_distribution.txt"):
+			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 
 def generateLatexFigures( outDir, outputPDFName, filesDict):
@@ -148,8 +148,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 
 
 def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ):
-	filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75}
-	launchRscripts(installDirectory, soft)
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75}
+	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict)
 
 

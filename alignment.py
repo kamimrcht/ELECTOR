@@ -59,16 +59,16 @@ def f(i):
 	return i
 
 
-def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
+def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, soft=None):
 	oldMode=False
 	#~ oldMode=True
 	if(oldMode):
 		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory
 		subprocessLauncher(cmdPOA)
 		if soft is not None:
-			cmdMv = "mv default_output_msa.fasta msa_" + soft + ".fa"
+			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa_" + soft + ".fa"
 		else:
-			cmdMv = "mv default_output_msa.fasta msa.fa"
+			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 	else:
 		global installDirectoryGlobal
@@ -92,9 +92,9 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=No
 			subprocessLauncher(cmdMerger)
 
 		if soft is not None:
-			cmdMv = "mv outputMerger msa_" + soft + ".fa"
+			cmdMv = "mv outputMerger " + outDir + "/msa_" + soft + ".fa"
 		else:
-			cmdMv = "mv outputMerger msa.fa"
+			cmdMv = "mv outputMerger " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 		cmdRM = "rm out*"
 		subprocess.check_output(['bash','-c', cmdRM])
