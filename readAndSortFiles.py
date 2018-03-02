@@ -285,7 +285,7 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 		header = line[0]
 		strand = int(line[1])
 		refId = line[2].replace("_", "-")
-		pos = int(line[3])
+		pos = int(line[3]) - 1
 		cigar = line[5]
 		len = int(line[8])
 		nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
