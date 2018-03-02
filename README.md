@@ -21,13 +21,29 @@ Binaries are then in ./bin
 
 Compatible tools:
 
-* LoRMA
+* Proovread
 
-* MECAT
+* LoRDEC
+
+* Nanocorr
+
+* NaS
+
+* CoLoRMap
+
+* HG-CoLoR
+
+* HALC
+
+* PBDAGCon
+
+* Canu
+
+* LoRMA
 
 * daccord
 
-* PBDAGCon
+* MECAT
 
 ## Running the benchmark
 
@@ -41,7 +57,7 @@ Compatible tools:
 
 * the number of threads can be precised using -threads
 
-* a tool used for correction, in lowercase and in this list (lorma, mecat, pbdagcon, daccord) can be given. In this case the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads. If another tool is used, the user must make sure that headers in the corrected file are similar to those in the reference and uncorrected files.
+* a tool used for correction, in lowercase and in this list (proovread, lordec, nanocorr, nas, colormap, hg-color, halc, pbdagcon, cau, lorma, daccord, mecat) can be given. In this case the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads. If another tool is used, the user must make sure that headers in the corrected file are similar to those in the reference and uncorrected files.
 
 ## Help
 
