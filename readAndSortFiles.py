@@ -291,7 +291,7 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 		nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
 		nbI = sum([int(i.split("I")[0]) for i in (re.findall('\d+I', cigar))])
 		len = len + nbD - nbI
-		seq = fSeqs[refId][pos:pos+len]
+		seq = fSeqs[refId][pos:pos+len+1]
 		if strand == 16:
 			seq = str(Seq(seq).reverse_complement())
 		out.write(">" + header + "\n" + seq + "\n")
