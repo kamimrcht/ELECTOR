@@ -324,7 +324,7 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 		formatHeader(corrector, corrected, uncorrected, dazzDb, split)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc") or split):
-		newCorrectedFileName = "corrected_format_" + correct + ".fa"
+		newCorrectedFileName = "corrected_format_" + corrector + ".fa"
 		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
