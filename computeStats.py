@@ -92,7 +92,7 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, beg=0, end=0, sof
 	if soft is not None:
 		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
-		precision, recall, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open(outDir + "/msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
@@ -164,6 +164,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
 		#insertion deletion substitution
+		#~ print(len(reference), len(uncorrected), len(corrected))
 		if positionsToRemoveBool[position]:
 			if ntRef == ".":
 				if ntUnco != ".":
@@ -173,6 +174,7 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 			else:
 				if ntUnco != "." :
 					if ntUnco != ntRef:
+						#print("newSub : " + ntRef + " " + ntUnco + " " + ntResult)
 						subsU += 1
 				else:
 					deleU += 1
@@ -188,7 +190,6 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 					corBases += 1
 				else:
 					if ntRef == ntUnco:  #no error
-						#TODO: if inutile?
 						if ntUnco != ntResult: #FP
 							FP += 1
 							toW += "!"
