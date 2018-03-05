@@ -47,14 +47,17 @@ except ImportError:
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
 	#~ p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
-	p = subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL).communicate()
-	return p
+	p = (subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL))
+	#~ rc=p.communicate()
+	#~ print (p.wait())
+	return p.wait()
 
 #~ # do the msa
 #~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
 
 def f(i):
 	cmdPOA = installDirectoryGlobal + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
+	#~ print(cmdPOA)
 	subprocessLauncher(cmdPOA)
 	return i
 
@@ -71,32 +74,47 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 	else:
+		amount_nuc=1000000;
+		print("- mean that a large amount of nuc has been handled (1,000,000)")
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
-		cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 15 100"
-		subprocessLauncher(cmdSplitter)
-		print("Wait for 100 '-' to be printed")
-		with Pool (processes=threads) as pool:
-			for i in pool.imap_unordered(f, range(100)):
-				sys.stdout.write('-')
-				sys.stdout.flush()
+		position_in_read_file=1
+
+		cmdRM = "rm progress.txt"
+		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
+		while(position_in_read_file!=0):
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 15 100 "+str(amount_nuc)
+			#~ print(cmdSplitter)
+			position_in_read_file=subprocessLauncher(cmdSplitter)
+			#~ print(position_in_read_file)
+			#~ print("Wait for 100 '-' to be printed")
+			with Pool (processes=threads) as pool:
+				for i in pool.imap_unordered(f, range(100)):
+					continue
+					#~ sys.stdout.write('-')
+					#~ sys.stdout.flush()
+			#~ print()
+				#~ print(pool.map(f, range(100)))
+			#~ for i in range(0, 100):
+				#~ for(j in range(0,threads)):
+					#~ cmdPOA = installDirectory + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
+			for i in range(0, 100):
+				cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  merger"
+				subprocessLauncher(cmdMerger)
+			sys.stdout.write('-')
+			sys.stdout.flush()
+			cmdRM = "rm out*"
+			subprocess.call(['bash','-c', cmdRM])
+			cmdRM = "rm swag*"
+			subprocess.call(['bash','-c', cmdRM])
+
 		print()
-
-			#~ print(pool.map(f, range(100)))
-		#~ for i in range(0, 100):
-			#~ for(j in range(0,threads)):
-				#~ cmdPOA = installDirectory + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
-
-		for i in range(0, 100):
-			cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  outputMerger"
-			subprocessLauncher(cmdMerger)
-
 		if soft is not None:
-			cmdMv = "mv outputMerger " + outDir + "/msa_" + soft + ".fa"
+			cmdMv = "mv merger " + outDir + "/msa_" + soft + ".fa"
 		else:
-			cmdMv = "mv outputMerger " + outDir + "/msa.fa"
-		subprocess.check_output(['bash','-c', cmdMv])
-		cmdRM = "rm out*"
-		subprocess.check_output(['bash','-c', cmdRM])
-		cmdRM = "rm swag*"
-		subprocess.check_output(['bash','-c', cmdRM])
+			cmdMv = "mv merger " + outDir + "/msa.fa"
+		subprocess.call(['bash','-c', cmdMv])
+		#~ cmdRM = "rm out*"
+		#~ subprocess.call(['bash','-c', cmdRM])
+		#~ cmdRM = "rm swag*"
+		#~ subprocess.call(['bash','-c', cmdRM])

@@ -255,30 +255,58 @@ int main(int argc, char ** argv){
 	string outputS2(argv[6]);
 	k=(stoi(argv[7]));
 	int nb_file=(stoi(argv[8]));
+	int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
+	string progress_file("progress.txt");
 	string ref,S1,S2;
-	string href,hS1,hS2,s_ref,s_S1,s_S2;
+	string href,hS1,hS2,s_ref,s_S1,s_S2,line;
+	uint32_t position_ref(0),position_cor(0),position_err(0);
+	//~ cout<<1<<endl;
+	ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
+	if(progress_in.good() and not progress_in.eof()){
+		getline(progress_in,line);
+		position_ref=stoi(line);
+		getline(progress_in,line);
+		position_cor=stoi(line);
+		getline(progress_in,line);
+		position_err=stoi(line);
+		inR.seekg (position_ref, inR.beg);
+		in1.seekg (position_cor, in1.beg);
+		in2.seekg (position_err, in2.beg);
+	}
+	//~ cout<<2<<endl;
 
-	ifstream inR(inputRef),in1(inputS1),in2(inputS2);
 	vector<ofstream> outR(nb_file),out1(nb_file),out2(nb_file);
 	for(uint i(0);i<nb_file;++i){
-		outR[i].open(outputRef+to_string(i));
-		out1[i].open(outputS1+to_string(i));
-		out2[i].open(outputS2+to_string(i));
+		outR[i].open(outputRef+to_string(i),ofstream::trunc);
+		out1[i].open(outputS1+to_string(i),ofstream::trunc);
+		out2[i].open(outputS2+to_string(i),ofstream::trunc);
 	}
+	//~ cout<<3<<endl;
 	uint i(0);
 	while(not inR.eof() and not in2.eof() and not in2.eof()){
+		//~ cout<<4<<endl;
 		getline(inR,href);
+
 		getline(inR,ref);
+		//~ cout<<ref<<endl;
 		getline(in1,hS1);
 		getline(in1,S1);
 		getline(in2,hS2);
 		getline(in2,S2);
 		if(ref.size()>2){
+			//~ cout<<5<<endl;
 			split(ref,S1,S2,s_ref,s_S1,s_S2,href);
+			//~ cout<<6<<endl;
 			outR[i%nb_file]<<s_ref;
 			out1[i%nb_file]<<s_S1;
 			out2[i%nb_file]<<s_S2;
+			nuc_amount+=s_ref.size();
+			if(nuc_amount>max_nuc_amount){
+				//~ cout<<7<<endl;
+				break;
+			}
 		}
+
 		s_ref=s_S1=s_S2=ref=S1=S2="";
 		++i;
 	}
@@ -287,6 +315,15 @@ int main(int argc, char ** argv){
 		out1[i].close();
 		out2[i].close();
 	}
-
-	return 0;
+	ofstream out(progress_file);
+	if(inR.eof()){
+		remove("progress.txt");
+		//~ cout<<0<<flush;
+		return 0;
+	}
+	out<<inR.tellg()<<"\n";
+	out<<in1.tellg()<<"\n";
+	out<<in2.tellg()<<"\n"<<flush;
+	//~ cout<<1<<flush;
+	return 1;
 }
