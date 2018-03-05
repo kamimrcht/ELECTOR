@@ -7,7 +7,7 @@
 
 static LPOSequence_T *read_partial_order_file (char *po_filename, char *subset_filename, int remove_listed_seqs, int keep_all_links, int do_switch_case, ResidueScoreMatrix_T *mat);
 
-void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, int use_aggressive_fusion, int do_progressive, char* pair_score_file, uint do_global, uint do_preserve_sequence_order, char* comment, FILE* seq_ifile, char* fasta_out, FILE* errfile, int ibundle);
+void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, int use_aggressive_fusion, int do_progressive, char* pair_score_file, int do_global, int do_preserve_sequence_order, char* comment, FILE* seq_ifile, char* fasta_out, FILE* errfile, int ibundle);
 
 void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_input_seqs);
 
@@ -322,7 +322,7 @@ void freeMem(LPOSequence_T **input_seqs, int nseq, LPOSequence_T *seq, int n_inp
   if (nseq>0) FREE (seq);
 }
 
-void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, int use_aggressive_fusion, int do_progressive, char* pair_score_file, uint do_global, uint do_preserve_sequence_order, char* comment, FILE* seq_ifile, char* fasta_out, FILE* errfile, int ibundle){
+void buildAndAnalysePOMSA (int n_input_seqs, LPOSequence_T* lpo_out, LPOSequence_T **input_seqs, ResidueScoreMatrix_T score_matrix, int use_aggressive_fusion, int do_progressive, char* pair_score_file, int do_global, int do_preserve_sequence_order, char* comment, FILE* seq_ifile, char* fasta_out, FILE* errfile, int ibundle){
 	//~ if (n_input_seqs == 0) { /* HMM.. NO DATA. */
     //~ WARN_MSG(USERR,(ERRTXT,"No input sequences were provided; use one of the -read_ flags.\nExiting."), "$Revision: 1.2.2.9 $");
     //~ exit_code=1; /* SIGNAL ERROR CONDITION */

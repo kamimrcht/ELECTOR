@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=  -Wall -Wextra  -Ofast -std=c++11 -march=native -pthread -pipe -Isparsepp
-LDFLAGS=-pthread -Isparsepp
+CFLAGS=  -Wall -Wextra  -Ofast -std=c++11 -march=native  -pipe -Isparsepp
+LDFLAGS= -Isparsepp
 
 
 

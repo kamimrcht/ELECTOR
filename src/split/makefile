@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=  -Wall  -Ofast -std=c++11  -pthread -pipe -Wfatal-errors -fopenmp
-LDFLAGS=-pthread -pipe -flto -fopenmp
+CFLAGS=  -Wall  -Ofast -std=c++11  -pthread -pipe -Wfatal-errors
+LDFLAGS=-pthread -pipe -flto
 
 
 
