@@ -74,8 +74,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 	else:
-		amount_nuc=1000000;
-		print("- mean that a large amount of nuc has been handled (1,000,000)")
+		amount_nuc=100*1000*1000;
+		print("- mean that a large amount of nuc has been handled (100,000,000)")
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
 		position_in_read_file=1
