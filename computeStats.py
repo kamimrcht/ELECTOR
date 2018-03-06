@@ -164,20 +164,20 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
 		#insertion deletion substitution
-		#~ print(len(reference), len(uncorrected), len(corrected))
+		if ntRef == ".":
+			if ntUnco != ".":
+				insU += 1
+		else:
+			if ntUnco != "." :
+				if ntUnco != ntRef:
+					subsU += 1
+			else:
+				deleU += 1
 		if positionsToRemoveBool[position]:
 			if ntRef == ".":
-				if ntUnco != ".":
-					insU += 1
 				if ntResult != ".":
 					insC += 1
 			else:
-				if ntUnco != "." :
-					if ntUnco != ntRef:
-						#print("newSub : " + ntRef + " " + ntUnco + " " + ntResult)
-						subsU += 1
-				else:
-					deleU += 1
 				if ntResult != "." :
 					if ntResult != ntRef:
 						subsC += 1
@@ -185,29 +185,29 @@ def getTPFNFP(reference, uncorrected, corrected, FP, TP, FN, corBasesRates, toW,
 					deleC += 1
 		#FP, FN, TP
 		if correctedPositions[position]:
-				if ntRef == ntUnco == ntResult:
-					toW += " "
-					corBases += 1
-				else:
-					if ntRef == ntUnco:  #no error
-						if ntUnco != ntResult: #FP
+			if ntRef == ntUnco == ntResult:
+				toW += " "
+				corBases += 1
+			else:
+				if ntRef == ntUnco:  #no error
+					if ntUnco != ntResult: #FP
+						FP += 1
+						toW += "!"
+					# else good nt not corrected = ok
+					else:
+						corBases +=1
+				else: #error
+					if ntRef == ntResult: #error corrected
+						TP += 1
+						toW += "*"
+						corBases += 1
+					else:
+						if ntUnco == ntResult: # error not corrected
+							FN += 1
+							toW += "M"
+						else: #new error introduced by corrector
 							FP += 1
 							toW += "!"
-						# else good nt not corrected = ok
-						else:
-							corBases +=1
-					else: #error
-						if ntRef == ntResult: #error corrected
-							TP += 1
-							toW += "*"
-							corBases += 1
-						else:
-							if ntUnco == ntResult: # error not corrected
-								FN += 1
-								toW += "M"
-							else: #new error introduced by corrector
-								FP += 1
-								toW += "!"
 		else:
 			corBases += 1
 		position += 1
