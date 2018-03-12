@@ -128,16 +128,25 @@ vector<int> best_chain_from_anchor_list(const vector<anchor>& anchor_list){
 }
 
 
+uint fragment(const string& str){
+	uint res(0);
+	for(uint i(0);i<str.size();++i){
+		if(str[i]=='\n'){
+			++res;
+		}
+	}
+	return res;
+}
+
+
 
 void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header){
 	//~ cout<<"GO SPLIT"<<endl;
 	unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
 	kmer seq(str2num(ref.substr(0,k)));
 	kmer_ref[seq]=0;
-	//~ cout<<ref<<endl;
 	for(uint j(0);j+k<ref.size();++j){
 		updateK(seq,ref[j+k]);
-		//~ cout<<seq<<endl;
 		if(kmer_ref.count(seq)==0){
 			kmer_ref[seq]=j+1;
 		}else{
@@ -145,11 +154,10 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			kmer_ref[seq]=-1;
 		}
 	}
-	//~ cout<<kmer_ref.size()<<endl;
 
 	seq=str2num(S1.substr(0,k));
 	if(kmer_ref.count(seq)==1){
-		if(kmer_ref[seq]!=-1){
+		if(kmer_ref[seq]=-1){
 			kmer_ref_inS1[seq]=0;
 		}
 	}
@@ -158,7 +166,6 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		updateK(seq,S1[j+k]);
 		if(kmer_ref.count(seq)==1){
 			if(kmer_ref[seq]!=-1){
-				//~ cout<<"go"<<endl;
 				if(kmer_ref_inS1.count(seq)==0){
 					kmer_ref_inS1[seq]=j+1;
 				}else{
@@ -166,7 +173,6 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 					kmer_ref_inS1[seq]=-1;
 				}
 			}
-			//~ cout<<kmer_ref[seq]<<endl;
 		}
 	}
 
@@ -194,6 +200,12 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	}
 	//~ cout<<S2.size()<<endl;
 	//~ cout<<"Kmer shared"<<endl;
+	//~ if(kmer_shared.size()==0){
+		//~ cout<<":("<<flush;
+		//~ cout<<ref.size()<<endl;
+		//~ cout<<S1.size()<<endl;
+		//~ cout<<S2.size()<<endl;
+	//~ }
 	//~ cout<<kmer_shared.size()<<endl;
 
 	//NOW KMER_SHARED CONTAIN KMER IN COMMUM IN THE THREE READ AND DUPLICATED IN NON OF THE THREE READS
@@ -210,8 +222,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	for(uint j(0);j+k<ref.size();++j){
 		updateK(seq,ref[j+k]);
 		if(kmer_shared.count(seq) ){
-		if(kmer_shared.count(seq) and j-last_indexed_anchor>16){
-			//~ if(kmer_shared[seq]!=-1){
+		if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> 10){
 				anchor_list.push_back(make_tuple(kmer_ref[seq],kmer_ref_inS1[seq],kmer_shared[seq]));
 				last_indexed_anchor=j;
 			}
@@ -226,24 +237,44 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	uint pred_ref(0),pred_S1(0),pred_S2(0);
 	for(int i(0);i<(int)BL.size()-1;++i){
 		//~ cout<<"NO"<<endl;
-		if(get<0>(anchor_list[BL[i]])-pred_ref>1){
+		if(get<0>(anchor_list[BL[i]])-pred_ref>15 and get<2>(anchor_list[BL[i]])-pred_S2>15 and get<1>(anchor_list[BL[i]])-pred_S1>15 ){
 			out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
-		}
-		pred_ref=get<0>(anchor_list[BL[i]])+k;
-		if(get<2>(anchor_list[BL[i]])-pred_S2>1){
 			out_S2+=header+"\n"+S2.substr(pred_S2,get<2>(anchor_list[BL[i]])-pred_S2+k)+"\n";
-		}
-		pred_S2=get<2>(anchor_list[BL[i]])+k;
-		if(get<1>(anchor_list[BL[i]])-pred_S1>1){
 			out_S1+=header+"\n"+S1.substr(pred_S1,get<1>(anchor_list[BL[i]])-pred_S1+k)+"\n";
+			pred_S1=get<1>(anchor_list[BL[i]])+k;
+			pred_ref=get<0>(anchor_list[BL[i]])+k;
+			pred_S2=get<2>(anchor_list[BL[i]])+k;
 		}
-		pred_S1=get<1>(anchor_list[BL[i]])+k;
 	}
 	//~ cout<<"??"<<endl;
 	out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
 	out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
 	out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
 	//~ cout<<"?"<<endl;
+}
+
+void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
+	k=15;
+	split(ref,S1,S2,s_ref,s_S1,s_S2,header);
+	uint nb_frag(fragment(s_ref));
+	while(true){
+		k-=2;
+		if(k<7){
+			return;
+		}
+		string s_ref_aux,s_S1_aux,s_S2_aux;
+		split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header);
+		uint nb_frag_aux(fragment(s_ref_aux));
+		if(nb_frag_aux>=nb_frag){
+			nb_frag=nb_frag_aux;
+			s_ref=s_ref_aux;
+			s_S1=s_S1_aux;
+			s_S2=s_S2_aux;
+			s_ref_aux=s_S1_aux=s_S2_aux="";
+		}else{
+			return;
+		}
+	}
 }
 
 
@@ -265,7 +296,7 @@ int main(int argc, char ** argv){
 	uint32_t position_ref(0),position_cor(0),position_err(0);
 	//~ cout<<1<<endl;
 	ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
-	cout<<"Teenage mutant NINJA TURTLE"<<endl;
+	//~ cout<<"Teenage mutant NINJA TURTLE"<<endl;
 	if(progress_in.good() and not progress_in.eof()){
 		getline(progress_in,line);
 		position_ref=stoi(line);
@@ -276,7 +307,7 @@ int main(int argc, char ** argv){
 		inR.seekg (position_ref, inR.beg);
 		in1.seekg (position_cor, in1.beg);
 		in2.seekg (position_err, in2.beg);
-		cout<<position_ref<<endl;
+		//~ cout<<position_ref<<endl;
 	}
 	//~ cout<<2<<endl;
 
@@ -300,7 +331,8 @@ int main(int argc, char ** argv){
 		getline(in2,S2);
 		if(ref.size()>2){
 			//~ cout<<5<<endl;
-			split(ref,S1,S2,s_ref,s_S1,s_S2,href);
+			best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
+			//~ cout<<k<<endl;
 			//~ cout<<6<<endl;
 			outR[i%nb_file]<<s_ref;
 			out1[i%nb_file]<<s_S1;
@@ -323,7 +355,7 @@ int main(int argc, char ** argv){
 
 	if(inR.eof() or in2.eof() or in1.eof() ){
 		remove("progress.txt");
-		cout<<"I ENDED"<<endl;
+		//~ cout<<"I ENDED"<<endl;
 		return 0;
 	}
 	ofstream out(progress_file);

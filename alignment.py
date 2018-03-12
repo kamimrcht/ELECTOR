@@ -74,8 +74,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
 	else:
-		amount_nuc=100*1000*1000;
-		print("- mean that a large amount of nuc has been handled (100,000,000)")
+		amount_nuc=10*1000*1000;
+		print("- mean that a large amount of nuc has been handled (10,000,000)")
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
 		position_in_read_file=1
@@ -83,7 +83,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		cmdRM = "rm progress.txt"
 		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 11 100 "+str(amount_nuc)
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#~ print(position_in_read_file)
