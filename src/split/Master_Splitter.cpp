@@ -192,6 +192,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			}
 		}
 	}
+	//~ cout<<S2.size()<<endl;
 	//~ cout<<"Kmer shared"<<endl;
 	//~ cout<<kmer_shared.size()<<endl;
 
@@ -223,24 +224,26 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	//~ cout<<"best chain size"<<endl;
 	//~ cout<<BL.size()<<endl;
 	uint pred_ref(0),pred_S1(0),pred_S2(0);
-	for(uint i(0);i<BL.size()-1;++i){
-		//~ if(get<0>(anchor_list[BL[i]])-pred_ref>1){
+	for(int i(0);i<(int)BL.size()-1;++i){
+		//~ cout<<"NO"<<endl;
+		if(get<0>(anchor_list[BL[i]])-pred_ref>1){
 			out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
-		//~ }
+		}
 		pred_ref=get<0>(anchor_list[BL[i]])+k;
-		//~ if(get<2>(anchor_list[BL[i]])-pred_S2>1){
+		if(get<2>(anchor_list[BL[i]])-pred_S2>1){
 			out_S2+=header+"\n"+S2.substr(pred_S2,get<2>(anchor_list[BL[i]])-pred_S2+k)+"\n";
-		//~ }
+		}
 		pred_S2=get<2>(anchor_list[BL[i]])+k;
-		//~ if(get<1>(anchor_list[BL[i]])-pred_S1>1){
+		if(get<1>(anchor_list[BL[i]])-pred_S1>1){
 			out_S1+=header+"\n"+S1.substr(pred_S1,get<1>(anchor_list[BL[i]])-pred_S1+k)+"\n";
-		//~ }
+		}
 		pred_S1=get<1>(anchor_list[BL[i]])+k;
 	}
+	//~ cout<<"??"<<endl;
 	out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
 	out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
 	out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
-
+	//~ cout<<"?"<<endl;
 }
 
 
@@ -262,6 +265,7 @@ int main(int argc, char ** argv){
 	uint32_t position_ref(0),position_cor(0),position_err(0);
 	//~ cout<<1<<endl;
 	ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
+	cout<<"Teenage mutant NINJA TURTLE"<<endl;
 	if(progress_in.good() and not progress_in.eof()){
 		getline(progress_in,line);
 		position_ref=stoi(line);
@@ -272,6 +276,7 @@ int main(int argc, char ** argv){
 		inR.seekg (position_ref, inR.beg);
 		in1.seekg (position_cor, in1.beg);
 		in2.seekg (position_err, in2.beg);
+		cout<<position_ref<<endl;
 	}
 	//~ cout<<2<<endl;
 
@@ -281,9 +286,9 @@ int main(int argc, char ** argv){
 		out1[i].open(outputS1+to_string(i),ofstream::trunc);
 		out2[i].open(outputS2+to_string(i),ofstream::trunc);
 	}
-	//~ cout<<3<<endl;
+	//~ cout<<"WTF11"<<endl;
 	uint i(0);
-	while(not inR.eof() and not in2.eof() and not in2.eof()){
+	while(not inR.eof() and not in2.eof() and not in1.eof()){
 		//~ cout<<4<<endl;
 		getline(inR,href);
 
@@ -306,24 +311,29 @@ int main(int argc, char ** argv){
 				break;
 			}
 		}
-
 		s_ref=s_S1=s_S2=ref=S1=S2="";
 		++i;
 	}
+	//~ cout<<"WTF1"<<endl;
 	for(uint i(0);i<nb_file;++i){
 		outR[i].close();
 		out1[i].close();
 		out2[i].close();
 	}
-	ofstream out(progress_file);
-	if(inR.eof()){
+
+	if(inR.eof() or in2.eof() or in1.eof() ){
 		remove("progress.txt");
-		//~ cout<<0<<flush;
+		cout<<"I ENDED"<<endl;
 		return 0;
 	}
+	ofstream out(progress_file);
+
+	//~ cout<<inR.tellg()<<endl;
 	out<<inR.tellg()<<"\n";
 	out<<in1.tellg()<<"\n";
 	out<<in2.tellg()<<"\n"<<flush;
+	out.close();
+	//~ cout<<"SO CLOSE"<<endl;
 	//~ cout<<1<<flush;
 	return 1;
 }

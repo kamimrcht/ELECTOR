@@ -46,8 +46,8 @@ except ImportError:
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
-	#~ p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
-	p = (subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL))
+	p = (subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr))
+	#~ p = (subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL))
 	#~ rc=p.communicate()
 	#~ print (p.wait())
 	return p.wait()
@@ -58,7 +58,7 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 def f(i):
 	cmdPOA = installDirectoryGlobal + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
 	#~ print(cmdPOA)
-	subprocessLauncher(cmdPOA)
+	subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
 	return i
 
 
@@ -83,7 +83,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		cmdRM = "rm progress.txt"
 		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 15 100 "+str(amount_nuc)
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 11 100 "+str(amount_nuc)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#~ print(position_in_read_file)
