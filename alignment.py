@@ -85,14 +85,14 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		cmdRM = "rm progress.txt"
 		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
 		while(position_in_read_file<0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 10 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			skipped_reads+=abs(position_in_read_file-1)
 			#~ print(position_in_read_file)
 			#~ print("Wait for 100 '-' to be printed")
 			with Pool (processes=threads) as pool:
-				for i in pool.imap_unordered(fpoa, range(10)):
+				for i in pool.imap_unordered(fpoa, range(100)):
 					continue
 					#~ sys.stdout.write('-')
 					#~ sys.stdout.flush()
@@ -101,7 +101,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			#~ for i in range(0, 100):
 				#~ for(j in range(0,threads)):
 					#~ cmdPOA = installDirectory + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
-			for i in range(0, 10):
+			for i in range(0, 100):
 				cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  merger"
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
