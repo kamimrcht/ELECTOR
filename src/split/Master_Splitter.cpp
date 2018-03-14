@@ -290,6 +290,9 @@ int main(int argc, char ** argv){
 	k=(stoi(argv[7]));
 	int nb_file=(stoi(argv[8]));
 	int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
+	int SIZE_CORRECTED_READ_THRESHOLD=(stoi(argv[10]));
+	int skipped_reads(0);
+
 	string progress_file("progress.txt");
 	string ref,S1,S2;
 	string href,hS1,hS2,s_ref,s_S1,s_S2,line;
@@ -330,17 +333,24 @@ int main(int argc, char ** argv){
 		getline(in2,hS2);
 		getline(in2,S2);
 		if(ref.size()>2){
-			//~ cout<<5<<endl;
-			best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
-			//~ cout<<k<<endl;
-			//~ cout<<6<<endl;
-			outR[i%nb_file]<<s_ref;
-			out1[i%nb_file]<<s_S1;
-			out2[i%nb_file]<<s_S2;
-			nuc_amount+=s_ref.size();
-			if(nuc_amount>max_nuc_amount){
-				//~ cout<<7<<endl;
-				break;
+			//~ cout<<4<<endl;
+			//~ cout<<(double)S2.size()/ref.size()<<endl;
+			//~ cout<<SIZE_CORRECTED_READ_THRESHOLD<<endl;
+			if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
+				//~ cout<<5<<endl;
+				best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
+				//~ cout<<k<<endl;
+				//~ cout<<6<<endl;
+				outR[i%nb_file]<<s_ref;
+				out1[i%nb_file]<<s_S1;
+				out2[i%nb_file]<<s_S2;
+				nuc_amount+=s_ref.size();
+				if(nuc_amount>max_nuc_amount){
+					//~ cout<<7<<endl;
+					break;
+				}
+			}else{
+				skipped_reads++;
 			}
 		}
 		s_ref=s_S1=s_S2=ref=S1=S2="";
@@ -356,7 +366,7 @@ int main(int argc, char ** argv){
 	if(inR.eof() or in2.eof() or in1.eof() ){
 		remove("progress.txt");
 		//~ cout<<"I ENDED"<<endl;
-		return 0;
+		return (1+skipped_reads);
 	}
 	ofstream out(progress_file);
 
@@ -367,5 +377,5 @@ int main(int argc, char ** argv){
 	out.close();
 	//~ cout<<"SO CLOSE"<<endl;
 	//~ cout<<1<<flush;
-	return 1;
+	return -(1+skipped_reads);
 }
