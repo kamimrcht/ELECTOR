@@ -362,11 +362,15 @@ int main(int argc, char ** argv){
 		out1[i].close();
 		out2[i].close();
 	}
+	ofstream out_skip("skipped_reads.txt");
+	out_skip<<skipped_reads<<endl;
+	out_skip.close();
+
 
 	if(inR.eof() or in2.eof() or in1.eof() ){
 		remove("progress.txt");
 		//~ cout<<"I ENDED"<<endl;
-		return (1+skipped_reads);
+		return 0;
 	}
 	ofstream out(progress_file);
 
@@ -376,6 +380,7 @@ int main(int argc, char ** argv){
 	out<<in2.tellg()<<"\n"<<flush;
 	out.close();
 	//~ cout<<"SO CLOSE"<<endl;
+	//~ cout<<-(1+skipped_reads)<<endl;
 	//~ cout<<1<<flush;
-	return -(1+skipped_reads);
+	return 1;
 }

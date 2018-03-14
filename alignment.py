@@ -46,6 +46,7 @@ except ImportError:
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
+	p=-1
 	p = (subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr))
 	#~ p = (subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL))
 	#~ rc=p.communicate()
@@ -75,32 +76,29 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		subprocess.check_output(['bash','-c', cmdMv])
 		return 0
 	else:
-		amount_nuc=100*1000*1000;
-		print("- mean that a large amount of nuc has been handled (100,000,000)")
+		amount_nuc=10*1000*1000;
+		print("- Mean that a large amount of nuc has been handled: "+str(amount_nuc))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
 		skipped_reads=0
-		position_in_read_file=-1
+		position_in_read_file=1
 
 		cmdRM = "rm progress.txt"
 		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
-		while(position_in_read_file<0):
+		while(position_in_read_file!=0):
 			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
-			skipped_reads+=abs(position_in_read_file-1)
-			#~ print(position_in_read_file)
-			#~ print("Wait for 100 '-' to be printed")
+			#TODO HERE read the file skipped_reads.txt read the integer and add it to the variable  skipped_reads
+			with open("skipped_reads.txt") as file:
+				for line in file:
+					Entier =int( line.rstrip())
+					skipped_reads+=Entier
+					break
+				file.close()
 			with Pool (processes=threads) as pool:
 				for i in pool.imap_unordered(fpoa, range(100)):
 					continue
-					#~ sys.stdout.write('-')
-					#~ sys.stdout.flush()
-			#~ print()
-				#~ print(pool.map(f, range(100)))
-			#~ for i in range(0, 100):
-				#~ for(j in range(0,threads)):
-					#~ cmdPOA = installDirectory + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectory
 			for i in range(0, 100):
 				cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  merger"
 				subprocessLauncher(cmdMerger)
@@ -117,5 +115,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		else:
 			cmdMv = "mv merger " + outDir + "/msa.fa"
 		subprocess.call(['bash','-c', cmdMv])
+		#~ print(skipped_reads)
+		#~ print("skipped_reads")
 		return skipped_reads
 
