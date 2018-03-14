@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
 	ifstream in(input);
 	ofstream out(output,ofstream::app);
 	if(not in){
-		cout<<"Problem opening file"<<endl;
+		//~ cout<<"Problem opening msa file to be compacted"<<endl;
 		return 0;
 	}
 
