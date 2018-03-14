@@ -19,11 +19,12 @@ int main(int argc, char ** argv){
 	string input(argv[1]),output(argv[2]),ref, useless,acc1,acc2,acc3,header,cor,err;
 	srand (time(NULL));
 	ifstream in(input);
-	ofstream out(output,ofstream::app);
-	if(not in){
+
+	if(not in.good() or in.eof()){
 		//~ cout<<"Problem opening msa file to be compacted"<<endl;
 		return 0;
 	}
+	ofstream out(output,ofstream::app);
 
 	getline(in,useless);
 	getline(in,ref);
