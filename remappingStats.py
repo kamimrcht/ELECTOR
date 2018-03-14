@@ -65,7 +65,7 @@ def averageIdentity(alignments):
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
 
-	readsBaseName = reads.split(".")[0]
+	readsBaseName = os.path.splitext(reads)[0]
 	cmdMakeIndex = "./bwa/bwa index " + reference
 	cmdAlign = "./bwa/bwa mem -t " + threads + " " + reference + " " + reads
 	outSam = open(readsBaseName + ".sam", 'w')
