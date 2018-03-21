@@ -65,6 +65,7 @@ def main():
 	parser.add_argument('-uncorrected', nargs='?', type=str,  action="store", dest="uncorrected",  help="Prefix of the reads simulation files")
 	parser.add_argument('-perfect', nargs='?', type=str, action="store", dest="perfect", help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference genome sequences (each sequence on one line)")
+	parser.add_argument('-real',  dest="real", action='store_true', default=False, help="Uncorrected reads are real data")
 	parser.add_argument('-simulator', nargs='?', type=str, action="store", dest="simulator", help="Tool used for the simulation of the long reads (either nanosim or simlord)")
 	parser.add_argument('-corrector', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
 	parser.add_argument('-dazzDb', nargs='?', type=str, action="store", dest="dazzDb", help="Reads database used for the correction, if the reads were corrected with Daccord or PBDagCon")
@@ -79,10 +80,23 @@ def main():
 	perfect = args.perfect
 	reference = args.reference
 	split = args.split
+	real = args.real
 	soft = None
 	dazzDb = args.dazzDb
 	simulator = args.simulator
 	outputDirPath = args.outputDirPath
+	
+	if perfect is not None and reference is not None:
+		#TODO: Print an actual help message
+		parser.print_help()
+		return 0
+	if real and simulator is not None:
+		#TODO: Print an actual help message
+		parser.print_help()
+		return 0
+	if real:
+		simulator = "real"
+		
 	if not outputDirPath is None:
 		if not os.path.exists(outputDirPath):
 			os.mkdir(outputDirPath)
@@ -98,8 +112,6 @@ def main():
 	logFile = open(outputDirPath + "/log", 'w')
 	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
 
-	if perfect is not None:
-		simulator = None
 	if args.soft is not None:
 		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat":
 			soft = args.soft

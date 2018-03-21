@@ -235,11 +235,11 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "mecat":
 		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 
-def loadReference(fRef, tool):
+def loadReference(fRef, simulator):
 	f = open(fRef)
 	refSeqs = {}
 
-	if tool == "nanosim":
+	if simulator == "nanosim" or simulator == "real":
 		id = f.readline()[1:-1].strip().split(" ")[0].replace("_", "-")
 	else:
 		id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
@@ -299,16 +299,55 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 	f.close()
 	out.close()
 
+def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
+	reFile = (os.path.splitext(realReads)[0])
+	cmdAl = "./minimap2/minimap2 -a " + referenceGenome + " " + realReads
+	outErr = open("/dev/null", 'w')
+	alFile = reFile + ".sam"
+	outAl = open(alFile, 'w')
+	subprocessLauncher(cmdAl, outAl, outErr)
+	outAl.close()
+	outErr.close()
+	
+	fSeqs = loadReference(referenceGenome, "real")
+	f = open(alFile)
+	out = open(referenceReads, 'w')
+	line = f.readline()
+	while line != '' and line[0] == "@":
+		line = f.readline()
+
+	line = line.split("\t")
+	while line != ['']:
+		if line[1] == "0" or line[1] == "16":
+			header = line[0]
+			strand = int(line[1])
+			refId = line[2].replace("_", "-")
+			pos = int(line[3]) - 1
+			cigar = line[5]
+			length = len(line[9])
+			nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
+			nbI = sum([int(i.split("I")[0]) for i in (re.findall('\d+I', cigar))])
+			length = length + nbD - nbI
+			seq = fSeqs[refId][pos:pos+length+1]
+			if strand == 16:
+				seq = str(Seq(seq).reverse_complement())
+			out.write(">" + header + "\n" + seq + "\n")
+		line = f.readline().split("\t")
+	f.close()
+	out.close()	
+
 #Generates reference reads file (only supported for nanosim and simlord)
 def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
 	if simulator == "nanosim":
 		generateRefReadsNanosim(simulatedPrefix + "_reads.fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
-	else:
+	elif simulator == "simlord":
 		cmdConv = "./bin/fq2fa " + simulatedPrefix + ".fastq"
 		outFa = open(simulatedPrefix + ".fasta", 'w')
 		subprocessLauncher(cmdConv, outFa)
 		outFa.close()
 		generateRefReadsSimLord(simulatedPrefix + ".fastq.sam", referenceGenome, simulatedPrefix + "_reference.fasta")
+	else:
+		generateRefReadsRealData(simulatedPrefix, referenceGenome, simulatedPrefix + "_reference.fasta")
 
 # main function
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
