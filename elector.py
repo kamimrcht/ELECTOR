@@ -86,7 +86,7 @@ def main():
 	simulator = args.simulator
 	outputDirPath = args.outputDirPath
 	
-	if perfect is not None and reference is not None:
+	if perfect is not None and simulator is not None:
 		#TODO: Print an actual help message
 		parser.print_help()
 		return 0
