@@ -121,7 +121,7 @@ def main():
 	else:
 		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, split, simulator, dazzDb)
 	#TOVERIFY
-	if soft is not None:
+	if soft is not None and soft != "nas" and ((soft != "lordec" and soft != "halc") or split):
 		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
 		sortedUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
 		sortedRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
