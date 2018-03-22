@@ -202,9 +202,9 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		formattedReads.close()
 	elif corrector == "hg-color":
 		if not split:
-			cmdFormatHeader = "sed 's/\(_[0-9]*\)\{4\}$//g' " + correctedReads
+			cmdFormatHeader = "sed 's/\(_-*[0-9]*\)\{4\}$//g' " + correctedReads
 		else:
-			cmdFormatHeader = "sed 's/\(_[0-9]*\)\{5\}$//g' " + correctedReads
+			cmdFormatHeader = "sed 's/\(_-*[0-9]*\)\{5\}$//g' " + correctedReads
 		formattedReads = open("corrected_format_hg-color.fa", 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
