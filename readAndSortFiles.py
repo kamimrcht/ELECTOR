@@ -170,9 +170,11 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 
 # format corrected reads headers
 def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
+	name = "corrected_format_" + corrector + ".fa"
 	if corrector == "proovread":
 		cmdFormatHeader = "sed 's/\(\.[0-9]*\)* SUBSTR.*$//g' " + correctedReads
-		formattedReads = open("corrected_format_proovread.fa", 'w')
+		#~ formattedReads = open("corrected_format_proovread.fa", 'w')
+		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "lordec":
@@ -181,12 +183,14 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 			pass
 		else:
 			cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
-			formattedReads = open("corrected_format_lordec.fa", 'w')
+			#~ formattedReads = open("corrected_format_lordec.fa", 'w')
+			formattedReads = open(name, 'w')
 			subprocessLauncher(cmdFormatHeader, formattedReads)
 			formattedReads.close()
 	elif corrector == "nanocorr":
 		cmdFormatHeader = "sed 's/_consensus$//g' " + correctedReads
-		formattedReads = open("corrected_format_nanocorr.fa")
+		#~ formattedReads = open("corrected_format_nanocorr.fa")
+		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "nas":
@@ -197,7 +201,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		pass
 	elif corrector == "colormap":
 		cmdFormatHeader = "sed 's/ [0-9]* [0-9]*$//g' " + correctedReads
-		formattedReads = open("corrected_format_colormap", 'w')
+		#~ formattedReads = open("corrected_format_colormap", 'w')
+		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "hg-color":
@@ -205,7 +210,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 			cmdFormatHeader = "sed 's/\(_-*[0-9]*\)\{4\}$//g' " + correctedReads
 		else:
 			cmdFormatHeader = "sed 's/\(_-*[0-9]*\)\{5\}$//g' " + correctedReads
-		formattedReads = open("corrected_format_hg-color.fa", 'w')
+		#~ formattedReads = open("corrected_format_hg-color.fa", 'w')
+		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "halc":
@@ -214,26 +220,32 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 			pass
 		else:
 			cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
-			formattedReads = open("corrected_format_halc.fa", 'w')
+			#~ formattedReads = open("corrected_format_halc.fa", 'w')
+			formattedReads = open(name, 'w')
 			subprocessLauncher(cmdFormatHeader, formattedReads)
 			formattedReads.close()
 	elif corrector == "pbdagcon":
 		sortPBDCHeaders(correctedReads, "tmp_sorted_pbdagcon.fa")
-		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
+		#~ formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
+		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, name)
 	elif corrector == "canu":
 		cmdFormatHeader = "sed 's/-id.*//g' " + correctedReads
-		formattedReads = open("corrected_format_canu", 'w')
+		#~ formattedReads = open("corrected_format_canu", 'w')
+		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "lorma":
 		cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
-		formattedReads = open("corrected_format_lorma.fa", 'w')
+		formattedReads = open(name, 'w')
+		#~ formattedReads = open("corrected_format_lorma.fa", 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
 	elif corrector == "daccord":
-		formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
+		#~ formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
+		formatDaccord(correctedReads, uncorrectedReads, dazzDb, name)
 	elif corrector == "mecat":
-		formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
+		#~ formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
+		formatMecat(correctedReads, uncorrectedReads, name)
 
 def loadReference(fRef, simulator):
 	f = open(fRef)
