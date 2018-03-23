@@ -170,14 +170,15 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 # compute ins, del, subs
 def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC):
 	#compute indels in uncorrected reads
-	if ntUnco != ntRef:
-		if ntRef == ".":
-			insU += 1
-		else:
-			if ntUnco != "." :
-				subsU += 1
+	if existingCorrectedPositions[position]:
+		if ntUnco != ntRef:
+			if ntRef == ".":
+				insU += 1
 			else:
-				deleU += 1
+				if ntUnco != "." :
+					subsU += 1
+				else:
+					deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 	if existingCorrectedPositions[position]:
 		if ntResult != ntRef:
