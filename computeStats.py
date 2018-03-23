@@ -108,15 +108,15 @@ def findGapStretches(correctedSequence, referenceSequence):
 
 # compute recall and precision and writes output files
 # TODO remove runtime
-def outputRecallPrecision( correctedFileName, outDir, logFile, beg=0, end=0, soft=None):
+def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, beg=0, end=0,  soft=None):
 	if soft is not None:
 		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName)
 	else:
 		outProfile = open(outDir + "/msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
-		precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa.fa", outProfile, outMetrics, correctedFileName)
+		precision, recall, corBasesRate, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr = computeMetrics(outDir + "/msa.fa", outProfile, outMetrics, correctedFileName)
 	outProfile.write("\n***********SUMMARY***********\n")
 	print("*********** SUMMARY ***********")
 	meanMissingSize = 0
@@ -363,7 +363,7 @@ def computeMetrics(fileName, outMSAProfile, outPerReadMetrics, correctedFileName
 	recall = recall*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	precision = precision*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	corBasesRate = corBasesRate*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
-	return (precision, recall, corBasesRate, missingSize, smallReadNumber, GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr)
+	return precision, recall, corBasesRate, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr
 
 
 # get the position of nt in uppercase to compute recall and precision only at these positions
