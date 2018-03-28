@@ -170,7 +170,7 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 
 # format corrected reads headers
 def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
-	name = "corrected_format_" + corrector + ".fa"
+	name = "corrected_format_" + str(corrector) + ".fa"
 	if corrector == "proovread":
 		cmdFormatHeader = "sed 's/\(\.[0-9]*\)* SUBSTR.*$//g' " + correctedReads
 		#~ formattedReads = open("corrected_format_proovread.fa", 'w')
