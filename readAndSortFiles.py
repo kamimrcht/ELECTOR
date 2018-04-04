@@ -323,7 +323,7 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 	subprocessLauncher(cmdAl, outAl, outErr)
 	outAl.close()
 	outErr.close()
-	
+
 	fSeqs = loadReference(referenceGenome, "real")
 	f = open(alFile)
 	out = open(referenceReads, 'w')
@@ -342,14 +342,18 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 			length = len(line[9])
 			nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
 			nbI = sum([int(i.split("I")[0]) for i in (re.findall('\d+I', cigar))])
-			length = length + nbD - nbI
+			nbS = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar))])
+			nbH = sum([int(i.split("H")[0]) for i in (re.findall('\d+H', cigar))])
+			length = length + nbD - nbI - nbS - nbH
 			seq = fSeqs[refId][pos:pos+length+1]
 			if strand == 16:
 				seq = str(Seq(seq).reverse_complement())
 			out.write(">" + header + "\n" + seq + "\n")
+		elif line[1] == "4":
+			out.write(">" + line[0] + "\n" + "\n\n")
 		line = f.readline().split("\t")
 	f.close()
-	out.close()	
+	out.close()
 
 #Generates reference reads file (only supported for nanosim and simlord)
 def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
