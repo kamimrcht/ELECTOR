@@ -83,6 +83,7 @@ def main():
 	dazzDb = args.dazzDb
 	simulator = args.simulator
 	outputDirPath = args.outputDirPath
+	
 	if not outputDirPath is None:
 		if not os.path.exists(outputDirPath):
 			os.mkdir(outputDirPath)
@@ -97,6 +98,10 @@ def main():
 		outputDirPath = currentDirectory
 	logFile = open(outputDirPath + "/log", 'w')
 	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
+
+
+	reportedHomopolThreshold = 6
+
 
 	if perfect is not None:
 		simulator = None
@@ -122,7 +127,7 @@ def main():
 	smallReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads,  0, 0,soft)
+	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, reportedHomopolThreshold, 0, 0,  soft)
 
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
