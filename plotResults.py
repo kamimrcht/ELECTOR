@@ -92,6 +92,10 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	Insertions & %(insU)s& %(insC)s  \\ \hline
 	Deletions &  %(delU)s& %(delC)s  \\ \hline
 	Substitutions &  %(subsU)s& %(subsC)s  \\ \hline
+	Insertions in homopolymers & %(homoInsU)s & %(homoInsC)s  \\ \hline
+	Deletions in homopolymers & %(homoDeleU)s & %(homoDeleC)s   \\ \hline
+	Mean size insertions in homopolymers & %(homoInsUMean)s & %(homoInsCMean)s   \\ \hline
+	Mean size deletions in homopolymers & %(homoDeleUMean)s & %(homoDeleCMean)s  \\ \hline
 	\end{tabular}
 	\end{figure*}
 
@@ -147,8 +151,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	#~ proc.communicate()
 
 
-def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ):
-	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75}
+def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean ):
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75, "homoInsU": homoInsU, "homoDeleU": homoDeleU, "homoInsC": homoInsC, "homoDeleC": homoDeleC,"homoInsUMean": homoInsUMean, "homoDeleUMean": homoDeleUMean, "homoInsCMean": homoInsCMean, "homoDeleCMean": homoDeleCMean }
 	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict)
 

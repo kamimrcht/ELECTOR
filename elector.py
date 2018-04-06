@@ -100,7 +100,7 @@ def main():
 	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
 
 
-	reportedHomopolThreshold = 6
+	reportedHomopolThreshold = 5
 
 
 	if perfect is not None:
@@ -127,7 +127,7 @@ def main():
 	smallReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr  = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, reportedHomopolThreshold, 0, 0,  soft)
+	precision, recall, correctBaseRate, meanMissing, smallReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr , homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, reportedHomopolThreshold, 0, 0,  soft)
 
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
@@ -152,7 +152,7 @@ def main():
 	nbBreakpoints=0#TODO THIS IS A QUICKFIX
 	NG50=0#TODO THIS IS A QUICKFIX
 	NG75=0#TODO THIS IS A QUICKFIX
-	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 )
+	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean)
 
 
 if __name__ == '__main__':
