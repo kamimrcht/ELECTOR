@@ -197,8 +197,14 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		#already formatted
 		pass
 	elif corrector == "jabba":
-		#TODO
-		pass
+		if not split:
+			#already formatted
+			pass
+		else:
+			cmdFormatHeader = "sed 's/_[0-9]*//g' " + correctedRead
+			formattedReads = open(name, 'w')
+			subprocessLauncher(cmdFormatHeader, formattedReads)
+			formattedReads.close()
 	elif corrector == "colormap":
 		if not split:
 			cmdFormatHeader = "sed 's/ [0-9]* [0-9]*$//g' " + correctedReads
