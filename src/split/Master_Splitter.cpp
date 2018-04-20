@@ -339,12 +339,14 @@ int main(int argc, char ** argv){
 			if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
 				//~ cout<<5<<endl;
 				best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
-				//~ cout<<k<<endl;
-				//~ cout<<6<<endl;
-				outR[i%nb_file]<<s_ref;
-				out1[i%nb_file]<<s_S1;
-				out2[i%nb_file]<<s_S2;
-				nuc_amount+=s_ref.size();
+				if((fragment(s_ref))<=1){
+					skipped_reads++;
+				}else{
+					outR[i%nb_file]<<s_ref;
+					out1[i%nb_file]<<s_S1;
+					out2[i%nb_file]<<s_S2;
+					nuc_amount+=s_ref.size();
+				}
 				if(nuc_amount>max_nuc_amount){
 					//~ cout<<7<<endl;
 					break;
