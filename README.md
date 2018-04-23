@@ -1,3 +1,5 @@
+![alt text](https://imgur.com/a/wfGUAnY)
+
 ELECTOR: EvaLuation of Error Correction Tols for lOng Reads
 =================================================
 
