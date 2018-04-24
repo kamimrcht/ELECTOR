@@ -1,3 +1,5 @@
+![alt text](Images/elector.png "ELECTOR.png")
+
 ELECTOR: EvaLuation of Error Correction Tols for lOng Reads
 =================================================
 
