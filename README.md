@@ -1,6 +1,6 @@
-![alt text](Images/elector.png "ELECTOR.png")
+![alt text](Images/elector.png "ELECTOR.png") 
 
-ELECTOR: EvaLuation of Error Correction Tols for lOng Reads
+EvaLuation of Error Correction Tools for lOng Reads
 =================================================
 
 # Description
@@ -12,6 +12,7 @@ ELECTOR: EvaLuation of Error Correction Tols for lOng Reads
 # Requirements
 * gcc and C++11
 * Python3 and Biopython
+* R  
 
 # Usage
 
