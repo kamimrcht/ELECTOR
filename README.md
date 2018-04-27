@@ -1,4 +1,4 @@
-![alt text](Images/elector.png "ELECTOR.png") 
+<center>![alt text](Images/elector.png "ELECTOR.png")</center>
 
 EvaLuation of Error Correction Tools for lOng Reads
 =================================================
