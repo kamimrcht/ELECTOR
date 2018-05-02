@@ -18,6 +18,8 @@ EvaLuation of Error Correction Tools for lOng Reads
 
 ## Installation
 
+	git clone --recursive https://github.com/kamimrcht/ELECTOR
+	
 	./install.sh
 
 Binaries are then in ./bin
