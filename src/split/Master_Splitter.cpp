@@ -87,9 +87,9 @@ pair<int,int> best_chain_from_anchor(unordered_map<uint,pair<int,int>>& best_cha
 	for(uint i(anchor_indice+1);i<anchor_list.size();++i){
 		anchor next(anchor_list[i]);
 
-		if(get<0>(next)-get<0>(anchor_start)<10000 and get<0>(next) > get<0>(anchor_start) ){
-			if(get<1>(next)-get<1>(anchor_start)<10000 and get<1>(next) > get<1>(anchor_start) ){
-				if(get<2>(next)-get<2>(anchor_start)<10000 and  get<2>(next) > get<2>(anchor_start)){
+		if(get<0>(next)-get<0>(anchor_start)<5000 and get<0>(next) > get<0>(anchor_start) ){
+			if(get<1>(next)-get<1>(anchor_start)<5000 and get<1>(next) > get<1>(anchor_start) ){
+				if(get<2>(next)-get<2>(anchor_start)<5000 and  get<2>(next) > get<2>(anchor_start)){
 					auto p=best_chain_from_anchor(best_chain_computed,anchor_list,i);
 					if(p.first>max_chain){
 						max_chain=p.first;
@@ -138,6 +138,20 @@ uint fragment(const string& str){
 	return res;
 }
 
+
+
+uint largest_fragment(const string& str){
+	uint res(0);
+	uint last(0);
+	for(uint i(0);i<str.size();++i){
+		if(str[i]=='\n'){
+			uint len=i-last;
+			res=max(res,len);
+			last=i;
+		}
+	}
+	return res;
+}
 
 
 void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header){
@@ -256,17 +270,17 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
 	k=15;
 	split(ref,S1,S2,s_ref,s_S1,s_S2,header);
-	uint nb_frag(fragment(s_ref));
+	uint largest_frag(largest_fragment(s_ref));
 	while(true){
 		k-=2;
-		if(k<7){
+		if(k<9){
 			return;
 		}
 		string s_ref_aux,s_S1_aux,s_S2_aux;
 		split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header);
-		uint nb_frag_aux(fragment(s_ref_aux));
-		if(nb_frag_aux>=nb_frag){
-			nb_frag=nb_frag_aux;
+		uint largest_frag_aux(largest_fragment(s_ref_aux));
+		if(largest_frag_aux<largest_frag){
+			largest_frag=largest_frag_aux;
 			s_ref=s_ref_aux;
 			s_S1=s_S1_aux;
 			s_S2=s_S2_aux;
@@ -323,40 +337,47 @@ int main(int argc, char ** argv){
 	//~ cout<<"WTF11"<<endl;
 	uint i(0);
 	while(not inR.eof() and not in2.eof() and not in1.eof()){
-		//~ cout<<4<<endl;
-		getline(inR,href);
-
-		getline(inR,ref);
-		//~ cout<<ref<<endl;
-		getline(in1,hS1);
-		getline(in1,S1);
-		getline(in2,hS2);
-		getline(in2,S2);
-		if(ref.size()>2){
-			//~ cout<<4<<endl;
-			//~ cout<<(double)S2.size()/ref.size()<<endl;
-			//~ cout<<SIZE_CORRECTED_READ_THRESHOLD<<endl;
-			if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
-				//~ cout<<5<<endl;
-				best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
-				if((fragment(s_ref))<=1){
-					skipped_reads++;
-				}else{
-					outR[i%nb_file]<<s_ref;
-					out1[i%nb_file]<<s_S1;
-					out2[i%nb_file]<<s_S2;
-					nuc_amount+=s_ref.size();
-				}
-				if(nuc_amount>max_nuc_amount){
-					//~ cout<<7<<endl;
-					break;
-				}
-			}else{
-				skipped_reads++;
-			}
+		if(nuc_amount>max_nuc_amount){
+			break;
 		}
-		s_ref=s_S1=s_S2=ref=S1=S2="";
-		++i;
+		#pragma omp parallel for ordered schedule(dynamic)
+		for(uint ii=(0);ii<100;++ii){
+			if(nuc_amount>max_nuc_amount){
+				continue;
+			}
+			#pragma omp ordered
+			{
+				getline(inR,href);
+				getline(inR,ref);
+				getline(in1,hS1);
+				getline(in1,S1);
+				getline(in2,hS2);
+				getline(in2,S2);
+			}
+			if(ref.size()>2){
+				if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
+					best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
+					if((fragment(s_ref))<=1 or largest_fragment(s_ref)>5000){
+						#pragma omp atomic
+						skipped_reads++;
+					}else{
+						#pragma omp ordered
+						{
+							outR[i%nb_file]<<s_ref;
+							out1[i%nb_file]<<s_S1;
+							out2[i%nb_file]<<s_S2;
+							nuc_amount+=s_ref.size();
+						}
+					}
+
+				}else{
+					#pragma omp atomic
+					skipped_reads++;
+				}
+			}
+			s_ref=s_S1=s_S2=ref=S1=S2="";
+			++i;
+		}
 	}
 	//~ cout<<"WTF1"<<endl;
 	for(uint i(0);i<nb_file;++i){
