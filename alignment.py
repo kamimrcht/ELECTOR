@@ -89,11 +89,9 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
-			#TODO HERE read the file skipped_reads.txt read the integer and add it to the variable  skipped_reads
 			with open("skipped_reads.txt") as file:
 				for line in file:
-					Entier =int( line.rstrip())
-					skipped_reads+=Entier
+					skipped_reads += int( line.rstrip())
 					break
 				file.close()
 			with Pool (processes=threads) as pool:
