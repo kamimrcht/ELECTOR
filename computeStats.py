@@ -107,7 +107,6 @@ def findGapStretches(correctedSequence, referenceSequence):
 
 
 # compute recall and precision and writes output files
-# TODO remove runtime
 def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber,reportedHomopolThreshold, beg=0, end=0, soft=None):
 	if soft is not None:
 		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
@@ -125,8 +124,6 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber,r
 	if soft is not None:
 		outProfile.write(soft + "Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
 		print(soft + "\nRecall :", round(recall,5), "\nPrecision :", round(precision,5), "\nCorrect bases rate :", round(corBasesRate,5), "\nNumber of trimmed/split reads :" , str(len(missingSize)), "\nMean missing size in trimmed/split reads :" , str(meanMissingSize))
-		outProfile.write("Run in {0} seconds.".format(str(round(end-beg, 2))) + "\n") #runtime of the tool
-		print(soft + " ran in {0} seconds.".format(str(round(end-beg, 2)))) #runtime of the tool
 	else:
 		outProfile.write("Recall " + str(round(recall,5)) + " Precision " + str(round(precision,5)) + " Number of trimmed reads " + str(len(missingSize)) + " Mean missing size in trimmed reads " + str(meanMissingSize)+  "\n")
 		print("Recall :", round(recall,5), "\nPrecision :", round(precision,5), "\nCorrect bases rate :", round(corBasesRate,5), "\nNumber of trimmed/split reads :" , str(len(missingSize)), "\nMean missing size in trimmed/split reads :" , str(meanMissingSize))
