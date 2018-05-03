@@ -62,7 +62,7 @@ def launchRscripts(installDirectory, soft, outDir):
 			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + installDirectory + "/read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 
-def generateLatexFigures( outDir, outputPDFName, filesDict):
+def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	content = r'''\documentclass{article}
 	\usepackage{graphicx}
 	\usepackage{multirow}
@@ -98,29 +98,34 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	Mean size deletions in homopolymers & %(homoDeleUMean)s & %(homoDeleCMean)s  \\ \hline
 	\end{tabular}
 	\end{figure*}
-
-
-    \section{Corrected reads remapping on genome}
-	\begin{figure*}[ht!]
-	\begin{tabular}{|l|c|} 
-	\hline
-	Average identity (\%%) & %(averageId)s  \\ \hline
-	Percent genome covered & %(genomeCov)s  \\ \hline
-	\end{tabular}
-	\end{figure*}
-	
-	\section{Corrected reads assembly metrics}
-	\begin{figure*}[ht!]
-	\begin{tabular}{|l|c|} 
-	\hline
-	Contigs number & %(nbContigs)s  \\ \hline
-	Aligned contigs number & %(nbAlContig)s  \\ \hline
-	Breakpoints number & %(nbBreakpoints)s  \\ \hline
-	NG50 & %(NG50)s  \\ \hline
-	NG75 & %(NG75)s  \\ \hline
-	\end{tabular}
-	\end{figure*}
 	'''
+
+	if remap:
+		content += r'''
+	    \section{Corrected reads remapping on genome}
+		\begin{figure*}[ht!]
+		\begin{tabular}{|l|c|} 
+		\hline
+		Average identity (\%%) & %(averageId)s  \\ \hline
+		Percent genome covered & %(genomeCov)s  \\ \hline
+		\end{tabular}
+		\end{figure*}
+		'''
+
+	if assemble:
+		content += r'''
+		\section{Corrected reads assembly metrics}
+		\begin{figure*}[ht!]
+		\begin{tabular}{|l|c|} 
+		\hline
+		Contigs number & %(nbContigs)s  \\ \hline
+		Aligned contigs number & %(nbAlContig)s  \\ \hline
+		Breakpoints number & %(nbBreakpoints)s  \\ \hline
+		NG50 & %(NG50)s  \\ \hline
+		NG75 & %(NG75)s  \\ \hline
+		\end{tabular}
+		\end{figure*}
+		'''
 
 	
 	#filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": percentGCRef, "GCCorr": percentGCCorr, "smallReads": smallReads}
@@ -151,10 +156,10 @@ def generateLatexFigures( outDir, outputPDFName, filesDict):
 	#~ proc.communicate()
 
 
-def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean ):
+def generateResults(outDir, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble ):
 	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75, "homoInsU": homoInsU, "homoDeleU": homoDeleU, "homoInsC": homoInsC, "homoDeleC": homoDeleC,"homoInsUMean": homoInsUMean, "homoDeleUMean": homoDeleUMean, "homoInsCMean": homoInsCMean, "homoDeleCMean": homoDeleCMean }
 	launchRscripts(installDirectory, soft, outDir)
-	generateLatexFigures(outDir, "summary", filesDict)
+	generateLatexFigures(outDir, "summary", filesDict, remap, assemble)
 
 
 #Recall  0.9997 

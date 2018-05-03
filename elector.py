@@ -140,13 +140,13 @@ def main():
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution, outputDirPath)
 
-	avId=0#TODO THIS IS A QUICKFIX
-	cov=0#TODO THIS IS A QUICKFIX
-	nbContigs=0#TODO THIS IS A QUICKFIX
-	nbAlContig=0#TODO THIS IS A QUICKFIX
-	nbBreakpoints=0#TODO THIS IS A QUICKFIX
-	NG50=0#TODO THIS IS A QUICKFIX
-	NG75=0#TODO THIS IS A QUICKFIX
+	avId=0
+	cov=0
+	nbContigs=0
+	nbAlContig=0
+	nbBreakpoints=0
+	NG50=0
+	NG75=0
 
 	if remap:
 		print("********** REMAPPING **********")
@@ -158,7 +158,7 @@ def main():
 		logFile.write("********** ASSEMBLY **********\n")
 		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
-	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean)
+	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble)
 
 
 if __name__ == '__main__':
