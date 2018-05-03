@@ -46,16 +46,18 @@ def launchRscripts(installDirectory, soft, outDir):
 	if soft is not None:
 		if checkIfFile( outDir + "/" + soft + "_per_read_metrics.txt"):
 			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + outDir + "/" + soft + "_per_read_metrics.txt " + outDir
+			print("yep we launch the first command")
 			subprocessLauncher(cmdRecallPrecision)
 	else:
 		if checkIfFile( outDir + "/per_read_metrics.txt"):
 			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + outDir + "/per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
-	
+
 	# sizes distribution
 	if soft is not None:
-		if checkIfFile( outDir + "/" + soft + "read_size_distribution.txt"):
+		if checkIfFile( outDir + "/" + soft + "_read_size_distribution.txt"):
 			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + outDir + "/" + soft + "_read_size_distribution.txt " + outDir
+			print("lauching the effin command")
 			subprocessLauncher(cmdSizesDistr)
 	else:
 		if checkIfFile( outDir + "/read_size_distribution.txt"):
