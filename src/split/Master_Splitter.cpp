@@ -155,7 +155,6 @@ uint largest_fragment(const string& str){
 
 
 void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header){
-	//~ cout<<"GO SPLIT"<<endl;
 	unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
 	kmer seq(str2num(ref.substr(0,k)));
 	kmer_ref[seq]=0;
@@ -171,7 +170,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 
 	seq=str2num(S1.substr(0,k));
 	if(kmer_ref.count(seq)==1){
-		if(kmer_ref[seq]=-1){
+		if(kmer_ref[seq]!=-1){
 			kmer_ref_inS1[seq]=0;
 		}
 	}
@@ -190,7 +189,6 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		}
 	}
 
-	//~ cout<<kmer_ref_inS1.size()<<endl;
 
 	seq=str2num(S2.substr(0,k));
 	if(kmer_ref_inS1.count(seq)==1){
@@ -212,15 +210,6 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			}
 		}
 	}
-	//~ cout<<S2.size()<<endl;
-	//~ cout<<"Kmer shared"<<endl;
-	//~ if(kmer_shared.size()==0){
-		//~ cout<<":("<<flush;
-		//~ cout<<ref.size()<<endl;
-		//~ cout<<S1.size()<<endl;
-		//~ cout<<S2.size()<<endl;
-	//~ }
-	//~ cout<<kmer_shared.size()<<endl;
 
 	//NOW KMER_SHARED CONTAIN KMER IN COMMUM IN THE THREE READ AND DUPLICATED IN NON OF THE THREE READS
 
@@ -236,7 +225,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	for(uint j(0);j+k<ref.size();++j){
 		updateK(seq,ref[j+k]);
 		if(kmer_shared.count(seq) ){
-		if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> 10){
+		if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> 20){
 				anchor_list.push_back(make_tuple(kmer_ref[seq],kmer_ref_inS1[seq],kmer_shared[seq]));
 				last_indexed_anchor=j;
 			}
@@ -246,12 +235,9 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	//Anchors list filled Now to find maximal chain
 	auto BL(best_chain_from_anchor_list(anchor_list));
 
-	//~ cout<<"best chain size"<<endl;
-	//~ cout<<BL.size()<<endl;
 	uint pred_ref(0),pred_S1(0),pred_S2(0);
 	for(int i(0);i<(int)BL.size()-1;++i){
-		//~ cout<<"NO"<<endl;
-		if(get<0>(anchor_list[BL[i]])-pred_ref>15 and get<2>(anchor_list[BL[i]])-pred_S2>15 and get<1>(anchor_list[BL[i]])-pred_S1>15 ){
+		if(get<0>(anchor_list[BL[i]])-pred_ref>20 and get<2>(anchor_list[BL[i]])-pred_S2>20 and get<1>(anchor_list[BL[i]])-pred_S1>20 ){
 			out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
 			out_S2+=header+"\n"+S2.substr(pred_S2,get<2>(anchor_list[BL[i]])-pred_S2+k)+"\n";
 			out_S1+=header+"\n"+S1.substr(pred_S1,get<1>(anchor_list[BL[i]])-pred_S1+k)+"\n";
@@ -260,11 +246,9 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 			pred_S2=get<2>(anchor_list[BL[i]])+k;
 		}
 	}
-	//~ cout<<"??"<<endl;
 	out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
 	out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
 	out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
-	//~ cout<<"?"<<endl;
 }
 
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
@@ -311,7 +295,6 @@ int main(int argc, char ** argv){
 	string ref,S1,S2;
 	string href,hS1,hS2,s_ref,s_S1,s_S2,line;
 	uint32_t position_ref(0),position_cor(0),position_err(0);
-	//~ cout<<1<<endl;
 	ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
 	//~ cout<<"Teenage mutant NINJA TURTLE"<<endl;
 	if(progress_in.good() and not progress_in.eof()){
@@ -324,9 +307,7 @@ int main(int argc, char ** argv){
 		inR.seekg (position_ref, inR.beg);
 		in1.seekg (position_cor, in1.beg);
 		in2.seekg (position_err, in2.beg);
-		//~ cout<<position_ref<<endl;
 	}
-	//~ cout<<2<<endl;
 
 	vector<ofstream> outR(nb_file),out1(nb_file),out2(nb_file);
 	for(uint i(0);i<nb_file;++i){
@@ -334,7 +315,6 @@ int main(int argc, char ** argv){
 		out1[i].open(outputS1+to_string(i),ofstream::trunc);
 		out2[i].open(outputS2+to_string(i),ofstream::trunc);
 	}
-	//~ cout<<"WTF11"<<endl;
 	uint i(0);
 	while(not inR.eof() and not in2.eof() and not in1.eof()){
 		if(nuc_amount>max_nuc_amount){
@@ -379,7 +359,6 @@ int main(int argc, char ** argv){
 			++i;
 		}
 	}
-	//~ cout<<"WTF1"<<endl;
 	for(uint i(0);i<nb_file;++i){
 		outR[i].close();
 		out1[i].close();
@@ -392,18 +371,13 @@ int main(int argc, char ** argv){
 
 	if(inR.eof() or in2.eof() or in1.eof() ){
 		remove("progress.txt");
-		//~ cout<<"I ENDED"<<endl;
 		return 0;
 	}
 	ofstream out(progress_file);
 
-	//~ cout<<inR.tellg()<<endl;
 	out<<inR.tellg()<<"\n";
 	out<<in1.tellg()<<"\n";
 	out<<in2.tellg()<<"\n"<<flush;
 	out.close();
-	//~ cout<<"SO CLOSE"<<endl;
-	//~ cout<<-(1+skipped_reads)<<endl;
-	//~ cout<<1<<flush;
 	return 1;
 }
