@@ -111,10 +111,12 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber,r
 	if soft is not None:
 		outProfile = open(outDir + "/" + soft + "_msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
+		outMetrics.write("metric score\n")
 		precision, recall, corBasesRate, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected  = computeMetrics(outDir + "/msa_" + soft + ".fa", outProfile, outMetrics, correctedFileName, reportedHomopolThreshold )
 	else:
 		outProfile = open(outDir + "/msa_profile.txt", 'w')
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
+		outMetrics.write("metric score\n")
 		precision, recall, corBasesRate, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected  = computeMetrics(outDir + "/msa.fa", outProfile, outMetrics, correctedFileName, reportedHomopolThreshold)
 	outProfile.write("\n***********SUMMARY***********\n")
 	print("*********** SUMMARY ***********")
