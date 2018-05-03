@@ -69,6 +69,8 @@ def main():
 	parser.add_argument('-corrector', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
 	parser.add_argument('-dazzDb', nargs='?', type=str, action="store", dest="dazzDb", help="Reads database used for the correction, if the reads were corrected with Daccord or PBDagCon")
 	parser.add_argument('-output', nargs='?', type=str, action="store", dest="outputDirPath", help="Name for output directory", default=None)
+	parser.add_argument('-remap',  dest="remap", action='store_true', default=False, help="Perform remapping of the corrected reads to the reference")
+	parser.add_argument('-assemble',  dest="assemble", action='store_true', default=False, help="Perform assembly of the corrected reads")
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
@@ -83,6 +85,8 @@ def main():
 	dazzDb = args.dazzDb
 	simulator = args.simulator
 	outputDirPath = args.outputDirPath
+	remap = args.remap
+	assemble = args.assemble
 	
 	if not outputDirPath is None:
 		if not os.path.exists(outputDirPath):
@@ -136,15 +140,6 @@ def main():
 	else:
 		computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution, outputDirPath)
 
-	if reference is not None:
-		print("********** REMAPPING **********")
-		logFile.write("********** REMAPPING **********\n")
-		avId, cov = remappingStats.generateResults(corrected, reference, args.threads, logFile)
-		print("*******************************\n")
-		print("********** ASSEMBLY **********")
-		logFile.write("********** ASSEMBLY **********\n")
-		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
-		print("******************************")
 	avId=0#TODO THIS IS A QUICKFIX
 	cov=0#TODO THIS IS A QUICKFIX
 	nbContigs=0#TODO THIS IS A QUICKFIX
@@ -152,6 +147,17 @@ def main():
 	nbBreakpoints=0#TODO THIS IS A QUICKFIX
 	NG50=0#TODO THIS IS A QUICKFIX
 	NG75=0#TODO THIS IS A QUICKFIX
+
+	if remap:
+		print("********** REMAPPING **********")
+		logFile.write("********** REMAPPING **********\n")
+		avId, cov = remappingStats.generateResults(corrected, reference, args.threads, logFile)
+		print("*******************************\n")
+	if assemble:
+		print("********** ASSEMBLY **********")
+		logFile.write("********** ASSEMBLY **********\n")
+		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
+		print("******************************")
 	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean)
 
 
