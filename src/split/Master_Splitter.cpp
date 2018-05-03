@@ -321,7 +321,7 @@ int main(int argc, char ** argv){
 			break;
 		}
 		#pragma omp parallel for ordered schedule(dynamic)
-		for(uint ii=(0);ii<100;++ii){
+		for(uint ii=(0);ii<1000;++ii){
 			if(nuc_amount>max_nuc_amount){
 				continue;
 			}
