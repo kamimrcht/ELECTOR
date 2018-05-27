@@ -201,7 +201,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 			#already formatted
 			pass
 		else:
-			cmdFormatHeader = "sed 's/_[0-9]*//g' " + correctedRead
+			cmdFormatHeader = "sed 's/_[0-9]*$//g' " + correctedReads
 			formattedReads = open(name, 'w')
 			subprocessLauncher(cmdFormatHeader, formattedReads)
 			formattedReads.close()
@@ -387,7 +387,7 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	else:
 		formatHeader(corrector, corrected, uncorrected, dazzDb, split)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc") or split):
+	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split):
 		newCorrectedFileName = "corrected_format_" + corrector + ".fa"
 		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
