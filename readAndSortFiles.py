@@ -394,13 +394,20 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
 		sortedRefFileName = "reference_sorted_" + corrector + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + corrector + ".fa"
-	else:
+	elif corrector is not None:
 		newCorrectedFileName = corrected
 		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
 		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
 		sortedRefFileName = "reference_sorted_" + corrector + ".fa"
 		newRefFileName =  "reference_sorted_duplicated_" + corrector + ".fa"
+	else:
+		newCorrectedFileName = corrected
+		sortedCorrectedFileName = "corrected_sorted.fa"
+		sortedUncoFileName = "uncorrected_sorted.fa"
+		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
+		sortedRefFileName = "reference_sorted.fa"
+		newRefFileName =  "reference_sorted_duplicated.fa"
 	if simulator == "nanosim":
 		readAndSortFasta(uncorrected + "_reads.fasta", sortedUncoFileName)
 	elif simulator == "simlord":
