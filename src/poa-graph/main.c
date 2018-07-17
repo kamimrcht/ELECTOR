@@ -111,7 +111,7 @@ int main(int argc,char *argv[])
     //~ NEXTARG(matrix_filename); /* NON-FLAG ARG SHOULD BE MATRIX FILE */
   }
 
-  do_switch_case = 1;
+  do_switch_case = switch_case_to_lower;
 
   /** CHECK FOR CONFLICTING FLAGS **/
 
