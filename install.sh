@@ -29,7 +29,7 @@ autoconf;
 make;
 
 cd ../samtools;
-autoheader:
+autoheader;
 autoconf -Wno-syntax;
 ./configure --disable-lzma;
 make;
