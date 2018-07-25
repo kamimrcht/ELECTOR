@@ -265,11 +265,11 @@ int main(int argc,char *argv[])
 		n_input_seqs = 0;
 		//~ input_seqs = NULL;
       input_seqs[n_input_seqs++] = &(seqRef[i]);
-      input_seqs[n_input_seqs++] = &(seqUnco[i]);
       input_seqs[n_input_seqs++] = &(seq[i]);
+      input_seqs[n_input_seqs++] = &(seqUnco[i]);
       initialize_seqs_as_lpo(1,&(seqRef[i]),&score_matrix);
-      initialize_seqs_as_lpo(1,&(seqUnco[i]),&score_matrix);
       initialize_seqs_as_lpo(1,&(seq[i]),&score_matrix);
+      initialize_seqs_as_lpo(1,&(seqUnco[i]),&score_matrix);
       buildAndAnalysePOMSA (n_input_seqs, lpo_out, input_seqs, score_matrix,  use_aggressive_fusion, do_progressive, pair_score_file, do_global,  do_preserve_sequence_order,  comment, seq_ifile, fasta_out, errfile,ibundle);
       //~ break;
       n_input_seqs++;
