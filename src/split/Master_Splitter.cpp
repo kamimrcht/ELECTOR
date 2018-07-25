@@ -258,7 +258,7 @@ void best_split(const string& ref, const string& S1, const string& S2, string& s
     uint largest_frag(largest_fragment(s_ref));
     while(true){
         k-=2;
-        if(k<9){
+        if(k<13){
             return;
         }
         string s_ref_aux,s_S1_aux,s_S2_aux;
@@ -290,7 +290,8 @@ int main(int argc, char ** argv){
     int nb_file=(stoi(argv[8]));
     int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
     int SIZE_CORRECTED_READ_THRESHOLD=(stoi(argv[10]));
-    int skipped_reads(0);
+    int small_reads(0);
+    int wrong_reads(0);
 
     string progress_file("progress.txt");
     string ref,S1,S2;
@@ -336,11 +337,15 @@ int main(int argc, char ** argv){
                 getline(in2,S2);
             }
             if(ref.size()>2){
+		//std::cerr << "size thresh : " << SIZE_CORRECTED_READ_THRESHOLD << std::endl;
+		//std::cerr << "frac : " << (double)(ref.size()/S2.size()) << std::endl;
+		//std::cerr << "size ref : " << ref.size() << std::endl;
+		//std::cerr << "size cor : " << S2.size() << std::endl;
                 if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
                     best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
                     if((fragment(s_ref))<=1 or largest_fragment(s_ref)>5000){
                         #pragma omp atomic
-                        skipped_reads++;
+                        wrong_reads++;
                     }else{
                         #pragma omp ordered
                         {
@@ -353,7 +358,7 @@ int main(int argc, char ** argv){
 
                 }else{
                     #pragma omp atomic
-                    skipped_reads++;
+                    small_reads++;
                 }
             }
             href=s_ref=s_S1=s_S2=ref=S1=S2="";
@@ -365,9 +370,12 @@ int main(int argc, char ** argv){
         out1[i].close();
         out2[i].close();
     }
-    ofstream out_skip("skipped_reads.txt");
-    out_skip<<skipped_reads<<endl;
-    out_skip.close();
+    ofstream out_small("small_reads.txt");
+    ofstream out_wrong("wrongly_cor_reads.txt");
+    out_small<<small_reads<<endl;
+    out_wrong<<wrong_reads<<endl;
+    out_small.close();
+    out_wrong.close();
 
 
     if(inR.eof() or in2.eof() or in1.eof() ){

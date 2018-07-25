@@ -65,7 +65,7 @@ def fpoa(i):
 
 def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, soft=None,SIZE_CORRECTED_READ_THRESHOLD=10):
 	oldMode=False
-	#~ oldMode=True
+	#oldMode=True
 	if(oldMode):
 		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory
 		subprocessLauncher(cmdPOA)
@@ -80,7 +80,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		print("- Mean that a large amount of nuc has been handled: "+str(amount_nuc))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
-		skipped_reads=0
+		small_reads=0
+		wrongly_cor_reads=0
 		position_in_read_file=1
 
 		cmdRM = "rm progress.txt"
@@ -89,9 +90,14 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
-			with open("skipped_reads.txt") as file:
+			with open("small_reads.txt") as file:
 				for line in file:
-					skipped_reads += int( line.rstrip())
+					small_reads += int( line.rstrip())
+					break
+				file.close()
+			with open("wrongly_cor_reads.txt") as file:
+				for line in file:
+					wrongly_cor_reads += int(line.rstrip())
 					break
 				file.close()
 			with Pool (processes=threads) as pool:
@@ -115,5 +121,5 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		subprocess.call(['bash','-c', cmdMv])
 		#~ print(skipped_reads)
 		#~ print("skipped_reads")
-		return skipped_reads
+		return small_reads, wrongly_cor_reads
 
