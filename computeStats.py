@@ -459,7 +459,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			sameLastHeader = False
 			reference = lines[nbLines].rstrip() # get msa for ref
 			nbLines += 2
-			#un
 			corrected =  lines[nbLines].rstrip() # msa for uncorrected
 			nbLines += 2
 			uncorrected = lines[nbLines].rstrip() # msa for corrected
