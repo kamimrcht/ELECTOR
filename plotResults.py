@@ -73,22 +73,28 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	\begin{figure*}[ht!]
 	\begin{tabular}{|l|c|} 
 	\hline
-	Mean recall & %(meanRecall)s  \\ \hline
-	Mean precision & %(meanPrecision)s  \\ \hline
-	Mean correct bases rate & %(meanCorrectBaseRate)s \\ \hline
-   Number of trimmed/split reads & %(numberReadSplit)s \\ \hline
-      Mean missing size in trimmed/split reads & %(meanMissingSize)s \\ \hline
+	Assessed reads & %(nbReads)s \\ \hline
+	Throughput & %(throughput)s \\ \hline
+	Recall & %(meanRecall)s  \\ \hline
+	Precision & %(meanPrecision)s  \\ \hline
+	Average correct bases rate & %(meanCorrectBaseRate)s \\ \hline
+	Overall error rate & %(errorRate)s \\ \hline
+	Number of trimmed/split reads & %(numberReadSplit)s \\ \hline
+    Mean missing size in trimmed/split reads & %(meanMissingSize)s \\ \hline
+    Number of reads over-corrected by extension & %(numberReadExtended)s \\ \hline
+    Mean extension size in over-correcte reads & %(meanExtensionSize)s \\ \hline
     \%% GC in reference reads & %(GCRef)s \\ \hline
     \%% GC in corrected reads & %(GCCorr)s \\ \hline
     Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
-  is $<$ 10.0 \%% of the original read & \\ \hline
+  is $<$ %(minLength)s \%% of the original read & \\ \hline
+  	Number of wrongly corrected reads & %(wronglyCorReads)s \\ \hline
 	\end{tabular}
 	\end{figure*}
 
 	\begin{figure*}[ht!]
 	\begin{tabular}{|l|c|c|} 
 	\hline
-	 &uncorrected & corrected  \\ \hline
+	 &Uncorrected & Corrected  \\ \hline
 	Insertions & %(insU)s& %(insC)s  \\ \hline
 	Deletions &  %(delU)s& %(delC)s  \\ \hline
 	Substitutions &  %(subsU)s& %(subsC)s  \\ \hline
@@ -107,7 +113,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		\begin{tabular}{|l|c|} 
 		\hline
 		Average identity (\%%) & %(averageId)s  \\ \hline
-		Percent genome covered & %(genomeCov)s  \\ \hline
+		Genome coverage (\%%) & %(genomeCov)s  \\ \hline
 		\end{tabular}
 		\end{figure*}
 		'''
@@ -121,8 +127,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		Contigs number & %(nbContigs)s  \\ \hline
 		Aligned contigs number & %(nbAlContig)s  \\ \hline
 		Breakpoints number & %(nbBreakpoints)s  \\ \hline
-		NG50 & %(NG50)s  \\ \hline
-		NG75 & %(NG75)s  \\ \hline
+		NGA50 & %(NGA50)s  \\ \hline
+		NGA75 & %(NGA75)s  \\ \hline
 		\end{tabular}
 		\end{figure*}
 		'''
@@ -155,9 +161,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
 	#~ proc.communicate()
 
-
-def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble ):
-	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NG50": NG50, "NG75": NG75, "homoInsU": homoInsU, "homoDeleU": homoDeleU, "homoInsC": homoInsC, "homoDeleC": homoDeleC,"homoInsUMean": homoInsUMean, "homoDeleUMean": homoDeleUMean, "homoInsCMean": homoInsCMean, "homoDeleCMean": homoDeleCMean }
+def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble ):
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoInsU": homoInsU, "homoDeleU": homoDeleU, "homoInsC": homoInsC, "homoDeleC": homoDeleC,"homoInsUMean": homoInsUMean, "homoDeleUMean": homoDeleUMean, "homoInsCMean": homoInsCMean, "homoDeleCMean": homoDeleCMean }
 	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict, remap, assemble)
 
