@@ -293,7 +293,7 @@ int main(int argc, char ** argv){
     string outDir(argv[11]);
     int small_reads(0);
     int wrong_reads(0);
-    string progress_file(outDir + "/PPPPPPPPPPPprogress.txt");
+    string progress_file(outDir + "/progress.txt");
     string ref,S1,S2;
     string href,hS1,hS2,s_ref,s_S1,s_S2,line;
     uint32_t position_ref(0),position_cor(0),position_err(0);
