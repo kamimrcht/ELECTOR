@@ -289,11 +289,11 @@ int main(int argc, char ** argv){
     k=(stoi(argv[7]));
     int nb_file=(stoi(argv[8]));
     int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
-    int SIZE_CORRECTED_READ_THRESHOLD=(stoi(argv[10]));
+    double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
+    string outDir(argv[11]);
     int small_reads(0);
     int wrong_reads(0);
-
-    string progress_file("progress.txt");
+    string progress_file(outDir + "/PPPPPPPPPPPprogress.txt");
     string ref,S1,S2;
     string href,hS1,hS2,s_ref,s_S1,s_S2,line;
     uint32_t position_ref(0),position_cor(0),position_err(0);
@@ -341,7 +341,8 @@ int main(int argc, char ** argv){
 		//std::cerr << "frac : " << (double)(ref.size()/S2.size()) << std::endl;
 		//std::cerr << "size ref : " << ref.size() << std::endl;
 		//std::cerr << "size cor : " << S2.size() << std::endl;
-                if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
+//                if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
+		  if ((double) S2.size() / ref.size() >= SIZE_CORRECTED_READ_THRESHOLD) {
                     best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
                     if((fragment(s_ref))<=1 or largest_fragment(s_ref)>5000){
                         #pragma omp atomic
@@ -370,8 +371,8 @@ int main(int argc, char ** argv){
         out1[i].close();
         out2[i].close();
     }
-    ofstream out_small("small_reads.txt");
-    ofstream out_wrong("wrongly_cor_reads.txt");
+    ofstream out_small(outDir + "small_reads.txt");
+    ofstream out_wrong(outDir + "wrongly_cor_reads.txt");
     out_small<<small_reads<<endl;
     out_wrong<<wrong_reads<<endl;
     out_small.close();
@@ -379,7 +380,8 @@ int main(int argc, char ** argv){
 
 
     if(inR.eof() or in2.eof() or in1.eof() ){
-        remove("progress.txt");
+//	const char* cProgress = (outDir + "/progress.txt").c_str();
+//        remove(cProgress);
         return 0;
     }
     ofstream out(progress_file);

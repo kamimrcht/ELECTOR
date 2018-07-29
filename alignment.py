@@ -33,6 +33,7 @@ from multiprocessing import Pool, TimeoutError
 
 
 installDirectoryGlobal=""
+outDirGlobal=""
 
 
 try:
@@ -57,13 +58,12 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 #~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
 
 def fpoa(i):
-	cmdPOA = installDirectoryGlobal + "/bin/poa -pir swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta out3"+str(i)+" -reference_reads_fasta out1"+str(i)+" -uncorrected_reads_fasta out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
-	#~ print(cmdPOA)
+	cmdPOA = installDirectoryGlobal + "/bin/poa -pir " + outDirGlobal + "/swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
 	subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
 	return i
 
 
-def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, soft=None,SIZE_CORRECTED_READ_THRESHOLD=10):
+def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, SIZE_CORRECTED_READ_THRESHOLD, soft=None):
 	oldMode=False
 	#oldMode=True
 	if(oldMode):
@@ -80,45 +80,58 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		print("- Mean that a large amount of nuc has been handled: "+str(amount_nuc))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
+		global outDirGlobal
+		outDirGlobal=outDir
 		small_reads=0
 		wrongly_cor_reads=0
 		position_in_read_file=1
 
-		cmdRM = "rm progress.txt"
-		subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
+		#cmdRM = "rm " + outDir + "/progress.txt"
+		#subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
+
+		if soft is not None:
+			mergeOut = outDir + "/msa_" + soft + ".fa"
+		else:
+			mergeOut = outDir + "/msa.fa"
+
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" out1 out2 out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
-			with open("small_reads.txt") as file:
+			#print("done")
+			with open(outDir + "small_reads.txt") as file:
 				for line in file:
 					small_reads += int( line.rstrip())
 					break
 				file.close()
-			with open("wrongly_cor_reads.txt") as file:
+				cmdRM = "rm " + outDir + "small_reads.txt"
+				subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL,stderr=DEVNULL)
+			with open(outDir + "wrongly_cor_reads.txt") as file:
 				for line in file:
 					wrongly_cor_reads += int(line.rstrip())
 					break
 				file.close()
+				cmdRM = "rm " + outDir + "wrongly_cor_reads.txt"
+				subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL, stderr=DEVNULL)
 			with Pool (processes=threads) as pool:
 				for i in pool.imap_unordered(fpoa, range(100)):
 					continue
 			for i in range(0, 100):
-				cmdMerger = installDirectory + "/bin/Donatello swag"+str(i)+"  merger"
+				cmdMerger = installDirectory + "/bin/Donatello " + outDir + "/swag"+str(i)+ " " + mergeOut
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
-			cmdRM = "rm out*"
+			cmdRM = "rm " + outDir + "/out*"
 			subprocess.call(['bash','-c', cmdRM])
-			cmdRM = "rm swag*"
+			cmdRM = "rm " + outDir + "/swag*"
 			subprocess.call(['bash','-c', cmdRM])
 
 		print()
-		if soft is not None:
-			cmdMv = "mv merger " + outDir + "/msa_" + soft + ".fa"
-		else:
-			cmdMv = "mv merger " + outDir + "/msa.fa"
-		subprocess.call(['bash','-c', cmdMv])
+		#if soft is not None:
+		#	cmdMv = "mv " + outDir + " /merger " + outDir + "/msa_" + soft + ".fa"
+		#else:
+		#	cmdMv = "mv " + outDir + " /merger " + outDir + "/msa.fa"
+		#subprocess.call(['bash','-c', cmdMv])
 		#~ print(skipped_reads)
 		#~ print("skipped_reads")
 		return small_reads, wrongly_cor_reads

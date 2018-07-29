@@ -38,7 +38,6 @@ import remappingStats
 import assemblyStats
 from utils import *
 
-
 # count the number of reads in a file
 def getFileReadNumber(fileName):
 	cmdGrep = """grep ">" -c """ + fileName
@@ -71,6 +70,7 @@ def main():
 	parser.add_argument('-output', nargs='?', type=str, action="store", dest="outputDirPath", help="Name for output directory", default=None)
 	parser.add_argument('-remap',  dest="remap", action='store_true', default=False, help="Perform remapping of the corrected reads to the reference")
 	parser.add_argument('-assemble',  dest="assemble", action='store_true', default=False, help="Perform assembly of the corrected reads")
+	parser.add_argument('-minsize', nargs='?', type=float, action="store", dest="minsize", help="Do not assess reads/fragments chose length is <= MINSIZE %% of the original read", default=10)
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
@@ -87,6 +87,8 @@ def main():
 	outputDirPath = args.outputDirPath
 	remap = args.remap
 	assemble = args.assemble
+	size_corrected_read_threshold = args.minsize / 100
+
 	
 	if not outputDirPath is None:
 		if not os.path.exists(outputDirPath):
@@ -128,10 +130,10 @@ def main():
 		sortedUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		sortedRefFileName =  "reference_sorted_duplicated.fa"
 		readSizeDistribution = "read_size_distribution.txt"
-	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, soft)
+	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, size_corrected_read_threshold, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	nbReads, throughput, precision, recall, correctBaseRate, errorRate, extendedBases, meanMissing, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, indelsubsUncorr, indelsubsCorr , homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, 0, 0,  soft)
+	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, indelsubsUncorr, indelsubsCorr , homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, 0, 0, soft)
 
 	if simulator == "nanosim":
 		computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
@@ -159,7 +161,7 @@ def main():
 		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
 	#TODO: inclure les nouvelles métriques dans le plot
-	plotResults.generateResults(outputDirPath, installDirectory, soft, recall, precision, correctBaseRate, numberSplit, meanMissing, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble)
+	plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 ,homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble)
 
 
 if __name__ == '__main__':
