@@ -166,19 +166,27 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 		meanExtendedBases = round(sum(extendedBases)/len(extendedBases),1)
 	if soft is not None:
 		print(soft)
+
+	recall = round(recall, 5)
+	precision = round(precision, 5)
+	corBasesRate = round(corBasesRate, 5)
+	erroRate = round(errorRate, 5)
+	GCRateRef = round(GCRateRef * 100, 5)
+	GCRateCorr = round(GCRateCorr * 100, 5)
+
 	print("*********** SUMMARY ***********")
 	print("Assessed reads: ", str(nbReads))
 	print("Throughput: ", str(throughput))
-	print("Recall:", round(recall,5))
-	print("Precision:", round(precision,5))
-	print("Average correct bases rate:", round(corBasesRate,5))
-	print("Overall error rate: ", round(errorRate, 5))
+	print("Recall:", str(recall))
+	print("Precision:", str(precision))
+	print("Average correct bases rate:", str(corBasesRate))
+	print("Overall error rate: ", str(errorRate))
 	print("Number of trimmed/split reads:" , str(len(missingSize)))
 	print("Mean missing size in trimmed/split reads:" , str(meanMissingSize))
 	print("Number of over-corrected reads by extention: ", str(len(extendedBases)))
 	print("Mean extension size in over-corrected reads: ", str(meanExtendedBases))
-	print("%GC in reference reads: ", str(round(GCRateRef * 100, 5)))
-	print("%GC in corrected reads: ", str(round(GCRateCorr * 100, 5)))
+	print("%GC in reference reads: ", str(GCRateRef))
+	print("%GC in corrected reads: ", str(GCRateCorr))
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
 	print("Number of wrongly corrected reads: ", wronglyCorrectedReadsNumber)
 	print("Number of insertions in uncorrected: ", str(indelsubsUncorr[0]))
@@ -198,7 +206,7 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	print("Mean length of deletions in homopolymers in corrected: ", str(meanLengthDeleHomopolymersInCorrected))
 	
 	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall:" + str(round(recall,5)) + "\nPrecision:" + str(round(precision,5)) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(len(missingSize)) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) +"\nNumber of insertions in homopolymers in uncorrected:" + str(numberHomopolymersInserInUncorrected ) + "\nNumber of deletions in homopolymers in uncorrected:" + str(numberHomopolymersDeleInUncorrected) + "\nNumber of insertions in homopolymers in corrected:" + str( numberHomopolymersInserInCorrected) + "\nNumber of deletions in homopolymers in corrected:" + str( numberHomopolymersDeleInCorrected) + "\nMean length of insertions in homopolymers in uncorrected:" + str(meanLengthInserHomopolymersInUncorrected) + "\nMean length of deletions in homopolymers in uncorrected:" + str(meanLengthDeleHomopolymersInUncorrected ) + "\nMean length of insertions in homopolymers in corrected:" + str(meanLengthInserHomopolymersInCorrected) + "\nMean length of deletions in homopolymers in corrected:" + str(meanLengthDeleHomopolymersInCorrected) + "\n")
-	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases,  indelsubsUncorr, indelsubsCorr,  numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected ,numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , meanLengthInserHomopolymersInUncorrected , meanLengthDeleHomopolymersInUncorrected ,	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected  
+	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr,  numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected ,numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , meanLengthInserHomopolymersInUncorrected , meanLengthDeleHomopolymersInUncorrected ,	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected  
 
 
 
@@ -511,9 +519,12 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			indelsubsUncorr[0] += insU
 			indelsubsUncorr[1] += deleU
 			indelsubsUncorr[2] += subsU
+			# print(headerNo)
+			# print(prevHeader)
 			if headerNo == prevHeader: #read in several parts (split) : do not output, only store information
 				sameLastHeader = True
 				# we add to list the several rates measured on each part
+				print("haha this is why")
 				corBasesForARead.append(corBases)
 				uncorBasesForARead.append(uncorBases)
 				FPlistForARead.append(FP)
@@ -545,7 +556,8 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
 			nbLines += 1
-	if sameLastHeader: # we must output info for the last read
+	if sameLastHeader or prevHeader != "": # we must output info for the last read
+		print(prevHeader)
 		recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases)
 	# compute global metrics
 	GCRateRef = round(sum(GCRateRef) / len(GCRateRef),3)
@@ -559,6 +571,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	meanLengthDeleHomopolymersInUncorrected = round(sum(meanLengthDeleHomopolymersInUncorrected) * 1.0 / len(meanLengthDeleHomopolymersInUncorrected),3) if len(meanLengthDeleHomopolymersInUncorrected) > 0 else 0
 	meanLengthInserHomopolymersInCorrected = round(sum(meanLengthInserHomopolymersInCorrected) * 1.0 / len(meanLengthInserHomopolymersInCorrected),3) if len(meanLengthInserHomopolymersInCorrected) > 0 else 0
 	meanLengthDeleHomopolymersInCorrected = round(sum(meanLengthDeleHomopolymersInCorrected) * 1.0 / len(meanLengthDeleHomopolymersInCorrected),3) if len(meanLengthDeleHomopolymersInCorrected) > 0 else 0
+	print("todivide : ", nbReadsToDivide)
 	return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected 
 
 
