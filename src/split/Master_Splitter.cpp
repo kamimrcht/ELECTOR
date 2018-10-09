@@ -86,7 +86,6 @@ pair<int,int> best_chain_from_anchor(unordered_map<uint,pair<int,int>>& best_cha
     anchor anchor_start(anchor_list[anchor_indice]);
     for(uint i(anchor_indice+1);i<anchor_list.size();++i){
         anchor next(anchor_list[i]);
-
         if(get<0>(next)-get<0>(anchor_start)<5000 and get<0>(next) > get<0>(anchor_start) ){
             if(get<1>(next)-get<1>(anchor_start)<5000 and get<1>(next) > get<1>(anchor_start) ){
                 if(get<2>(next)-get<2>(anchor_start)<5000 and  get<2>(next) > get<2>(anchor_start)){
@@ -344,7 +343,7 @@ int main(int argc, char ** argv){
 //                if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
 		  if ((double) S2.size() / ref.size() >= SIZE_CORRECTED_READ_THRESHOLD) {
                     best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
-                    if((fragment(s_ref))<=1 or largest_fragment(s_ref)>5000){
+                    if((fragment(s_ref))<=1){
                         #pragma omp atomic
                         wrong_reads++;
                     }else{
