@@ -29,6 +29,7 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
 import copy
+import statistics
 
 #SIZE_CORRECTED_READ_THRESHOLD = 0.1
 
@@ -235,92 +236,117 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 
 
 # compute ins, del, subs
-def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold):
-	#~ reportedHomopolymerUInser = None
-	#~ reportedHomopolymerUDele = None
-	reportedHomopolymerRInser = None
-	reportedHomopolymerRDele = None
-	reportedHomopolymerCInser = None
-	reportedHomopolymerCDele = None
+def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef, reportedThreshold):
 	#compute indels in uncorrected reads
+	#~ reported[0] = None
+	#~ addH = False
+	endOfHomopolResult = True
+	okToAppendR = False
+	okToAppendC = False
+	##### homopolymers in ref ######
 	if existingCorrectedPositions[position]:
+		if ntRef != '.':
+			if ntRef == reported[0][-1]:
+				#~ print("true")
+				#~ sizeHomopolymerR += 1
+				okToAppendR = True
+				if len(reported[0]) + 1 >= reportedThreshold: 
+					okToReportRef = True
+			else:
+				if okToReportRef:
+					endOfHomopolRef = True
+			#~ sizeHomopolymerR = 0
+			#~ lastHomopolymerRInser = ntRef
+		
+	###############################
 		if ntUnco != ntRef:
 			if ntRef == ".":
 				insU += 1
-				sizeHomopolymerR = 0
-				lastHomopolymerRInser = ntRef
-				lastHomopolymerUDele = ntRef
-			else:
-				### insertion in homopolymer (uncorrected read) ###
-				#~ #it can be an insertion in a homopolymer in the uncorrected read
-				if ntRef == lastHomopolymerRInser:
-					sizeHomopolymerR += 1
-				#it can be an insertion in a homopolymer in the uncorrected read
-				#~ if ntUnco == lastHomopolymerUInser:
-					#~ sizeHomopolymerU += 1
-				else:
-					if sizeHomopolymerR >= reportedThreshold: #end of a homopolymer: return it
-						reportedHomopolymerRInser = sizeHomopolymerR
-					sizeHomopolymerR = 0
-					lastHomopolymerRInser = ntRef
-					lastHomopolymerUDele = ntRef
-					#~ if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
-						#~ reportedHomopolymerUInser = sizeHomopolymerU
-					#~ sizeHomopolymerU = 0
-					#~ lastHomopolymerUInser = ntUnco
-					#~ lastHomopolymerUDele = ntRef
 				if ntUnco != "." :
 					subsU += 1
-					#~ sizeHomopolymerU = 0
-					#~ lastHomopolymerUInser = ntUnco
-					#~ lastHomopolymerUDele = ntRef
 				else:
-					### deletion in homopolymer (uncorrected read) ###
-					#~ if ntRef == lastHomopolymerUDele:
-						#~ sizeHomopolymerU += 1
-					#~ else:
-						#~ if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
-							#~ reportedHomopolymerUDele = sizeHomopolymerU
-						#~ sizeHomopolymerU = 0
-						#~ lastHomopolymerUInser = ntUnco
-						#~ lastHomopolymerUDele = ntRef
 					deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
-	if existingCorrectedPositions[position]:
+	#~ if existingCorrectedPositions[position]:
 		if ntResult != ntRef:
 			if ntRef == ".":
 				insC += 1
-				#print("ins")
-				### insertion in homopolymer (corrected read) ###
-				if ntResult == lastHomopolymerCInser:
-					sizeHomopolymerC += 1
-				else:
-					if sizeHomopolymerC >= reportedThreshold: #end of a homopolymer: return it
-						reportedHomopolymerCInser = sizeHomopolymerC
-					sizeHomopolymerC = 0
-					lastHomopolymerCInser = ntResult
-					lastHomopolymerCDele = ntRef
 			else:
 				if ntResult != "." :
 					subsC += 1
-					#print("subs")
-					sizeHomopolymerC = 0
-					lastHomopolymerCInser = ntResult
-					lastHomopolymerCDele = ntRef
 				else:
-					### deletion in homopolymer (uncorrected read) ###
-					if ntRef == lastHomopolymerCDele:
-						sizeHomopolymerC += 1
-					else:
-						if sizeHomopolymerC >= reportedThreshold: #end of a homopolymer: return it
-							reportedHomopolymerCDele = sizeHomopolymerC
-						sizeHomopolymerC = 0
-						lastHomopolymerCInser = ntResult
-						lastHomopolymerCDele = ntRef
 					deleC += 1
+
+		##########" homopolymer in corrected ############
+		if ntResult != '.':
+			if ntResult == reported[1][-1]:
+				#~ addH = True
+				#~ sizeHomopolymerC += 1
+				okToAppendC = True
+				endOfHomopolResult = False
+				#~ if len(reported[1]) >= reportedThreshold: 
+					#~ okToReportCor = True
+			else:
+				endOfHomopolResult = False
+			
+		#~ if okToReportRef or (not endOfHomopolResult):
+			#~ reported[0].append(ntRef)
+			#~ reported[1].append(ntResult)
+		#~ else:
+			
+		#~ else:
+			#~ if ntResult == lastHomopolymerCInser:
+					#~ sizeHomopolymerC += 1
+			#~ else:
+				#~ if sizeHomopolymerC >= reportedThreshold: #end of a homopolymer: return it
+					#~ print("happens 3")
+					#~ reportedHomopolymerCInser = sizeHomopolymerC
+				#~ sizeHomopolymerC = 0
+			#~ lastHomopolymerCInser = ntResult
+			#~ lastHomopolymerCDele = ntRef
+	#~ else:
+		#~ reported[0] =  ntRef
+		#~ lastHomopolymerRInser = ntRef
+	if okToAppendC or okToAppendR:
+		reported[0].append(ntRef)
+		reported[1].append(ntResult)
+		#~ print(reported)
+	else:
+		if not (endOfHomopolRef or endOfHomopolResult):
+			reported= [[ntRef],[ntResult]]
+		
+	if endOfHomopolRef and endOfHomopolResult:  #finally report an homopolymer
+		#~ print("llllllllllllllllllllllllll", reported)
+		#~ input()
+		detectedHomopolymer = True
+		ntH = max(set(reported[0]), key=reported[0].count)
+		if ntH == '.':
+			filtered = list(filter(lambda x:  x!= '.', reported[0]))
+			ntH = max(set(filtered), key=filtered.count)
+		sizeHomopolR = [0]
+		sizeHomopolC = [0]
+		for nt, nt2 in zip(reported[0], reported[1]):
+			if nt == ntH:
+				sizeHomopolR[-1] += 1
+			elif nt != ".":
+				sizeHomopolR.append(0)
+			if nt2 == ntH:
+				sizeHomopolC[-1] += 1
+			elif nt2 != ".":
+				sizeHomopolC.append(0)
+		sizeHomopolReference = max(sizeHomopolR)
+		sizeHomopolCorrected = max(sizeHomopolC)
+		#~ if sizeHomopolReference != sizeHomopolCorrected:
+			#~ print(ntH, 'repor', reported)
+			#~ print([sizeHomopolReference, sizeHomopolCorrected])
+			#~ input()
+		reported = [sizeHomopolReference, sizeHomopolCorrected]
+		#~ print('""""', reported)
+				
+		
 					#print("del")
 	#~ return insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC
-	return insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC
+	return insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef
 
 # compute fp, tp, fn
 def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, existingCorrectedPositions, position, corBases, uncorBase, FP, FN, TP):
@@ -378,18 +404,22 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 	insC = 0
 	deleC = 0
 	subsC = 0
-	sizeHomopolymerR = 0
-	sizeHomopolymerC = 0
-	lastHomopolymerCDele = ''
-	lastHomopolymerCInser = ''
-	lastHomopolymerRInser = ''
-	lastHomopolymerRDele = ''
-	homopolymersRInser = []
-	homopolymersRDele = []
-	homopolymersCInser = []
-	homopolymersCDele = []
-	sizeHomopolymerR = 0
-	sizeHomopolymerC = 0
+	#~ sizeHomopolymerR = 0
+	#~ sizeHomopolymerC = 0
+	#~ lastHomopolymerCDele = ''
+	#~ lastHomopolymerCInser = ''
+	#~ lastHomopolymerRInser = reference[0]
+	#~ lastHomopolymerRDele = reference[0]
+	#~ homopolymersRInser = []
+	#~ homopolymersRDele = []
+	#~ homopolymersCInser = []
+	#~ homopolymersCDele = []
+	#~ sizeHomopolymerR = 0
+	#~ sizeHomopolymerC = 0
+	detectedHomopolymer = False
+	okToReportRef = False
+	endOfHomopolRef = False
+	reported = [['x'],['x']]
 	for ntRef, ntResult, ntUnco in zip(reference, corrected, uncorrected): #zip(reference, uncorrected, corrected):
 		if ntRef.upper() == "G" or ntRef.upper() == "C":
 			GCSumRef += 1
@@ -397,29 +427,40 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 			GCSumCorr += 1
 		#insertion deletion substitution
 		#~ insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerU, sizeHomopolymerC, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
-		insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
-		if reportedHomopolymerCInser is not None:
-			homopolymersCInser.append(reportedHomopolymerCInser)
-		elif reportedHomopolymerCDele is not None:
-			homopolymersCDele.append(reportedHomopolymerCDele)
-		if reportedHomopolymerRInser is not None:
-			homopolymersRInser.append(reportedHomopolymerRInser)
-			if reportedHomopolymerCInser is not None:
-				toDivide = len(reportedHomopolymerCInser)
-			elif reportedHomopolymerCDele is not None:
-				toDivide = len(reportedHomopolymerCDele)
-			else:
-				toDivide = 0
-			ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRInser),2))
-		elif reportedHomopolymerRDele is not None:
-			homopolymersRDele.append(reportedHomopolymerRDele)
-			if reportedHomopolymerCInser is not None:
-				toDivide = len(reportedHomopolymerCInser)
-			elif reportedHomopolymerCDele is not None:
-				toDivide = len(reportedHomopolymerCDele)
-			else:
-				toDivide = 0
-			ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRDele),2))
+		#~ insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
+		insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef= indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef, reportedThreshold)
+
+		if detectedHomopolymer:
+			detectedHomopolymer = False
+			okToReportRef = False
+			endOfHomopolRef = False
+			print(reported)
+			ratioHomopolymers.append(round(reported[1]*1.0/reported[0],2))
+			reported = [ [ntRef], [ntResult]]
+		#~ if reportedHomopolymerCInser is not None:
+			#~ homopolymersCInser.append(reportedHomopolymerCInser)
+		#~ elif reportedHomopolymerCDele is not None:
+			#~ homopolymersCDele.append(reportedHomopolymerCDele)
+		#~ if reportedHomopolymerRInser is not None:
+			#~ homopolymersRInser.append(reportedHomopolymerRInser)
+			#~ if reportedHomopolymerCInser is not None:
+				#~ toDivide = reportedHomopolymerCInser
+			#~ elif reportedHomopolymerCDele is not None:
+				#~ toDivide = reportedHomopolymerCDele
+			#~ else:
+				#~ toDivide = 0
+			#~ print(toDivide)
+			#~ print(reportedHomopolymerRInser)
+			#~ ratioHomopolymers.append(round(toDivide*1.0/reportedHomopolymerRInser,2))
+		#~ elif reportedHomopolymerRDele is not None:
+			#~ homopolymersRDele.append(reportedHomopolymerRDele)
+			#~ if reportedHomopolymerCInser is not None:
+				#~ toDivide = len(reportedHomopolymerCInser)
+			#~ elif reportedHomopolymerCDele is not None:
+				#~ toDivide = len(reportedHomopolymerCDele)
+			#~ else:
+				#~ toDivide = 0
+			#~ ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRDele),2))
 		#~ if reportedHomopolymerUInser is not None:
 			#~ homopolymersUInser.append(reportedHomopolymerUInser)
 		#~ if reportedHomopolymerUDele is not None:
