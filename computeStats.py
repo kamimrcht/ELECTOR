@@ -152,11 +152,11 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	if soft is not None:
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
 		outMetrics.write("metric score\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected, trimmedOrSplit  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold )
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  trimmedOrSplit, ratioHomopolymers  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold )
 	else:
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
 		outMetrics.write("metric score\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected, trimmedOrSplit  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold)
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold)
 	outMetrics.close()
 	meanMissingSize = 0
 	if len(missingSize) > 0:
@@ -196,18 +196,18 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	print("Number of substitutions in uncorrected: ", str(indelsubsUncorr[2]))
 	print("Number of substitutions in corrected: ", str(indelsubsCorr[2]))
 	#TODO
-	print("Number of insertions in homopolymers in uncorrected: ", str(numberHomopolymersInserInUncorrected))
-	print("Number of deletions in homopolymers in uncorrected: ", str(numberHomopolymersDeleInUncorrected))
-	print("Number of insertions in homopolymers in corrected: ", str( numberHomopolymersInserInCorrected))
-	print("Number of deletions in homopolymers in corrected: ", str( numberHomopolymersDeleInCorrected))
-	print("Mean length of insertions in homopolymers in uncorrected:", str(meanLengthInserHomopolymersInUncorrected))
-	print("Mean length of deletions in homopolymers in uncorrected: ", str(meanLengthDeleHomopolymersInUncorrected))
-	print("Mean length of insertions in homopolymers in corrected: ", str(meanLengthInserHomopolymersInCorrected))
-	print("Mean length of deletions in homopolymers in corrected: ", str(meanLengthDeleHomopolymersInCorrected))
+	print("Ratio of homopolymer sizes in corrected vs reference:", str(ratioHomopolymers))
+	#~ print("Number of insertions in homopolymers in uncorrected: ", str(numberHomopolymersInserInUncorrected))
+	#~ print("Number of deletions in homopolymers in uncorrected: ", str(numberHomopolymersDeleInUncorrected))
+	#~ print("Number of insertions in homopolymers in corrected: ", str( numberHomopolymersInserInCorrected))
+	#~ print("Number of deletions in homopolymers in corrected: ", str( numberHomopolymersDeleInCorrected))
+	#~ print("Mean length of insertions in homopolymers in uncorrected:", str(meanLengthInserHomopolymersInUncorrected))
+	#~ print("Mean length of deletions in homopolymers in uncorrected: ", str(meanLengthDeleHomopolymersInUncorrected))
+	#~ print("Mean length of insertions in homopolymers in corrected: ", str(meanLengthInserHomopolymersInCorrected))
+	#~ print("Mean length of deletions in homopolymers in corrected: ", str(meanLengthDeleHomopolymersInCorrected))
 	
-	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall:" + str(round(recall,5)) + "\nPrecision:" + str(round(precision,5)) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(len(missingSize)) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) +"\nNumber of insertions in homopolymers in uncorrected:" + str(numberHomopolymersInserInUncorrected ) + "\nNumber of deletions in homopolymers in uncorrected:" + str(numberHomopolymersDeleInUncorrected) + "\nNumber of insertions in homopolymers in corrected:" + str( numberHomopolymersInserInCorrected) + "\nNumber of deletions in homopolymers in corrected:" + str( numberHomopolymersDeleInCorrected) + "\nMean length of insertions in homopolymers in uncorrected:" + str(meanLengthInserHomopolymersInUncorrected) + "\nMean length of deletions in homopolymers in uncorrected:" + str(meanLengthDeleHomopolymersInUncorrected ) + "\nMean length of insertions in homopolymers in corrected:" + str(meanLengthInserHomopolymersInCorrected) + "\nMean length of deletions in homopolymers in corrected:" + str(meanLengthDeleHomopolymersInCorrected) + "\n")
-	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr,  numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected ,numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , meanLengthInserHomopolymersInUncorrected , meanLengthDeleHomopolymersInUncorrected ,	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected  
-
+	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall:" + str(round(recall,5)) + "\nPrecision:" + str(round(precision,5)) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(trimmedOrSplit) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"Ratio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
+	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers
 
 
 def getLen(sequenceMsa):
@@ -235,9 +235,11 @@ def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileNa
 
 
 # compute ins, del, subs
-def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerU, sizeHomopolymerC, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold):
-	reportedHomopolymerUInser = None
-	reportedHomopolymerUDele = None
+def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold):
+	#~ reportedHomopolymerUInser = None
+	#~ reportedHomopolymerUDele = None
+	reportedHomopolymerRInser = None
+	reportedHomopolymerRDele = None
 	reportedHomopolymerCInser = None
 	reportedHomopolymerCDele = None
 	#compute indels in uncorrected reads
@@ -245,32 +247,43 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 		if ntUnco != ntRef:
 			if ntRef == ".":
 				insU += 1
-				### insertion in homopolymer (uncorrected read) ###
-				#it can be an insertion in a homopolymer in the uncorrected read
-				if ntUnco == lastHomopolymerUInser:
-					sizeHomopolymerU += 1
-				else:
-					if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
-						reportedHomopolymerUInser = sizeHomopolymerU
-					sizeHomopolymerU = 0
-					lastHomopolymerUInser = ntUnco
-					lastHomopolymerUDele = ntRef
+				sizeHomopolymerR = 0
+				lastHomopolymerRInser = ntRef
+				lastHomopolymerUDele = ntRef
 			else:
+				### insertion in homopolymer (uncorrected read) ###
+				#~ #it can be an insertion in a homopolymer in the uncorrected read
+				if ntRef == lastHomopolymerRInser:
+					sizeHomopolymerR += 1
+				#it can be an insertion in a homopolymer in the uncorrected read
+				#~ if ntUnco == lastHomopolymerUInser:
+					#~ sizeHomopolymerU += 1
+				else:
+					if sizeHomopolymerR >= reportedThreshold: #end of a homopolymer: return it
+						reportedHomopolymerRInser = sizeHomopolymerR
+					sizeHomopolymerR = 0
+					lastHomopolymerRInser = ntRef
+					lastHomopolymerUDele = ntRef
+					#~ if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
+						#~ reportedHomopolymerUInser = sizeHomopolymerU
+					#~ sizeHomopolymerU = 0
+					#~ lastHomopolymerUInser = ntUnco
+					#~ lastHomopolymerUDele = ntRef
 				if ntUnco != "." :
 					subsU += 1
-					sizeHomopolymerU = 0
-					lastHomopolymerUInser = ntUnco
-					lastHomopolymerUDele = ntRef
+					#~ sizeHomopolymerU = 0
+					#~ lastHomopolymerUInser = ntUnco
+					#~ lastHomopolymerUDele = ntRef
 				else:
 					### deletion in homopolymer (uncorrected read) ###
-					if ntRef == lastHomopolymerUDele:
-						sizeHomopolymerU += 1
-					else:
-						if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
-							reportedHomopolymerUDele = sizeHomopolymerU
-						sizeHomopolymerU = 0
-						lastHomopolymerUInser = ntUnco
-						lastHomopolymerUDele = ntRef
+					#~ if ntRef == lastHomopolymerUDele:
+						#~ sizeHomopolymerU += 1
+					#~ else:
+						#~ if sizeHomopolymerU >= reportedThreshold: #end of a homopolymer: return it
+							#~ reportedHomopolymerUDele = sizeHomopolymerU
+						#~ sizeHomopolymerU = 0
+						#~ lastHomopolymerUInser = ntUnco
+						#~ lastHomopolymerUDele = ntRef
 					deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 	if existingCorrectedPositions[position]:
@@ -306,7 +319,8 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 						lastHomopolymerCDele = ntRef
 					deleC += 1
 					#print("del")
-	return insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC
+	#~ return insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC
+	return insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC
 
 # compute fp, tp, fn
 def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, existingCorrectedPositions, position, corBases, uncorBase, FP, FN, TP):
@@ -349,7 +363,7 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, exi
 
 
 # get insertion deletion substitution FP, FN, TP and GC rates for a triplet
-def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCorrectedPositions, reportedThreshold):
+def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCorrectedPositions, reportedThreshold, ratioHomopolymers):
 	position = 0
 	corBases = getLen(corrected)
 	uncorBases = 0
@@ -364,17 +378,17 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 	insC = 0
 	deleC = 0
 	subsC = 0
-	sizeHomopolymerU = 0
+	sizeHomopolymerR = 0
 	sizeHomopolymerC = 0
 	lastHomopolymerCDele = ''
 	lastHomopolymerCInser = ''
-	lastHomopolymerUInser = ''
-	lastHomopolymerUDele = ''
-	homopolymersUInser = []
-	homopolymersUDele = []
+	lastHomopolymerRInser = ''
+	lastHomopolymerRDele = ''
+	homopolymersRInser = []
+	homopolymersRDele = []
 	homopolymersCInser = []
 	homopolymersCDele = []
-	sizeHomopolymerU = 0
+	sizeHomopolymerR = 0
 	sizeHomopolymerC = 0
 	for ntRef, ntResult, ntUnco in zip(reference, corrected, uncorrected): #zip(reference, uncorrected, corrected):
 		if ntRef.upper() == "G" or ntRef.upper() == "C":
@@ -382,22 +396,43 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
 		#insertion deletion substitution
-		insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerU, sizeHomopolymerC, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
+		#~ insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerU, sizeHomopolymerC, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
+		insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
 		if reportedHomopolymerCInser is not None:
 			homopolymersCInser.append(reportedHomopolymerCInser)
-		if reportedHomopolymerCDele is not None:
+		elif reportedHomopolymerCDele is not None:
 			homopolymersCDele.append(reportedHomopolymerCDele)
-		if reportedHomopolymerUInser is not None:
-			homopolymersUInser.append(reportedHomopolymerUInser)
-		if reportedHomopolymerUDele is not None:
-			homopolymersUDele.append(reportedHomopolymerUDele)
+		if reportedHomopolymerRInser is not None:
+			homopolymersRInser.append(reportedHomopolymerRInser)
+			if reportedHomopolymerCInser is not None:
+				toDivide = len(reportedHomopolymerCInser)
+			elif reportedHomopolymerCDele is not None:
+				toDivide = len(reportedHomopolymerCDele)
+			else:
+				toDivide = 0
+			ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRInser),2))
+		elif reportedHomopolymerRDele is not None:
+			homopolymersRDele.append(reportedHomopolymerRDele)
+			if reportedHomopolymerCInser is not None:
+				toDivide = len(reportedHomopolymerCInser)
+			elif reportedHomopolymerCDele is not None:
+				toDivide = len(reportedHomopolymerCDele)
+			else:
+				toDivide = 0
+			ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRDele),2))
+		#~ if reportedHomopolymerUInser is not None:
+			#~ homopolymersUInser.append(reportedHomopolymerUInser)
+		#~ if reportedHomopolymerUDele is not None:
+			#~ homopolymersUDele.append(reportedHomopolymerUDele)
+		# HERE replace homopol in U by those in R and if homopol is reported in R dividec hC/hR and append a vector (this vector can be the same for all reads)
 		#FP, FN, TP
 		corBases, uncorBases, FP, FN, TP = getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions,  existingCorrectedPositions, position,  corBases, uncorBases, FP, FN, TP)
 		#print(str(corBases))
 		position += 1
 	GCRateRef = round(GCSumRef * 1.0 / getLen(reference),3)
 	GCRateCorr = round(GCSumCorr * 1.0 / getLen(corrected),3)
-	return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele
+	#~ return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele
+	return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers
 
 
 def outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases):
@@ -462,6 +497,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	meanLengthInserHomopolymersInCorrected = []
 	meanLengthDeleHomopolymersInCorrected = []
 	trimmedOrSplit = 0
+	ratioHomopolymers = []
 	
 	while nbLines < len(lines):
 		if not ">" in lines[nbLines]:
@@ -501,20 +537,21 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			#~ correctedPositions, existingCorrectedReadPositions = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
 			# if the corrected read (or this part of a split read) is long enough
 			#~ FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele = getTPFNFP(reference, corrected, uncorrected, correctedPositions, existingCorrectedReadPositions, reportedThreshold)
-			FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold)
+			#~ FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold)
+			FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers)
 			#print("Read no : " + str(readNo) + " cor : " + str(corBases) + " uncor : " + str(uncorBases) + " size : " + str(corBases + uncorBases))
-			numberHomopolymersInserInCorrected += len(homopolymersCInser)
-			numberHomopolymersDeleInCorrected += len(homopolymersCDele)
-			numberHomopolymersInserInUncorrected += len(homopolymersUInser)
-			numberHomopolymersDeleInUncorrected += len(homopolymersUDele)
-			if len(homopolymersUInser) > 0:
-				meanLengthInserHomopolymersInUncorrected.append(sum(homopolymersUInser)*1.0/len(homopolymersUInser))
-			if len(homopolymersUDele) > 0:
-				meanLengthDeleHomopolymersInUncorrected.append(sum(homopolymersUDele)*1.0/len(homopolymersUDele))
-			if len(homopolymersCInser) > 0:
-				meanLengthInserHomopolymersInCorrected.append(sum(homopolymersCInser)*1.0/len(homopolymersCInser))
-			if len(homopolymersCDele) > 0:
-				meanLengthDeleHomopolymersInCorrected.append(sum(homopolymersCDele)*1.0/len(homopolymersCDele))
+			#~ numberHomopolymersInserInCorrected += len(homopolymersCInser)
+			#~ numberHomopolymersDeleInCorrected += len(homopolymersCDele)
+			#~ numberHomopolymersInserInUncorrected += len(homopolymersUInser)
+			#~ numberHomopolymersDeleInUncorrected += len(homopolymersUDele)
+			#~ if len(homopolymersUInser) > 0:
+				#~ meanLengthInserHomopolymersInUncorrected.append(sum(homopolymersUInser)*1.0/len(homopolymersUInser))
+			#~ if len(homopolymersUDele) > 0:
+				#~ meanLengthDeleHomopolymersInUncorrected.append(sum(homopolymersUDele)*1.0/len(homopolymersUDele))
+			#~ if len(homopolymersCInser) > 0:
+				#~ meanLengthInserHomopolymersInCorrected.append(sum(homopolymersCInser)*1.0/len(homopolymersCInser))
+			#~ if len(homopolymersCDele) > 0:
+				#~ meanLengthDeleHomopolymersInCorrected.append(sum(homopolymersCDele)*1.0/len(homopolymersCDele))
 			
 				
 			# add insertion/deletions/substitutions that have been counted
@@ -574,12 +611,17 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	corBasesRate = corBasesRate*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	throughput = totalCorBases + totalUncorBases
 	errorRate = round(1 - (totalCorBases / throughput), 3)
-	meanLengthInserHomopolymersInUncorrected = round(sum(meanLengthInserHomopolymersInUncorrected) * 1.0 / len(meanLengthInserHomopolymersInUncorrected),3) if len(meanLengthInserHomopolymersInUncorrected) > 0 else 0
-	meanLengthDeleHomopolymersInUncorrected = round(sum(meanLengthDeleHomopolymersInUncorrected) * 1.0 / len(meanLengthDeleHomopolymersInUncorrected),3) if len(meanLengthDeleHomopolymersInUncorrected) > 0 else 0
-	meanLengthInserHomopolymersInCorrected = round(sum(meanLengthInserHomopolymersInCorrected) * 1.0 / len(meanLengthInserHomopolymersInCorrected),3) if len(meanLengthInserHomopolymersInCorrected) > 0 else 0
-	meanLengthDeleHomopolymersInCorrected = round(sum(meanLengthDeleHomopolymersInCorrected) * 1.0 / len(meanLengthDeleHomopolymersInCorrected),3) if len(meanLengthDeleHomopolymersInCorrected) > 0 else 0
+	#~ meanLengthInserHomopolymersInUncorrected = round(sum(meanLengthInserHomopolymersInUncorrected) * 1.0 / len(meanLengthInserHomopolymersInUncorrected),3) if len(meanLengthInserHomopolymersInUncorrected) > 0 else 0
+	#~ meanLengthDeleHomopolymersInUncorrected = round(sum(meanLengthDeleHomopolymersInUncorrected) * 1.0 / len(meanLengthDeleHomopolymersInUncorrected),3) if len(meanLengthDeleHomopolymersInUncorrected) > 0 else 0
+	#~ meanLengthInserHomopolymersInCorrected = round(sum(meanLengthInserHomopolymersInCorrected) * 1.0 / len(meanLengthInserHomopolymersInCorrected),3) if len(meanLengthInserHomopolymersInCorrected) > 0 else 0
+	#~ meanLengthDeleHomopolymersInCorrected = round(sum(meanLengthDeleHomopolymersInCorrected) * 1.0 / len(meanLengthDeleHomopolymersInCorrected),3) if len(meanLengthDeleHomopolymersInCorrected) > 0 else 0
 	#~ print("todivide : ", nbReadsToDivide)
-	return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected, trimmedOrSplit
+	#~ return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected, trimmedOrSplit
+	if len(ratioHomopolymers) > 1:
+		meanRatioHomopolymers = statistics.mean(ratioHomopolymers)
+	else:
+		meanRatioHomopolymers = 1
+	return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, meanRatioHomopolymers
 
 
 # get the position of nt in uppercase to compute recall and precision only at these positions
