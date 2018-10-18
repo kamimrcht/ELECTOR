@@ -256,10 +256,10 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 		if ntUnco != ntRef:
 			if ntRef == ".":
 				insU += 1
-				if ntUnco != "." :
-					subsU += 1
-				else:
-					deleU += 1
+			if ntUnco != "." :
+				subsU += 1
+			else:
+				deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 		if ntResult != ntRef:
 			if ntRef == ".":
@@ -365,18 +365,6 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 	insC = 0
 	deleC = 0
 	subsC = 0
-	#~ sizeHomopolymerR = 0
-	#~ sizeHomopolymerC = 0
-	#~ lastHomopolymerCDele = ''
-	#~ lastHomopolymerCInser = ''
-	#~ lastHomopolymerRInser = reference[0]
-	#~ lastHomopolymerRDele = reference[0]
-	#~ homopolymersRInser = []
-	#~ homopolymersRDele = []
-	#~ homopolymersCInser = []
-	#~ homopolymersCDele = []
-	#~ sizeHomopolymerR = 0
-	#~ sizeHomopolymerC = 0
 	detectedHomopolymer = False
 	okToReportRef = False
 	endOfHomopolRef = False
@@ -387,45 +375,14 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 		if ntResult.upper() ==  "G" or ntResult.upper() == "C":
 			GCSumCorr += 1
 		#insertion deletion substitution
-		#~ insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerUInser, reportedHomopolymerUDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerU,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerU, sizeHomopolymerC, lastHomopolymerUInser, lastHomopolymerUDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
-		#~ insU, deleU, subsU, insC, deleC, subsC, reportedHomopolymerRInser, reportedHomopolymerRDele, reportedHomopolymerCInser, reportedHomopolymerCDele, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele,sizeHomopolymerR,sizeHomopolymerC = indels(ntRef, ntUnco, ntResult, existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, sizeHomopolymerR, sizeHomopolymerC, lastHomopolymerRInser, lastHomopolymerRDele, lastHomopolymerCInser, lastHomopolymerCDele, reportedThreshold)
 		insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef= indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef, reportedThreshold)
 
 		if detectedHomopolymer:
 			detectedHomopolymer = False
 			okToReportRef = False
 			endOfHomopolRef = False
-			#~ print(reported)
 			ratioHomopolymers.append(round(reported[1]*1.0/reported[0],2))
 			reported = [ [ntRef], [ntResult]]
-		#~ if reportedHomopolymerCInser is not None:
-			#~ homopolymersCInser.append(reportedHomopolymerCInser)
-		#~ elif reportedHomopolymerCDele is not None:
-			#~ homopolymersCDele.append(reportedHomopolymerCDele)
-		#~ if reportedHomopolymerRInser is not None:
-			#~ homopolymersRInser.append(reportedHomopolymerRInser)
-			#~ if reportedHomopolymerCInser is not None:
-				#~ toDivide = reportedHomopolymerCInser
-			#~ elif reportedHomopolymerCDele is not None:
-				#~ toDivide = reportedHomopolymerCDele
-			#~ else:
-				#~ toDivide = 0
-			#~ print(toDivide)
-			#~ print(reportedHomopolymerRInser)
-			#~ ratioHomopolymers.append(round(toDivide*1.0/reportedHomopolymerRInser,2))
-		#~ elif reportedHomopolymerRDele is not None:
-			#~ homopolymersRDele.append(reportedHomopolymerRDele)
-			#~ if reportedHomopolymerCInser is not None:
-				#~ toDivide = len(reportedHomopolymerCInser)
-			#~ elif reportedHomopolymerCDele is not None:
-				#~ toDivide = len(reportedHomopolymerCDele)
-			#~ else:
-				#~ toDivide = 0
-			#~ ratioHomopolymers.append(round(toDivide*1.0/len(reportedHomopolymerRDele),2))
-		#~ if reportedHomopolymerUInser is not None:
-			#~ homopolymersUInser.append(reportedHomopolymerUInser)
-		#~ if reportedHomopolymerUDele is not None:
-			#~ homopolymersUDele.append(reportedHomopolymerUDele)
 		# HERE replace homopol in U by those in R and if homopol is reported in R dividec hC/hR and append a vector (this vector can be the same for all reads)
 		#FP, FN, TP
 		corBases, uncorBases, FP, FN, TP = getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions,  existingCorrectedPositions, position,  corBases, uncorBases, FP, FN, TP)
