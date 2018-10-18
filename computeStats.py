@@ -176,15 +176,15 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 
 	
 
-	recall = round(recall, 5)
-	precision = round(precision, 5)
-	corBasesRate = round(corBasesRate, 5)
-	errorRate = round(errorRate, 5)
-	GCRateRef = round(GCRateRef * 100, 5)
-	GCRateCorr = round(GCRateCorr * 100, 5)
+	recall = round(recall, 7)
+	precision = round(precision, 7)
+	corBasesRate = round(corBasesRate, 7)
+	errorRate = round(errorRate, 7)
+	GCRateRef = round(GCRateRef * 100, 7)
+	GCRateCorr = round(GCRateCorr * 100, 7)
 
-	globalRecall =  round(globalRec, 5)
-	globalPrecision =  round(globalPrec, 5)
+	globalRecall =  round(globalRec, 7)
+	globalPrecision =  round(globalPrec, 7)
 	print("*********** SUMMARY ***********")
 	print("Assessed reads: ", str(nbReads))
 	print("Throughput: ", str(throughput))
@@ -201,7 +201,7 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	print("%GC in reference reads: ", str(GCRateRef))
 	print("%GC in corrected reads: ", str(GCRateCorr))
 	print("Number of corrected reads which length is <", SIZE_CORRECTED_READ_THRESHOLD*100,"% of the original read:", smallReadNumber)
-	print("Number of wrongly corrected reads: ", wronglyCorrectedReadsNumber)
+	print("Number of very low quality corrected reads: ", wronglyCorrectedReadsNumber)
 	print("Number of insertions in uncorrected: ", str(indelsubsUncorr[0]))
 	print("Number of insertions in corrected: ", str(indelsubsCorr[0]))
 	print("Number of deletions in uncorrected: ", str(indelsubsUncorr[1]))
@@ -211,7 +211,7 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	#TODO
 	print("Ratio of homopolymer sizes in corrected vs reference:", str(ratioHomopolymers))
 	
-	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall (computed only on corrected bases):" + str(recall) + "\nGlobal recall (computed on all bases):" + str(globalRecall) + "\nPrecision (computed only on corrected bases):" + str(precision) + "\nGlobal precision (computed on all bases:" + str(globalPrecision) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(trimmedOrSplit) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"Ratio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
+	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall (computed only on corrected bases):" + str(recall) + "\nGlobal recall (computed on all bases):" + str(globalRecall) + "\nPrecision (computed only on corrected bases):" + str(precision) + "\nGlobal precision (computed on all bases:" + str(globalPrecision) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(trimmedOrSplit) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of very low quality corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"Ratio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
 	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers, globalRecall, globalPrecision
 
 
@@ -325,6 +325,7 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, exi
 		if ntRef == ntUnco:  #no error
 			if ntUnco != ntResult: #FP
 				FP += 1
+				globalFP += 1
 				uncorBase += 1
 				corBases -= 1
 			# else good nt not corrected = ok
@@ -333,12 +334,15 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, exi
 		else: #error
 			if ntRef == ntResult: #error corrected
 				TP += 1
+				globalTP += 1
 			#	corBases += 1
 			else:
 				if ntUnco == ntResult: # error not corrected
 					FN += 1
+					globalFN += 1
 				else: #new error introduced by corrector
 					FP += 1
+					globalFP += 1
 				uncorBase += 1
 				corBases -= 1
 	#correct base rate is computed everywhere
@@ -350,23 +354,34 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, exi
 			if ntRef != ntResult:
 				uncorBase += 1
 				corBases -= 1
-			
+			if ntRef == ntUnco:  #no error
+				if ntUnco != ntResult: #FP
+					globalFP += 1
+			else: #error
+				if ntRef == ntResult: #error corrected
+					globalTP += 1
+				#	corBases += 1
+				else:
+					if ntUnco == ntResult: # error not corrected
+						globalFN += 1
+					else: #new error introduced by corrector
+						globalFP += 1
 
 
 	#global FP,FN,TP (not only computed on corrected positions):
-	if existingCorrectedPositions[position]:
-		if ntRef == ntUnco:  #no error
-			if ntUnco != ntResult: #FP
-				globalFP += 1
-		else: #error
-			if ntRef == ntResult: #error corrected
-				globalTP += 1
-			#	corBases += 1
-			else:
-				if ntUnco == ntResult: # error not corrected
-					globalFN += 1
-				else: #new error introduced by corrector
-					globalFP += 1
+	#~ if existingCorrectedPositions[position]:
+		#~ if ntRef == ntUnco:  #no error
+			#~ if ntUnco != ntResult: #FP
+				#~ globalFP += 1
+		#~ else: #error
+			#~ if ntRef == ntResult: #error corrected
+				#~ globalTP += 1
+			#~ #	corBases += 1
+			#~ else:
+				#~ if ntUnco == ntResult: # error not corrected
+					#~ globalFN += 1
+				#~ else: #new error introduced by corrector
+					#~ globalFP += 1
 	#~ print TP, globalTP, FN, globalFN
 
 	return corBases, uncorBase, FP, FN, TP, globalFP, globalFN, globalTP

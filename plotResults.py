@@ -92,7 +92,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
     Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
   is $<$ %(minLength)s \%% of the original read & \\ \hline\hline
   
-  	Number of wrongly corrected reads & %(wronglyCorReads)s \\ \hline\hline
+  	Number of very low quality corrected reads & %(wronglyCorReads)s \\ \hline\hline
   	
 	Ratio of homopolymer sizes in corrected vs reference &  %(homoRatio)s \\ \hline\hline
 
