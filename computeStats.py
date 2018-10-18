@@ -171,7 +171,7 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	recall = round(recall, 5)
 	precision = round(precision, 5)
 	corBasesRate = round(corBasesRate, 5)
-	erroRate = round(errorRate, 5)
+	errorRate = round(errorRate, 5)
 	GCRateRef = round(GCRateRef * 100, 5)
 	GCRateCorr = round(GCRateCorr * 100, 5)
 
@@ -612,7 +612,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	precision = precision*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	corBasesRate = corBasesRate*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	throughput = totalCorBases + totalUncorBases
-	errorRate = round(1 - (totalCorBases / throughput), 3)
+	errorRate = 1 - (totalCorBases / throughput)
 	#~ meanLengthInserHomopolymersInUncorrected = round(sum(meanLengthInserHomopolymersInUncorrected) * 1.0 / len(meanLengthInserHomopolymersInUncorrected),3) if len(meanLengthInserHomopolymersInUncorrected) > 0 else 0
 	#~ meanLengthDeleHomopolymersInUncorrected = round(sum(meanLengthDeleHomopolymersInUncorrected) * 1.0 / len(meanLengthDeleHomopolymersInUncorrected),3) if len(meanLengthDeleHomopolymersInUncorrected) > 0 else 0
 	#~ meanLengthInserHomopolymersInCorrected = round(sum(meanLengthInserHomopolymersInCorrected) * 1.0 / len(meanLengthInserHomopolymersInCorrected),3) if len(meanLengthInserHomopolymersInCorrected) > 0 else 0
