@@ -74,20 +74,31 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	\begin{tabular}{|l|c|} 
 	\hline
 	Assessed reads & %(nbReads)s \\ \hline
-	Throughput & %(throughput)s \\ \hline
-	Recall & %(meanRecall)s  \\ \hline
-	Precision & %(meanPrecision)s  \\ \hline
-	Average correct bases rate & %(meanCorrectBaseRate)s \\ \hline
-	Overall error rate & %(errorRate)s \\ \hline
+	Throughput & %(throughput)s \\ \hline\hline
+	
+	Recall (computed on corrected bases)& %(meanRecall)s  \\ \hline
+	Precision (computed on corrected bases)& %(meanPrecision)s  \\ \hline
+	Global recall (computed on whole read)& %(meanGlobRecall)s  \\ \hline
+	Global precision  (computed on whole read)& %(meanGlobPrecision)s  \\ \hline
+	Average correct bases rate  (computed on whole read)& %(meanCorrectBaseRate)s \\ \hline
+	Overall error rate (computed on whole read)& %(errorRate)s \\ \hline\hline
+	
 	Number of trimmed/split reads & %(numberReadSplit)s \\ \hline
     Mean missing size in trimmed/split reads & %(meanMissingSize)s \\ \hline
     Number of reads over-corrected by extension & %(numberReadExtended)s \\ \hline
     Mean extension size in over-correcte reads & %(meanExtensionSize)s \\ \hline
-    \%% GC in reference reads & %(GCRef)s \\ \hline
-    \%% GC in corrected reads & %(GCCorr)s \\ \hline
+    
+ 
     Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
-  is $<$ %(minLength)s \%% of the original read & \\ \hline
-  	Number of wrongly corrected reads & %(wronglyCorReads)s \\ \hline
+  is $<$ %(minLength)s \%% of the original read & \\ \hline\hline
+  
+  	Number of wrongly corrected reads & %(wronglyCorReads)s \\ \hline\hline
+  	
+	Ratio of homopolymer sizes in corrected vs reference &  %(homoRatio)s \\ \hline\hline
+
+	\%% GC in reference reads & %(GCRef)s \\ \hline
+    \%% GC in corrected reads & %(GCCorr)s \\ \hline
+
 	\end{tabular}
 	\end{figure*}
 
@@ -98,10 +109,6 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	Insertions & %(insU)s& %(insC)s  \\ \hline
 	Deletions &  %(delU)s& %(delC)s  \\ \hline
 	Substitutions &  %(subsU)s& %(subsC)s  \\ \hline
-	Insertions in homopolymers & %(homoInsU)s & %(homoInsC)s  \\ \hline
-	Deletions in homopolymers & %(homoDeleU)s & %(homoDeleC)s   \\ \hline
-	Mean size insertions in homopolymers & %(homoInsUMean)s & %(homoInsCMean)s   \\ \hline
-	Mean size deletions in homopolymers & %(homoDeleUMean)s & %(homoDeleCMean)s  \\ \hline
 	\end{tabular}
 	\end{figure*}
 	'''
@@ -151,7 +158,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		content += r'''
 		\begin{figure}[ht!]
 		\centering\includegraphics[width=0.7\textwidth]{%(size_distribution)s}
-		\caption{\textbf{Size distribution of reads before and after correction.}}
+		\caption{\textbf{Size distributions after correction.} "Sequences" relate to each fasta sequence of the corrected file. "Reads" relate to corrected reads. In case of split reads, a "read" can be composed of two "sequences" for instance. This is why we report two different distributions. In case no read is split, we only report read length distribution.}
 		\label{fig:size_distr}
 		\end{figure}'''
 	content += r'''
@@ -161,16 +168,10 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
 	#~ proc.communicate()
 
-def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75, homoInsU, homoDeleU, homoInsC,  homoDeleC, homoInsUMean,  homoDeleUMean, homoInsCMean, homoDeleCMean, remap, assemble ):
-	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoInsU": homoInsU, "homoDeleU": homoDeleU, "homoInsC": homoInsC, "homoDeleC": homoDeleC,"homoInsUMean": homoInsUMean, "homoDeleUMean": homoDeleUMean, "homoInsCMean": homoInsCMean, "homoDeleCMean": homoDeleCMean }
+def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision,globRecall, globPrecision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75,  remap, assemble, homoRatio ):
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall,"meanGlobPrecision": globPrecision, "meanGlobRecall": globRecall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoRatio": homoRatio}
 	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict, remap, assemble)
 
 
-#Recall  0.9997 
-#Precision  1.0 
-#Correct bases rate  0.99998 
-#Number of trimmed/split reads  0 
-#Mean missing size in trimmed/split reads  0
-#%GC in reference reads: 36.1 %GC in corrected reads: 18.5
-#Number of corrected reads which length is < 10.0 % of the original read: 0
+

@@ -149,15 +149,21 @@ def findGapStretches(correctedSequence, referenceSequence):
 
 # compute recall and precision and writes output files
 #@Camille j'ai aussi fait un peu de ménage ici
-def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, wronglyCorrectedReadsNumber, reportedHomopolThreshold, SIZE_CORRECTED_READ_THRESHOLD, beg=0, end=0, soft=None):
+def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, wronglyCorrectedReadsNumber, reportedHomopolThreshold, SIZE_CORRECTED_READ_THRESHOLD,  fileSizeName,beg=0, end=0, soft=None):
 	if soft is not None:
+		#recall, precision
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
-		outMetrics.write("metric score\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  trimmedOrSplit, ratioHomopolymers  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold )
+		outMetrics.write("score metric\n")
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold )
+
 	else:
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
-		outMetrics.write("metric score\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold)
+		outMetrics.write("score metric\n")
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold)
+
+	# read lengths
+	outputReadSizeDistribution(correctedFileName, fileSizeName, outDir, trimmedOrSplit, lenAllCorrectedReads)
+
 	outMetrics.close()
 	meanMissingSize = 0
 	if len(missingSize) > 0:
@@ -168,6 +174,8 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	if soft is not None:
 		print(soft)
 
+	
+
 	recall = round(recall, 5)
 	precision = round(precision, 5)
 	corBasesRate = round(corBasesRate, 5)
@@ -175,11 +183,15 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	GCRateRef = round(GCRateRef * 100, 5)
 	GCRateCorr = round(GCRateCorr * 100, 5)
 
+	globalRecall =  round(globalRec, 5)
+	globalPrecision =  round(globalPrec, 5)
 	print("*********** SUMMARY ***********")
 	print("Assessed reads: ", str(nbReads))
 	print("Throughput: ", str(throughput))
-	print("Recall:", str(recall))
-	print("Precision:", str(precision))
+	print("Recall (computed only on corrected bases):", str(recall))
+	print("Global recall (computed on all bases):", str(globalRecall))
+	print("Precision (computed only on corrected bases):", str(precision))
+	print("Global precision (computed on all bases:", str(globalPrecision))
 	print("Average correct bases rate:", str(corBasesRate))
 	print("Overall error rate: ", str(errorRate))
 	print("Number of trimmed/split reads:" , str(trimmedOrSplit))
@@ -198,40 +210,37 @@ def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, 
 	print("Number of substitutions in corrected: ", str(indelsubsCorr[2]))
 	#TODO
 	print("Ratio of homopolymer sizes in corrected vs reference:", str(ratioHomopolymers))
-	#~ print("Number of insertions in homopolymers in uncorrected: ", str(numberHomopolymersInserInUncorrected))
-	#~ print("Number of deletions in homopolymers in uncorrected: ", str(numberHomopolymersDeleInUncorrected))
-	#~ print("Number of insertions in homopolymers in corrected: ", str( numberHomopolymersInserInCorrected))
-	#~ print("Number of deletions in homopolymers in corrected: ", str( numberHomopolymersDeleInCorrected))
-	#~ print("Mean length of insertions in homopolymers in uncorrected:", str(meanLengthInserHomopolymersInUncorrected))
-	#~ print("Mean length of deletions in homopolymers in uncorrected: ", str(meanLengthDeleHomopolymersInUncorrected))
-	#~ print("Mean length of insertions in homopolymers in corrected: ", str(meanLengthInserHomopolymersInCorrected))
-	#~ print("Mean length of deletions in homopolymers in corrected: ", str(meanLengthDeleHomopolymersInCorrected))
 	
-	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall:" + str(round(recall,5)) + "\nPrecision:" + str(round(precision,5)) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(trimmedOrSplit) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"Ratio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
-	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers
+	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput: " + str(throughput) + "\nRecall (computed only on corrected bases):" + str(recall) + "\nGlobal recall (computed on all bases):" + str(globalRecall) + "\nPrecision (computed only on corrected bases):" + str(precision) + "\nGlobal precision (computed on all bases:" + str(globalPrecision) + "\nAverage correct bases rate:" + str(round(corBasesRate,5)) + "\nOverall error rate: " + str(errorRate) + "\nNumber of trimmed/split reads:" + str(trimmedOrSplit) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(len(extendedBases)) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef * 100) + "\n%GC in corrected reads: " + str(GCRateCorr * 100) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of wrongly corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"Ratio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
+	return nbReads, throughput, precision, recall, corBasesRate, errorRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(len(missingSize)) , meanMissingSize, str(len(extendedBases)), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers, globalRecall, globalPrecision
 
 
 def getLen(sequenceMsa):
 	return len(sequenceMsa) - sequenceMsa.count('.')
 
 # Compute the length distribution of uncorrected and corrected reads
-def outputReadSizeDistribution(uncorrectedFileName, correctedFileName, outFileName, outDir):
-	unco = open(uncorrectedFileName)
-	cor = open(correctedFileName)
+def outputReadSizeDistribution(correctedFileName, outFileName, outDir, trimmedOrSplit, lenAllReads):
 	out = open(outDir + "/" + outFileName, 'w')
 	out.write("size type\n")
-	l = unco.readline()
-	while l != "":
-		l = unco.readline()[:-1]
-		out.write(str(len(l)) + " uncorrected\n")
-		l = unco.readline()
-	l = cor.readline()
-	while l != "":
-		l = cor.readline()[:-1]
-		out.write(str(len(l)) + " corrected\n")
+	for readSize in lenAllReads:
+		out.write(str(readSize) + " reads\n")
+	if trimmedOrSplit != 0:
+	#~ unco = open(uncorrectedFileName)
+		cor = open(correctedFileName)
+		
+		
+		#~ l = unco.readline()
+		#~ while l != "":
+			#~ l = unco.readline()[:-1]
+			#~ out.write(str(len(l)) + " uncorrected\n")
+			#~ l = unco.readline()
 		l = cor.readline()
-	unco.close()
-	cor.close()
+		while l != "":
+			l = cor.readline()[:-1]
+			out.write(str(len(l)) + " sequences\n")
+			l = cor.readline()
+		#~ unco.close()
+		cor.close()
 	out.close()
 
 
@@ -310,13 +319,9 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 	return insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef
 
 # compute fp, tp, fn
-def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, existingCorrectedPositions, position, corBases, uncorBase, FP, FN, TP):
+def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, existingCorrectedPositions, position, corBases, uncorBase, FP, FN, TP, globalFP, globalFN, globalTP):
 	#compute FN,FP,TP only on corrected parts
 	if correctedPositions[position]:
-		#print(ntResult)
-		#if ntRef == ntUnco == ntResult:
-			#corBases += 1
-		#else:
 		if ntRef == ntUnco:  #no error
 			if ntUnco != ntResult: #FP
 				FP += 1
@@ -345,8 +350,26 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, exi
 			if ntRef != ntResult:
 				uncorBase += 1
 				corBases -= 1
+			
 
-	return corBases, uncorBase, FP, FN, TP
+
+	#global FP,FN,TP (not only computed on corrected positions):
+	if existingCorrectedPositions[position]:
+		if ntRef == ntUnco:  #no error
+			if ntUnco != ntResult: #FP
+				globalFP += 1
+		else: #error
+			if ntRef == ntResult: #error corrected
+				globalTP += 1
+			#	corBases += 1
+			else:
+				if ntUnco == ntResult: # error not corrected
+					globalFN += 1
+				else: #new error introduced by corrector
+					globalFP += 1
+	#~ print TP, globalTP, FN, globalFN
+
+	return corBases, uncorBase, FP, FN, TP, globalFP, globalFN, globalTP
 
 
 # get insertion deletion substitution FP, FN, TP and GC rates for a triplet
@@ -357,6 +380,9 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 	FN = 0
 	FP = 0
 	TP = 0
+	globalFN = 0
+	globalFP = 0
+	globalTP = 0
 	GCSumRef = 0
 	GCSumCorr = 0
 	insU = 0
@@ -385,16 +411,16 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 			reported = [ [ntRef], [ntResult]]
 		# HERE replace homopol in U by those in R and if homopol is reported in R dividec hC/hR and append a vector (this vector can be the same for all reads)
 		#FP, FN, TP
-		corBases, uncorBases, FP, FN, TP = getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions,  existingCorrectedPositions, position,  corBases, uncorBases, FP, FN, TP)
+		corBases, uncorBases, FP, FN, TP,globalFP, globalFN, globalTP = getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions,  existingCorrectedPositions, position,  corBases, uncorBases, FP, FN, TP,globalFP, globalFN, globalTP)
 		#print(str(corBases))
 		position += 1
 	GCRateRef = round(GCSumRef * 1.0 / getLen(reference),3)
 	GCRateCorr = round(GCSumCorr * 1.0 / getLen(corrected),3)
 	#~ return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, homopolymersUInser, homopolymersUDele, homopolymersCInser, homopolymersCDele
-	return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers
+	return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers, globalFP, globalFN, globalTP
 
 
-def outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader):
+def outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader,lenCorrected, lenAllCorrectedReads,globalFPlistForARead, globalTPlistForARead, globalFNlistForARead):
 	if sameLastHeader:
 		missingInRead = existingCorrectedPositionsInThisRead.count(False) # final sum
 	else:
@@ -413,21 +439,28 @@ def outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, t
 		outPerReadMetrics.write(str(rec) + " recall\n")
 		outPerReadMetrics.write(str(prec) + " precision\n")
 		outPerReadMetrics.write(str(corBRate) + " correct_rate\n")
-		recall += rec
-		precision += prec
-		corBasesRate += corBRate
+		recall.append(rec)
+		precision.append(prec)
+		corBasesRate.append(corBRate)
 		totalCorBases += sum(corBasesForARead)
 		totalUncorBases += sum(uncorBasesForARead)
 	nbReadsToDivide += 1
+	if globalFPlistForARead != [] or globalTPlistForARead != [] or globalFNlistForARead != [] :
+		globalFNsum = sum(globalFNlistForARead)
+		globalTPsum = sum(globalTPlistForARead)
+		globalFPsum = sum (globalFPlistForARead)
+		globalRec = globalTPsum / (globalTPsum + globalFNsum) if (globalTPsum + globalFNsum) != 0 else 0
+		globalPrec = globalTPsum / (globalTPsum + globalFPsum) if (globalTPsum + globalFPsum) != 0 else 0
 	GCRateRef.append(GCRateRefRead)
 	GCRateCorr.append(GCRateCorrRead)
-	return recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases
+	lenAllCorrectedReads.append(lenCorrected)
+	return recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases, lenAllCorrectedReads, globalRec, globalPrec
 
 def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThreshold):
 	#global metrics to return
-	precision = 0
-	recall = 0
-	corBasesRate = 0
+	precision = []
+	recall = []
+	corBasesRate = []
 	totalCorBases = 0
 	totalUncorBases = 0
 	missingSize = []
@@ -460,7 +493,8 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	meanLengthDeleHomopolymersInCorrected = []
 	trimmedOrSplit = 0
 	ratioHomopolymers = []
-	
+	lenCorrected = 0
+	lenAllCorrectedReads = [] #this length is computing by adding the sizes of split reads if needed
 	while nbLines < len(lines):
 		if not ">" in lines[nbLines]:
 			if sameLastHeader:
@@ -492,12 +526,12 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				corrected = corrected[0:len(corrected) - gapsRight]
 			
 			nbLines += 1 #go to next header
-			lenCorrected = getLen(corrected)
+			#~ lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
 			stretches = findGapStretches(corrected, reference)
 			correctedPositionsRead, existingCorrectedPositionsInThisRead = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
 			
-			FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers)
+			FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers,globalFP, globalFN, globalTP = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers)
 
 			# add insertion/deletions/substitutions that have been counted
 			indelsubsCorr[0] += insC
@@ -517,29 +551,37 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				FPlistForARead.append(FP)
 				TPlistForARead.append(TP)
 				FNlistForARead.append(FN)
+				globalFPlistForARead.append(globalFP)
+				globalTPlistForARead.append(globalTP)
+				globalFNlistForARead.append(globalFN)
 				totalGaps = totalGaps + gapsLeft + gapsRight
 				lenPrevReference = lenReference
 				existingCorrectedPositionsInThisRead = [any(tup) for tup in zip(existingCorrectedReadPositions, existingCorrectedPositionsInThisRead)] #logical OR, positions that exist in the corrected read 
 				correctedPositionsRead = [any(tup) for tup in zip(correctedPositionsRead, correctedPositions)] #logical OR, positions that are corrected in the read
+				lenRead += getLen(corrected)
 			else: # end of previous read in several parts or end of previous simple read or first triplet => output for previous read and start to store info for current read
 					
 				if prevHeader != "":
 					# output info for previous read
-					recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead,uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader)
+					recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases, lenAllCorrectedReads, globalRec, globalPrec = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead,uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader, lenCorrected, lenAllCorrectedReads,globalFPlistForARead, globalTPlistForARead, globalFNlistForARead)
 				# store new info
+				lenCorrected = getLen(corrected)
 				sameLastHeader = False
 				corBasesForARead = [corBases]
 				uncorBasesForARead = [uncorBases]
 				FPlistForARead = [FP]
 				TPlistForARead = [TP]
 				FNlistForARead = [FN]
+				globalFPlistForARead = [globalFP]
+				globalTPlistForARead = [globalTP]
+				globalFNlistForARead = [globalFN]
 				totalGaps = gapsLeft + gapsRight
 				lenPrevReference = lenReference
 				existingCorrectedReadPositions = existingCorrectedPositionsInThisRead
 				correctedPositions = correctedPositionsRead
 				prevHeader = headerNo
 				if len(lines) == 6:
-					recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead,  uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader)
+					recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases, lenAllCorrectedReads, globalRec, globalPrec = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead,  uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader, lenCorrected, lenAllCorrectedReads, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead)
 			readNo += 1
 				
 		else:
@@ -548,26 +590,22 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	if sameLastHeader or prevHeader != "": # we must output info for the last read
 		if sameLastHeader:
 			trimmedOrSplit += 1
-		recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader)
+			lenCorrected += getLen(corrected)
+		lenCorrected = getLen(corrected)
+		recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases, lenAllCorrectedReads, globalRec, globalPrec = outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenPrevReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader, lenCorrected, lenAllCorrectedReads,globalFPlistForARead, globalTPlistForARead, globalFNlistForARead)
 	# compute global metrics
 	GCRateRef = round(sum(GCRateRef) / len(GCRateRef),3)
 	GCRateCorr = round(sum(GCRateCorr) / len(GCRateCorr),3)
-	recall = recall*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
-	precision = precision*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
-	corBasesRate = corBasesRate*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
+	recall = sum(recall)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
+	precision = sum(precision)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
+	corBasesRate = sum(corBasesRate)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	throughput = totalCorBases + totalUncorBases
 	errorRate = 1 - (totalCorBases / throughput)
-	#~ meanLengthInserHomopolymersInUncorrected = round(sum(meanLengthInserHomopolymersInUncorrected) * 1.0 / len(meanLengthInserHomopolymersInUncorrected),3) if len(meanLengthInserHomopolymersInUncorrected) > 0 else 0
-	#~ meanLengthDeleHomopolymersInUncorrected = round(sum(meanLengthDeleHomopolymersInUncorrected) * 1.0 / len(meanLengthDeleHomopolymersInUncorrected),3) if len(meanLengthDeleHomopolymersInUncorrected) > 0 else 0
-	#~ meanLengthInserHomopolymersInCorrected = round(sum(meanLengthInserHomopolymersInCorrected) * 1.0 / len(meanLengthInserHomopolymersInCorrected),3) if len(meanLengthInserHomopolymersInCorrected) > 0 else 0
-	#~ meanLengthDeleHomopolymersInCorrected = round(sum(meanLengthDeleHomopolymersInCorrected) * 1.0 / len(meanLengthDeleHomopolymersInCorrected),3) if len(meanLengthDeleHomopolymersInCorrected) > 0 else 0
-	#~ print("todivide : ", nbReadsToDivide)
-	#~ return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, numberHomopolymersInserInCorrected, numberHomopolymersDeleInCorrected , numberHomopolymersInserInUncorrected ,	numberHomopolymersDeleInUncorrected,	meanLengthDeleHomopolymersInUncorrected , meanLengthInserHomopolymersInUncorrected , 	meanLengthInserHomopolymersInCorrected ,	meanLengthDeleHomopolymersInCorrected, trimmedOrSplit
 	if len(ratioHomopolymers) > 1:
 		meanRatioHomopolymers = statistics.mean(ratioHomopolymers)
 	else:
 		meanRatioHomopolymers = 1
-	return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, meanRatioHomopolymers
+	return nbReadsToDivide, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, meanRatioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec
 
 
 # get the position of nt in uppercase to compute recall and precision only at these positions
