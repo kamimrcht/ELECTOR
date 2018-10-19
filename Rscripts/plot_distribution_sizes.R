@@ -11,9 +11,10 @@ ggplot_plot_distr_sizes <- function()
 
 
   yy <- read.table(args[1],h=T)
-
-  ggplot(data=yy, aes(x=yy$size, fill=yy$type)) + geom_histogram(alpha=.5, position="identity") + 
-  labs(title = "Impact of correction method on reads size distributions\n", x = "Reads sizes before and after correction", y = "Counts") +
+ ggplot(data=yy, aes(x=factor(yy$type), y=yy$size, fill=yy$type))  + geom_boxplot() +
+#~   ggplot(data=yy, aes(x=yy$size, fill=yy$type)) + geom_histogram(alpha=.5, position="identity") + 
+#~   ggplot(data=yy, aes(x=yy$size, fill=yy$type)) + geom_histogram(alpha=.5, position="identity") + 
+  labs(title = "Corrected reads/sequence sizes\n", x = "Reads or sequences", y = "Sizes distribution") +
   guides(fill=guide_legend(title="Reads type")) + theme_bw()
 
 }
