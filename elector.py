@@ -88,6 +88,7 @@ def main():
 	remap = args.remap
 	assemble = args.assemble
 	size_corrected_read_threshold = args.minsize / 100
+	clipsNb = {}
 
 	
 	if not outputDirPath is None:
@@ -116,9 +117,16 @@ def main():
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	if simulator is not None:
-		readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, split, simulator, dazzDb)
+		# Récupération de la map id -> [nbLeftClips, nbRightClips] ici.
+		# Si un vrai simulateur est utilisé, la map récupérée est simplement vide
+		clipsNb = readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, split, simulator, dazzDb)
 	else:
 		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, split, simulator, dazzDb)
+
+	# Check if the map is correct, ok
+	# for key,val in clipsNb.items():
+	# 	print (key, "=>", val[0], " ", val[1])
+
 	#TOVERIFY
 	if soft is not None:
 		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"

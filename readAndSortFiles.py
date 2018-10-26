@@ -285,7 +285,8 @@ def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
 		head = int(id[5])
 		mid = int(id[6])
 		tail = int(id[7])
-		seq = fSeqs[refId][pos:+pos+mid]
+		# TODO: prolly start in pos+head and end in pos+mid
+		seq = fSeqs[refId][pos:pos+mid]
 		if strand == "R":
 			seq = str(Seq(seq).reverse_complement())
 		out.write(">" + header + "\n" + seq + "\n")
@@ -315,20 +316,24 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 		seq = fSeqs[refId][pos:pos+len+1]
 		if strand == 16:
 			seq = str(Seq(seq).reverse_complement())
+		# if strand == 16:
 		out.write(">" + header + "\n" + seq + "\n")
+		# else:
+		# 	out.write(">" + header + "\n" + "\n\n")
 		line = f.readline().split("\t")
 	f.close()
 	out.close()
 
 def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 	reFile = (os.path.splitext(realReads)[0])
-	cmdAl = "./minimap2/minimap2 -a " + referenceGenome + " " + realReads
+	cmdAl = "./minimap2/minimap2 -a -O4,24 " + referenceGenome + " " + realReads
 	outErr = open("/dev/null", 'w')
 	alFile = reFile + ".sam"
 	outAl = open(alFile, 'w')
 	subprocessLauncher(cmdAl, outAl, outErr)
 	outAl.close()
 	outErr.close()
+	clipsNb = {}
 
 	fSeqs = loadReference(referenceGenome, "real")
 	f = open(alFile)
@@ -348,18 +353,46 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 			length = len(line[9])
 			nbD = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
 			nbI = sum([int(i.split("I")[0]) for i in (re.findall('\d+I', cigar))])
-			nbS = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar))])
-			nbH = sum([int(i.split("H")[0]) for i in (re.findall('\d+H', cigar))])
-			length = length + nbD - nbI - nbS - nbH
+			nbSLeft = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar[0:int(len(cigar)/2)+1]))])
+			nbSRight = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar[int(len(cigar)/2)+1:len(cigar)]))])
+			nbS = nbSLeft + nbSRight;
+			nbHLeft = sum([int(i.split("H")[0]) for i in (re.findall('\d+H', cigar[0:int(len(cigar)/2)+1]))])
+			nbHRight = sum([int(i.split("H")[0]) for i in (re.findall('\d+H', cigar[int(len(cigar)/2)+1:len(cigar)]))])
+			nbH = nbHLeft + nbHRight;
+			leftShift = 0
+			rightShift = 0	
+			length = length + nbD - nbI
+			# pos = pos - nbSLeft
+			
+			# if 2 <= nbSLeft:# and nbSLeft <= 15:
+			# 	length = length
+			# 	pos = pos - nbSLeft
+			# else:
+			# 	length = length - nbSLeft
+
+			# if 2 <= nbSRight:# and nbSRight <= 20:
+			# 	length = length
+			# else:
+			# 	length = length - nbSRight
+
 			seq = fSeqs[refId][pos:pos+length+1]
 			if strand == 16:
 				seq = str(Seq(seq).reverse_complement())
+			# if (nbS != 0 or nbH != 0):
+			# 	print(">" + header)
+			# 	print(line[9])
+			# else:
+			# 	print(header)
+			# 	print(nbS, nbH)
 			out.write(">" + header + "\n" + seq + "\n")
 		elif line[1] == "4":
-			out.write(">" + line[0] + "\n" + "\n\n")
+			out.write(">" + line[0] + "\n" + "\n")
 		line = f.readline().split("\t")
+		clipsNb[header] = [nbSLeft, nbSRight]
 	f.close()
 	out.close()
+
+	return clipsNb
 
 #Generates reference reads file (only supported for nanosim and simlord)
 def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
@@ -376,9 +409,13 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 
 # main function
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
+	clipsNb = {}
 	#0- generate reference reads, if needed
-	if simulator is not None:
+	if simulator != "real":
 		convertSimulationOutputToRefFile(uncorrected, reference, simulator)
+	else:
+		#convertSimulationOutputToRefFile(corrected, reference, simulator)
+		clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
 		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split)
@@ -421,3 +458,4 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	occurrenceEachRead = readAndSortFasta(newCorrectedFileName, sortedCorrectedFileName)
 	#3- duplicate reference and uncorrected reads files to prepare for POA (we want as many triplets as there are corrected reads)
 	duplicateRefReads(sortedRefFileName, sortedUncoFileName, occurrenceEachRead, size, newUncoFileName, newRefFileName)
+	return clipsNb
