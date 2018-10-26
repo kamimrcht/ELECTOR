@@ -362,7 +362,7 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 			leftShift = 0
 			rightShift = 0	
 			length = length + nbD - nbI
-			# pos = pos - nbSLeft
+			pos = pos - nbSLeft
 			
 			# if 2 <= nbSLeft:# and nbSLeft <= 15:
 			# 	length = length
