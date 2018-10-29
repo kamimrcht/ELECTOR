@@ -149,17 +149,18 @@ def findGapStretches(correctedSequence, referenceSequence):
 
 # compute recall and precision and writes output files
 #@Camille j'ai aussi fait un peu de ménage ici
-def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, wronglyCorrectedReadsNumber, reportedHomopolThreshold, SIZE_CORRECTED_READ_THRESHOLD,  fileSizeName,beg=0, end=0, soft=None):
+#main function
+def outputRecallPrecision( correctedFileName, outDir, logFile, smallReadNumber, wronglyCorrectedReadsNumber, reportedHomopolThreshold, SIZE_CORRECTED_READ_THRESHOLD,  fileSizeName, clipsNb, beg=0, end=0, soft=None):
 	if soft is not None:
 		#recall, precision
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')
 		outMetrics.write("score metric\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold )
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa_" + soft + ".fa", outMetrics, correctedFileName, reportedHomopolThreshold, clipsNb )
 
 	else:
 		outMetrics = open(outDir + "/per_read_metrics.txt", 'w')
 		outMetrics.write("score metric\n")
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold)
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, extendedBases, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, trimmedOrSplit, ratioHomopolymers, lenAllCorrectedReads, globalRec, globalPrec  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold, clipsNb)
 
 	# read lengths
 	outputReadSizeDistribution(correctedFileName, fileSizeName, outDir, trimmedOrSplit, lenAllCorrectedReads)
@@ -453,7 +454,7 @@ def outputMetrics(recall, precision, corBasesRate, missingSize, extendedBases, t
 	lenAllCorrectedReads.append(lenCorrected)
 	return recall, precision, corBasesRate, missingSize, extendedBases, GCRateRef, GCRateCorr, outPerReadMetrics, nbReadsToDivide, totalCorBases, totalUncorBases, lenAllCorrectedReads, globalRec, globalPrec, trimmedOrSplit
 
-def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThreshold):
+def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThreshold, clipsNb):
 	#global metrics to return
 	precision = []
 	recall = []
@@ -497,6 +498,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			if sameLastHeader:
 				trimmedOrSplit += 1
 			#~ sameLastHeader = False
+			
 			reference = lines[nbLines].rstrip() # get msa for ref
 			nbLines += 2
 			corrected =  lines[nbLines].rstrip() # msa for uncorrected
@@ -526,7 +528,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			#~ lenCorrected = getLen(corrected)
 			lenReference = getLen(reference)
 			stretches = findGapStretches(corrected, reference)
-			correctedPositionsRead, existingCorrectedPositionsInThisRead = getCorrectedPositions(stretches, len(corrected), readNo, upperCasePositions, reference)
+			correctedPositionsRead, existingCorrectedPositionsInThisRead = getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, reference, clipsNb, header)
 			
 			FP, TP, FN, corBases, uncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers,globalFP, globalFN, globalTP = getTPFNFP(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers)
 
@@ -583,6 +585,8 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				
 		else:
 			headerNo = lines[nbLines].split(">")[1].split(" ")[0]
+			header = lines[nbLines].split(">")[1].rstrip()
+
 			nbLines += 1
 	if sameLastHeader or prevHeader != "": # we must output info for the last read
 		if sameLastHeader:
@@ -656,9 +660,38 @@ def getUpperCasePositions(correctedReadsList, lines):
 
 
 # add to the uppercase positions the positions where there is no stretch of "." , i.e. all positions where recall and precision are actually computed
-def getCorrectedPositions(stretches, msaLineLen, readNo, upperCasePositions, reference):
+
+def getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, reference, clipsNb, header):
+	msaLineLen = len(corrected)
 	correctedPositions = copy.copy(upperCasePositions[readNo]) #all positions in upper case in the corrected read
 	existingCorrectedPositions = [True] * len(correctedPositions)
+	leftClipping = 0
+	rightClipping = None
+	if header in clipsNb.keys():
+		leftClipping = clipsNb[header][0]
+		rightClipping = msaLineLen - clipsNb[header][1]
+
+	i = 0
+	j = 0
+	while j < leftClipping:
+		if corrected[i] != ".":
+			j += 1
+		existingCorrectedPositions[i] = False
+		i += 1
+	print(i)
+
+	i = msaLineLen - 1
+	j = msaLineLen - 1
+	if rightClipping is not None:
+		while j >= rightClipping:
+			#~ print(j, rightClipping)
+			if corrected[i] != ".":
+				j -= 1
+			existingCorrectedPositions[i] = False
+			i -= 1
+	#~ print(i)
+	#~ print('%%%')
+	
 	positionsToRemove = list()
 	if len(stretches.keys()) > 0:  # split read (or trimmed)
 		for pos in stretches.keys(): 

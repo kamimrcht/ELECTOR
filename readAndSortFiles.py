@@ -345,7 +345,7 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 	line = line.split("\t")
 	while line != ['']:
 		if line[1] == "0" or line[1] == "16":
-			header = line[0]
+			header = line[0].rstrip()
 			strand = int(line[1])
 			refId = line[2].replace("_", "-")
 			pos = int(line[3]) - 1

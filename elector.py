@@ -141,7 +141,9 @@ def main():
 	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, size_corrected_read_threshold, soft)
 #	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer, globalRecall, globalPrecision = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, 0, 0, soft)
+	#~ print(clipsNb)
+	
+	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer, globalRecall, globalPrecision = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
 
 	#~ if simulator == "nanosim":
 		#~ computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
