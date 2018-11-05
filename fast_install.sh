@@ -3,38 +3,38 @@
 mkdir bin;
 
 cd src/simulator;
-make;
+make -j;
 cp simulator ../../bin;
 
 cd ../poa-graph;
-make poa;
+make poa -j;
 cp poa ../../bin;
 
 cd ../utils;
-make;
+make -j;
 cp fq2fa ../../bin;
 
 cd ../../minimap2;
-make;
+make -j;
 cd ../miniasm;
-make;
+make -j;
 
 cd ../bwa;
-make;
+make -j;
 
 cd ../htslib;
 autoheader;
 autoconf;
 ./configure --disable-lzma;
-make;
+make -j;
 
 cd ../samtools;
 autoheader;
 autoconf -Wno-syntax;
 ./configure --disable-lzma;
-make;
+make -j;
 
 cd ../src/split;
-make;
+make -j;
 cp masterSplitter ../../bin;
 cp Donatello ../../bin;
