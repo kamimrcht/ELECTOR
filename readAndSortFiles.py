@@ -238,7 +238,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		#~ formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
 		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, name)
 	elif corrector == "canu":
-		cmdFormatHeader = "sed 's/-id.*//g' " + correctedReads
+		cmdFormatHeader = "sed 's/ id.*//g' " + correctedReads
 		#~ formattedReads = open("corrected_format_canu", 'w')
 		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
