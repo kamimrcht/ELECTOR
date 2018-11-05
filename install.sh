@@ -4,15 +4,15 @@ mkdir bin;
 
 cd src/simulator;
 make;
-mv simulator ../../bin;
+cp simulator ../../bin;
 
 cd ../BOA;
 make poa;
-mv poa ../../bin;
+cp poa ../../bin;
 
 cd ../utils;
 make;
-mv fq2fa ../../bin;
+cp fq2fa ../../bin;
 
 cd ../../minimap2;
 make;
@@ -36,5 +36,5 @@ make;
 
 cd ../src/split;
 make;
-mv masterSplitter ../../bin;
-mv Donatello ../../bin;
+cp masterSplitter ../../bin;
+cp Donatello ../../bin;
