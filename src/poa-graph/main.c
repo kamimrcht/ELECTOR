@@ -21,7 +21,7 @@ int main(int argc,char *argv[])
   LPOSequence_T *seq=NULL,*seqRef=NULL,*seqUnco=NULL,*lpo_out=NULL,*frame_seq=NULL,*dna_lpo=NULL,*lpo_in=NULL;
   LPOSequence_T **input_seqs=NULL;
   FILE *errfile=stderr,*logfile=NULL,*lpo_file_out=NULL,*po_list_file=NULL,*seqCorrected_ifile=NULL,*seqUncorrected_ifile=NULL,*seqReference_ifile=NULL, *seq_ifile=NULL;
-  char *print_matrix_letters=NULL,*fasta_out=NULL,*po_out=NULL,*matrix_filename="./src/poa-graph/blosum80.mat",
+  char *print_matrix_letters=NULL,*fasta_out=NULL,*po_out=NULL,*matrix_filename="./blosum80.mat",
     *seq_filename=NULL, *unco_seq_filename=NULL,*ref_seq_filename=NULL,*frame_dna_filename=NULL,*po_filename=NULL,*po2_filename=NULL,
     *po_list_filename=NULL, *hbmin=NULL,*numeric_data=NULL,*numeric_data_name="Nmiscall",
     *dna_to_aa=NULL,*pair_score_file=NULL,*aafreq_file=NULL,*termval_file=NULL,
@@ -291,7 +291,7 @@ int main(int argc,char *argv[])
 
  free_memory_and_exit: /* FREE ALL DYNAMICALLY ALLOCATED DATA!!!! */
 
-  if (dna_lpo)
+  //~ if (dna_lpo)
     free_lpo_sequence(dna_lpo,TRUE);
 
   for (i=0;i<n_input_seqs;i++) {
@@ -305,6 +305,8 @@ int main(int argc,char *argv[])
 
   FREE (input_seqs);
   if (nseq>0) FREE (seq);
+  if (nseq>0) FREE (seqRef);
+  if (nseq>0) FREE (seqUnco);
    //~ freeMem(input_seqs, nseq, seq, n_input_seqs);
   exit (exit_code);
 }
