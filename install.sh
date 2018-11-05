@@ -6,7 +6,7 @@ cd src/simulator;
 make;
 mv simulator ../../bin;
 
-cd ../poa-graph;
+cd ../BOA;
 make poa;
 mv poa ../../bin;
 

@@ -17,10 +17,8 @@ int main(int argc, char ** argv){
 		exit(0);
 	}
 	string input(argv[1]);
-	srand (time(NULL));
 	string ref, useless,header;
 	ifstream in(input);
-	vector<uint> lengths;
 	while(not in.eof()){
 		getline(in,header);
 		getline(in,ref);
