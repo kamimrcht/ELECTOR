@@ -494,6 +494,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	ratioHomopolymers = []
 	lenCorrected = 0
 	clips = 0
+	lenRead = 0
 	lenAllCorrectedReads = [] #this length is computing by adding the sizes of split reads if needed
 	while nbLines < len(lines):
 		if not ">" in lines[nbLines]:
