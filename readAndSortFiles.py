@@ -411,11 +411,12 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
 	clipsNb = {}
 	#0- generate reference reads, if needed
-	if simulator != "real":
-		convertSimulationOutputToRefFile(uncorrected, reference, simulator)
-	else:
-		#convertSimulationOutputToRefFile(corrected, reference, simulator)
-		clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
+	if simulator is not None:
+		if simulator != "real":
+			convertSimulationOutputToRefFile(uncorrected, reference, simulator)
+		else:
+			#convertSimulationOutputToRefFile(corrected, reference, simulator)
+			clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
 		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split)
