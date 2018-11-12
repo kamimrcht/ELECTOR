@@ -255,6 +255,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "mecat":
 		#~ formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 		formatMecat(correctedReads, uncorrectedReads, name)
+	#~ else: #None corrector
 
 def loadReference(fRef, simulator):
 	f = open(fRef)
