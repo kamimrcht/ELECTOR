@@ -265,20 +265,21 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 		if ntUnco != ntRef:
 			if ntRef == ".":
 				insU += 1
-			if ntUnco != "." :
-				subsU += 1
-				print("deleU")
 			else:
-				deleU += 1
+				if ntUnco != "." :
+					subsU += 1
+				else:
+					deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 		if ntResult != ntRef:
 			if ntRef == ".":
 				insC += 1
-			if ntResult != "." :
-				subsC += 1
 			else:
-				deleC += 1
-				print("deleC")
+				if ntResult != "." :
+					subsC += 1
+				else:
+					deleC += 1
+				
 		##########" homopolymer in corrected ############
 		if ntResult != '.':
 			if ntResult == reported[1][-1]:
