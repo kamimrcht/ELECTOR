@@ -251,8 +251,8 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 	endOfHomopolResult = True
 	okToAppendR = False
 	okToAppendC = False
-	##### homopolymers in ref ######
 	if existingCorrectedPositions[position]:
+		##### homopolymers in ref ######
 		if ntRef != '.':
 			if ntRef == reported[0][-1]:
 				okToAppendR = True #elongation of the repeated chain
@@ -267,6 +267,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 				insU += 1
 			if ntUnco != "." :
 				subsU += 1
+				print("deleU")
 			else:
 				deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
@@ -277,6 +278,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 				subsC += 1
 			else:
 				deleC += 1
+				print("deleC")
 		##########" homopolymer in corrected ############
 		if ntResult != '.':
 			if ntResult == reported[1][-1]:
@@ -284,6 +286,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 				endOfHomopolResult = False #we still are elongating of the repeated chain for corrected read => do not stop
 			#~ else:
 				#~ endOfHomopolResult = False
+
 	if okToAppendC or okToAppendR:
 		reported[0].append(ntRef)
 		reported[1].append(ntResult)
@@ -420,7 +423,6 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 
 
 def outputMetrics(recall, precision, globalRecall, globalPrecision, corBasesRate, missingSize, extendedBases, totalGaps, GCRateRef, GCRateCorr, outPerReadMetrics, lenReference, existingCorrectedPositionsInThisRead, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, GCRateRefRead, GCRateCorrRead, nbReadsToDivide, totalCorBases, totalUncorBases, sameLastHeader,lenCorrected, lenAllCorrectedReads,globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, trimmedOrSplit, clips):
-	print(globalTPlistForARead, globalFPlistForARead, TPlistForARead, FPlistForARead)
 	missingInRead = existingCorrectedPositionsInThisRead.count(False) - clips # final sum
 	if not sameLastHeader and missingInRead != 0:
 		trimmedOrSplit += 1
@@ -454,7 +456,6 @@ def outputMetrics(recall, precision, globalRecall, globalPrecision, corBasesRate
 		globalPrec = globalTPsum / (globalTPsum + globalFPsum) if (globalTPsum + globalFPsum) != 0 else 0
 		globalPrecision.append(globalPrec)
 		globalRecall.append(globalRec)
-	print(globalPrec, globalRec, precision, recall)
 	GCRateRef.append(GCRateRefRead)
 	GCRateCorr.append(GCRateCorrRead)
 	lenAllCorrectedReads.append(lenCorrected)
@@ -598,7 +599,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			header = lines[nbLines].split(">")[1].rstrip()
 
 			nbLines += 1
-	if sameLastHeader or prevHeader != "": # we must output info for the last read
+	if (sameLastHeader or prevHeader != "") and len(lines) > 6: # we must output info for the last read
 		if sameLastHeader:
 			trimmedOrSplit += 1
 			lenCorrected += getLen(corrected)
