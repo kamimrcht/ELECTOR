@@ -66,6 +66,8 @@ def fpoa(i):
 def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, SIZE_CORRECTED_READ_THRESHOLD, soft=None):
 	oldMode=False
 	#oldMode=True
+	small_reads=0
+	wrongly_cor_reads=0
 	if(oldMode):
 		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory
 		subprocessLauncher(cmdPOA)
@@ -74,7 +76,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		else:
 			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa.fa"
 		subprocess.check_output(['bash','-c', cmdMv])
-		return 0
+		return 0, 0
 	else:
 		amount_nuc=100*1000*1000;
 		print("- Means that a large amount of nuc has been handled: "+str(amount_nuc))
@@ -82,8 +84,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		installDirectoryGlobal=installDirectory
 		global outDirGlobal
 		outDirGlobal=outDir
-		small_reads=0
-		wrongly_cor_reads=0
+
 		position_in_read_file=1
 
 		#cmdRM = "rm " + outDir + "/progress.txt"
