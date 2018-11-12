@@ -5,9 +5,9 @@
 #  Blocks Database = /data/blocks_5.0/blocks.dat
 #  Cluster Percentage: >= 80
 #  Entropy =   0.9868, Expected =  -0.7442
-GAP-TRUNCATION-LENGTH=8
-GAP-DECAY-LENGTH=4
-GAP-PENALTIES=8 4 4
+GAP-TRUNCATION-LENGTH=10
+GAP-DECAY-LENGTH=5
+GAP-PENALTIES=10 5 5
   A R N D C Q E G H I L K M F P S T W Y V B Z X ? a g t c u ] n
 A 0 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10
 R -10 0 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10
