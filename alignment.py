@@ -133,10 +133,10 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
-			# ~ cmdRM = "rm " + outDir + "/out*"
-			# ~ subprocess.call(['bash','-c', cmdRM])
-			# ~ cmdRM = "rm " + outDir + "/smsa*"
-			# ~ subprocess.call(['bash','-c', cmdRM])
+			cmdRM = "rm " + outDir + "/out*"
+			subprocess.call(['bash','-c', cmdRM])
+			cmdRM = "rm " + outDir + "/smsa*"
+			subprocess.call(['bash','-c', cmdRM])
 
 		print()
 		#if soft is not None:
