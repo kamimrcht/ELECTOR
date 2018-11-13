@@ -96,7 +96,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			mergeOut = outDir + "/msa.fa"
 
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 1 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
@@ -115,9 +115,9 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				cmdRM = "rm " + outDir + "wrongly_cor_reads.txt"
 				subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL, stderr=DEVNULL)
 			with Pool (processes=threads) as pool:
-				for i in pool.imap_unordered(fpoa, range(100)):
+				for i in pool.imap_unordered(fpoa, range(1)):
 					continue
-			for i in range(0, 100):
+			for i in range(0, 1):
 				cmdMerger = installDirectory + "/bin/Donatello " + outDir + "/swag"+str(i)+ " " + mergeOut
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
