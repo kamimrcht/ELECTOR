@@ -238,7 +238,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		#~ formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, "corrected_format_pbdagcon.fa")
 		formatDaccord("tmp_sorted_pbdagcon.fa", uncorrectedReads, dazzDb, name)
 	elif corrector == "canu":
-		cmdFormatHeader = "sed 's/-id.*//g' " + correctedReads
+		cmdFormatHeader = "sed 's/ id.*//g' " + correctedReads
 		#~ formattedReads = open("corrected_format_canu", 'w')
 		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
@@ -255,6 +255,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "mecat":
 		#~ formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 		formatMecat(correctedReads, uncorrectedReads, name)
+	#~ else: #None corrector
 
 def loadReference(fRef, simulator):
 	f = open(fRef)
@@ -411,11 +412,12 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
 	clipsNb = {}
 	#0- generate reference reads, if needed
-	if simulator != "real":
-		convertSimulationOutputToRefFile(uncorrected, reference, simulator)
-	else:
-		#convertSimulationOutputToRefFile(corrected, reference, simulator)
-		clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
+	if simulator is not None:
+		if simulator != "real":
+			convertSimulationOutputToRefFile(uncorrected, reference, simulator)
+		else:
+			#convertSimulationOutputToRefFile(corrected, reference, simulator)
+			clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
 		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split)
