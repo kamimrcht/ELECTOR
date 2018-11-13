@@ -290,6 +290,7 @@ int main(int argc, char ** argv){
     int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
+    int factor((stoi(argv[12])/(nb_file))+2);
     int small_reads(0);
     int wrong_reads(0);
     string progress_file(outDir + "/progress.txt");
@@ -297,7 +298,6 @@ int main(int argc, char ** argv){
     string href,hS1,hS2,s_ref,s_S1,s_S2,line;
     uint32_t position_ref(0),position_cor(0),position_err(0);
     ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
-    //~ cout<<"Teenage mutant NINJA TURTLE"<<endl;
     if(progress_in.good() and not progress_in.eof()){
         getline(progress_in,line);
         position_ref=stoi(line);
@@ -349,9 +349,9 @@ int main(int argc, char ** argv){
                     }else{
                         #pragma omp ordered
                         {
-                            outR[i%nb_file]<<s_ref;
-                            out1[i%nb_file]<<s_S1;
-                            out2[i%nb_file]<<s_S2;
+                            outR[i/factor]<<s_ref;
+                            out1[i/factor]<<s_S1;
+                            out2[i/factor]<<s_S2;
                             nuc_amount+=s_ref.size();
                         }
                     }

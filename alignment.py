@@ -54,12 +54,21 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	#~ print (p.wait())
 	return p.wait()
 
+
+	# return number of reads in a fasta
+def getFileReadNumber(fileName):
+	cmdGrep = """grep ">" -c """ + fileName
+	val = subprocess.check_output(['bash','-c', cmdGrep])
+	return int(val.decode('ascii'))
+
 #~ # do the msa
 #~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
 
 def fpoa(i):
-	cmdPOA = installDirectoryGlobal + "/bin/poa -pir " + outDirGlobal + "/swag"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
+	#~ print("GO: "+str(i))
+	cmdPOA = installDirectoryGlobal + "/bin/poa -pir " + outDirGlobal + "/smsa"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal
 	subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
+	#~ print (cmdPOA)
 	return i
 
 
@@ -95,8 +104,10 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		else:
 			mergeOut = outDir + "/msa.fa"
 
+		read_number=getFileReadNumber(reference)
+
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 1 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir+ " "+str(read_number)
 			#~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
@@ -115,16 +126,16 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				cmdRM = "rm " + outDir + "wrongly_cor_reads.txt"
 				subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL, stderr=DEVNULL)
 			with Pool (processes=threads) as pool:
-				for i in pool.imap_unordered(fpoa, range(1)):
+				for i in pool.imap_unordered(fpoa, range(100)):
 					continue
-			for i in range(0, 1):
-				cmdMerger = installDirectory + "/bin/Donatello " + outDir + "/swag"+str(i)+ " " + mergeOut
+			for i in range(0, 100):
+				cmdMerger = installDirectory + "/bin/Donatello " + outDir + "/smsa"+str(i)+ " " + mergeOut
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
 			cmdRM = "rm " + outDir + "/out*"
 			subprocess.call(['bash','-c', cmdRM])
-			cmdRM = "rm " + outDir + "/swag*"
+			cmdRM = "rm " + outDir + "/smsa*"
 			subprocess.call(['bash','-c', cmdRM])
 
 		print()
