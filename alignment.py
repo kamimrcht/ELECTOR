@@ -68,7 +68,7 @@ def fpoa(i):
 	#~ print("GO: "+str(i))
 	cmdPOA = installDirectoryGlobal + "/bin/poa -pir " + outDirGlobal + "/smsa"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal +"/src/poa-graph/blosum80.mat"
 	subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
-	#~ print (cmdPOA)
+	# ~ print (cmdPOA)
 	return i
 
 
@@ -108,7 +108,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 
 		while(position_in_read_file!=0):
 			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir+ " "+str(read_number)
-			#~ print(cmdSplitter)
+			# ~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
 			with open(outDir + "small_reads.txt") as file:
@@ -133,10 +133,10 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
-			cmdRM = "rm " + outDir + "/out*"
-			subprocess.call(['bash','-c', cmdRM])
-			cmdRM = "rm " + outDir + "/smsa*"
-			subprocess.call(['bash','-c', cmdRM])
+			# ~ cmdRM = "rm " + outDir + "/out*"
+			# ~ subprocess.call(['bash','-c', cmdRM])
+			# ~ cmdRM = "rm " + outDir + "/smsa*"
+			# ~ subprocess.call(['bash','-c', cmdRM])
 
 		print()
 		#if soft is not None:

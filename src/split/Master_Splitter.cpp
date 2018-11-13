@@ -134,7 +134,21 @@ uint fragment(const string& str){
             ++res;
         }
     }
-    return res;
+    return res/2;
+}
+
+string generate_dumb_str(uint n,const string& header,const string& begin,const string& end){
+	string res;
+	if(not end.empty()){
+		res+=header+"\n"+end+"\n";
+	}
+	for(uint i(0);i<n-1;++i){
+		res+=header+"\nN\n";
+	}
+	if(not begin.empty()){
+		res+=header+"\n"+begin+"\n";
+	}
+	return res;
 }
 
 
@@ -153,7 +167,7 @@ uint largest_fragment(const string& str){
 }
 
 
-void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header){
+void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call=true){
     unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
     kmer seq(str2num(ref.substr(0,k)));
     kmer_ref[seq]=0;
@@ -233,9 +247,25 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 
     //Anchors list filled Now to find maximal chain
     auto BL(best_chain_from_anchor_list(anchor_list));
-
+	int i=0;
     uint pred_ref(0),pred_S1(0),pred_S2(0);
-    for(int i(0);i<(int)BL.size()-1;++i){
+    string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[0]])+k));
+    string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[0]])+k));
+    string start_S2(S2.substr(pred_S2,get<2>(anchor_list[BL[0]])+k));
+    string out_ref_2,out_S1_2,out_S2_2;
+    if(start_S2.size()*2<start_ref.size() and start_ref.size()-start_S2.size()>100 and first_call and true){
+		//~ cout<<"start"<<endl;
+		split(start_ref,start_S1,start_ref,out_ref_2,out_S1_2,out_S2_2,header,false);
+		++i;
+		out_ref+=out_ref_2;
+		out_S1+=out_S1_2;
+		out_S2+=generate_dumb_str(fragment(out_ref_2),header,start_S2,"");
+		//~ cout<<"start2"<<endl;
+		pred_S1=get<1>(anchor_list[BL[i]])+k;
+		pred_ref=get<0>(anchor_list[BL[i]])+k;
+		pred_S2=get<2>(anchor_list[BL[i]])+k;
+	}
+    for(;i<(int)BL.size()-2;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
         if(size_R>20 and size_S1>20 and size_S2>20 and abs(size_S1-size_R)<size_R*0.4 and abs(size_S2-size_R)<size_R*0.4 ){
             out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
@@ -246,9 +276,23 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
             pred_S2=get<2>(anchor_list[BL[i]])+k;
         }
     }
-    out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
-    out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
-    out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
+    string end_ref(ref.substr(pred_ref));
+    string end_S1(S1.substr(pred_S1));
+    string end_S2(S2.substr(pred_S2));
+    if(end_S2.size()*2<end_ref.size() and end_ref.size()-end_S2.size()>100 and first_call and true){
+		//~ cout<<"end1"<<endl;
+		out_ref_2=out_S1_2=out_S2_2="";
+		split(end_ref,end_S1,end_ref,out_ref_2,out_S1_2,out_S2_2,header,false);
+		out_ref+=out_ref_2;
+		out_S1+=out_S1_2;
+		out_S2+=generate_dumb_str(fragment(out_ref_2),header,"",end_S2);
+				//~ cout<<"end2"<<endl;
+
+	}else{
+		out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
+		out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
+		out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
+	}
 }
 
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
