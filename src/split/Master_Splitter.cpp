@@ -148,6 +148,9 @@ string generate_dumb_str(uint n,const string& header,const string& begin,const s
 	if(not begin.empty()){
 		res+=header+"\n"+begin+"\n";
 	}
+	if(begin.empty() and end.empty()){
+		res+=header+"\nN\n";
+	}
 	return res;
 }
 
@@ -167,7 +170,10 @@ uint largest_fragment(const string& str){
 }
 
 
-void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call=true){
+
+
+
+void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call,uint minSize=15){
     unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
     kmer seq(str2num(ref.substr(0,k)));
     kmer_ref[seq]=0;
@@ -238,36 +244,33 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     for(uint j(0);j+k<ref.size();++j){
         updateK(seq,ref[j+k]);
         if(kmer_shared.count(seq) ){
-        if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> 20){
+        if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> minSize){
                 anchor_list.push_back(make_tuple(kmer_ref[seq],kmer_ref_inS1[seq],kmer_shared[seq]));
                 last_indexed_anchor=j;
             }
         }
     }
-
     //Anchors list filled Now to find maximal chain
     auto BL(best_chain_from_anchor_list(anchor_list));
 	int i=0;
     uint pred_ref(0),pred_S1(0),pred_S2(0);
-    string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[0]])+k));
-    string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[0]])+k));
-    string start_S2(S2.substr(pred_S2,get<2>(anchor_list[BL[0]])+k));
+    string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[i]])+k));
+    string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[i]])+k));
+    string start_S2(S2.substr(pred_S2,get<2>(anchor_list[BL[i]])+k));
     string out_ref_2,out_S1_2,out_S2_2;
-    if(start_S2.size()*2<start_ref.size() and start_ref.size()-start_S2.size()>100 and first_call and true){
-		//~ cout<<"start"<<endl;
-		split(start_ref,start_S1,start_ref,out_ref_2,out_S1_2,out_S2_2,header,false);
-		++i;
+    if(start_S2.size()*2<start_ref.size() and start_ref.size()-start_S2.size()>200 and first_call and true){
+		split(start_ref,start_S1,start_ref,out_ref_2,out_S1_2,out_S2_2,header,false,1.2*start_S2.size());
 		out_ref+=out_ref_2;
 		out_S1+=out_S1_2;
 		out_S2+=generate_dumb_str(fragment(out_ref_2),header,start_S2,"");
-		//~ cout<<"start2"<<endl;
 		pred_S1=get<1>(anchor_list[BL[i]])+k;
 		pred_ref=get<0>(anchor_list[BL[i]])+k;
 		pred_S2=get<2>(anchor_list[BL[i]])+k;
+		++i;
 	}
-    for(;i<(int)BL.size()-2;++i){
+    for(;i<(int)BL.size()-1;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
-        if(size_R>20 and size_S1>20 and size_S2>20 and abs(size_S1-size_R)<size_R*0.4 and abs(size_S2-size_R)<size_R*0.4 ){
+        if(size_R>minSize and size_S1>minSize and size_S2>minSize and abs(size_S1-size_R)<size_R*0.5 and abs(size_S2-size_R)<size_R*0.5 ){
             out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
             out_S2+=header+"\n"+S2.substr(pred_S2,get<2>(anchor_list[BL[i]])-pred_S2+k)+"\n";
             out_S1+=header+"\n"+S1.substr(pred_S1,get<1>(anchor_list[BL[i]])-pred_S1+k)+"\n";
@@ -279,14 +282,12 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     string end_ref(ref.substr(pred_ref));
     string end_S1(S1.substr(pred_S1));
     string end_S2(S2.substr(pred_S2));
-    if(end_S2.size()*2<end_ref.size() and end_ref.size()-end_S2.size()>100 and first_call and true){
-		//~ cout<<"end1"<<endl;
+    if(end_S2.size()*2<end_ref.size() and end_ref.size()-end_S2.size()>200 and first_call and true){
 		out_ref_2=out_S1_2=out_S2_2="";
-		split(end_ref,end_S1,end_ref,out_ref_2,out_S1_2,out_S2_2,header,false);
+		split(end_ref,end_S1,end_ref,out_ref_2,out_S1_2,out_S2_2,header,false,1.2*end_S2.size());
 		out_ref+=out_ref_2;
 		out_S1+=out_S1_2;
 		out_S2+=generate_dumb_str(fragment(out_ref_2),header,"",end_S2);
-				//~ cout<<"end2"<<endl;
 
 	}else{
 		out_ref+=header+"\n"+ref.substr(pred_ref)+'\n';
@@ -297,15 +298,15 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
     k=15;
-    split(ref,S1,S2,s_ref,s_S1,s_S2,header);
+    split(ref,S1,S2,s_ref,s_S1,s_S2,header,true);
     uint largest_frag(largest_fragment(s_ref));
     while(true){
         k-=2;
-        if(k<13){
+        if(k<9){
             return;
         }
         string s_ref_aux,s_S1_aux,s_S2_aux;
-        split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header);
+        split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header,true);
         uint largest_frag_aux(largest_fragment(s_ref_aux));
         if(largest_frag_aux<largest_frag){
             largest_frag=largest_frag_aux;
@@ -380,12 +381,7 @@ int main(int argc, char ** argv){
                 getline(in2,S2);
             }
             if(ref.size()>2){
-		//std::cerr << "size thresh : " << SIZE_CORRECTED_READ_THRESHOLD << std::endl;
-		//std::cerr << "frac : " << (double)(ref.size()/S2.size()) << std::endl;
-		//std::cerr << "size ref : " << ref.size() << std::endl;
-		//std::cerr << "size cor : " << S2.size() << std::endl;
-//                if((double)ref.size()/S2.size()<=SIZE_CORRECTED_READ_THRESHOLD){
-		  if ((double) S2.size() / ref.size() >= SIZE_CORRECTED_READ_THRESHOLD) {
+				if ((double) S2.size() / ref.size() >= SIZE_CORRECTED_READ_THRESHOLD){
                     best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
                     if((fragment(s_ref))<=1){
                         #pragma omp atomic
