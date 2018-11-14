@@ -136,13 +136,65 @@ def findGapStretches(correctedSequence, referenceSequence):
 						positionsStretch[-1][1] = pos # update position
 		prev = ntResult
 		pos += 1
+
+	tmpStretch = []
+	# bords
+	for i,s in enumerate(positionsStretch):
+		if len(positionsStretch) > 1:
+			if len(s) > 0:
+				if i == 0:
+					if s[0] <= THRESH2:
+						tmpStretch.append([0, s[1]])
+					else:
+						tmpStretch.append([s[0], s[1]])
+				elif i == len(positionsStretch) - 1:
+					if len(correctedSequence) - s[1] <= THRESH2:
+						tmpStretch.append([s[0], len(correctedSequence) - 1])
+					else:
+						tmpStretch.append([s[0], s[1]])
+				else:
+					tmpStretch.append([s[0], s[1]])
+		elif  len(positionsStretch) == 1:
+			if len(s) > 0:
+				if s[0] <= THRESH2:
+					tmpStretch.append([0, s[1]])
+				else:
+					tmpStretch.append([s[0], s[1]])
+				if len(correctedSequence) - s[1] <= THRESH2:
+					tmpStretch[-1][1] = len(correctedSequence) - 1
+		
+	#merge
+	tmpStretch2 = []
+	merge = False
+	for i,s in enumerate(tmpStretch):
+		if i < len(tmpStretch) - 1:
+			if tmpStretch[i+1][0] - s[1] <= THRESH:
+				tmpStretch2.append([s[0], tmpStretch[i+1][1]])
+				merge = True
+			else:
+				tmpStretch2.append([s[0], s[1]])
+				merge = False
+	if not merge: #add the last one
+		if len(tmpStretch) > 0:
+			tmpStretch2.append([tmpStretch[-1][0], tmpStretch[-1][1]])
+		
 	stretch = dict()
-	for s in positionsStretch:
-		if len(s) > 0:
+
+
+	#garder seulement aux bords (=split/trimmed)
+	#~ for s in tmpStretch2:
+		#~ if s[0] == 0:
+			#~ if s[1] - s[0] > THRESH2:
+				#~ stretch[s[0]] = s[1]
+		#~ elif s[1] == len(correctedSequence) - 1:
+			#~ if s[1] - s[0] > THRESH2:
+				#~ stretch[s[0]] = s[1]
+	for s in tmpStretch2:
 			if s[1] - s[0] > THRESH2:
 				stretch[s[0]] = s[1]
+	
+
 	return stretch
-	#~ return positionsStretch
 
 
 
@@ -251,6 +303,14 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 	endOfHomopolResult = True
 	okToAppendR = False
 	okToAppendC = False
+	if ntUnco != ntRef:
+		if ntRef == ".":
+			insU += 1
+		else:
+			if ntUnco != "." :
+				subsU += 1
+			else:
+				deleU += 1
 	if existingCorrectedPositions[position]:
 		##### homopolymers in ref ######
 		if ntRef != '.':
@@ -262,14 +322,14 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 				if okToReportRef: #we were in a homopolymer and it just terminated at this base => report it
 					endOfHomopolRef = True
 	###############################
-		if ntUnco != ntRef:
-			if ntRef == ".":
-				insU += 1
-			else:
-				if ntUnco != "." :
-					subsU += 1
-				else:
-					deleU += 1
+		#~ if ntUnco != ntRef:
+			#~ if ntRef == ".":
+				#~ insU += 1
+			#~ else:
+				#~ if ntUnco != "." :
+					#~ subsU += 1
+				#~ else:
+					#~ deleU += 1
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 		if ntResult != ntRef:
 			if ntRef == ".":
@@ -557,9 +617,9 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			indelsubsCorr[0] += insC
 			indelsubsCorr[1] += deleC
 			indelsubsCorr[2] += subsC
-			indelsubsUncorr[0] += insU
-			indelsubsUncorr[1] += deleU
-			indelsubsUncorr[2] += subsU
+			#~ indelsubsUncorr[0] += insU
+			#~ indelsubsUncorr[1] += deleU
+			#~ indelsubsUncorr[2] += subsU
 			if headerNo == prevHeader: #read in several parts (split) : do not output, only store information
 				sameLastHeader = True
 				# we add to list the several rates measured on each part
@@ -580,7 +640,9 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				lenRead += getLen(corrected)
 				allLenCorrected.append(getLen(corrected))
 			else: # end of previous read in several parts or end of previous simple read or first triplet => output for previous read and start to store info for current read
-					
+				indelsubsUncorr[0] += insU
+				indelsubsUncorr[1] += deleU
+				indelsubsUncorr[2] += subsU
 				if prevHeader != "":
 					#~ print("a#####", headerNo)
 					# output info for previous read
@@ -730,7 +792,7 @@ def getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, refe
 		for pos in stretches.keys(): 
 			positionsToRemove.append([pos, stretches[pos]]) #interval(s)) in which the corrected read sequence does not exist
 		for interv in positionsToRemove:
-			for i in range(interv[0], interv[1] ):
+			for i in range(interv[0], interv[1] +1):
 				#~ print(interv[0], interv[1])
 				existingCorrectedPositions[i] = False # remove regions where there is no corrected sequence
 				correctedPositions[i] = False # remove regions where there is no corrected sequence (split/trimmed) from corrected regions
