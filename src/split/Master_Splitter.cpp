@@ -252,7 +252,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     }
     //Anchors list filled Now to find maximal chain
     auto BL(best_chain_from_anchor_list(anchor_list));
-	int i=0;
+	int i=1;
     uint pred_ref(0),pred_S1(0),pred_S2(0);
     string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[i]])+k));
     string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[i]])+k));
@@ -268,7 +268,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		pred_S2=get<2>(anchor_list[BL[i]])+k;
 		++i;
 	}
-    for(;i<(int)BL.size()-1;++i){
+    for(;i<(int)BL.size()-2;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
         if(size_R>minSize and size_S1>minSize and size_S2>minSize and abs(size_S1-size_R)<size_R*0.5 and abs(size_S2-size_R)<size_R*0.5 ){
             out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
