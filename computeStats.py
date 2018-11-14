@@ -136,13 +136,65 @@ def findGapStretches(correctedSequence, referenceSequence):
 						positionsStretch[-1][1] = pos # update position
 		prev = ntResult
 		pos += 1
+
+	tmpStretch = []
+	# bords
+	for i,s in enumerate(positionsStretch):
+		if len(positionsStretch) > 1:
+			if len(s) > 0:
+				if i == 0:
+					if s[0] <= THRESH2:
+						tmpStretch.append([0, s[1]])
+					else:
+						tmpStretch.append([s[0], s[1]])
+				elif i == len(positionsStretch) - 1:
+					if len(correctedSequence) - s[1] <= THRESH2:
+						tmpStretch.append([s[0], len(correctedSequence) - 1])
+					else:
+						tmpStretch.append([s[0], s[1]])
+				else:
+					tmpStretch.append([s[0], s[1]])
+		elif  len(positionsStretch) == 1:
+			if len(s) > 0:
+				if s[0] <= THRESH2:
+					tmpStretch.append([0, s[1]])
+				else:
+					tmpStretch.append([s[0], s[1]])
+				if len(correctedSequence) - s[1] <= THRESH2:
+					tmpStretch[-1][1] = len(correctedSequence) - 1
+		
+	#merge
+	tmpStretch2 = []
+	merge = False
+	for i,s in enumerate(tmpStretch):
+		if i < len(tmpStretch) - 1:
+			if tmpStretch[i+1][0] - s[1] <= THRESH:
+				tmpStretch2.append([s[0], tmpStretch[i+1][1]])
+				merge = True
+			else:
+				tmpStretch2.append([s[0], s[1]])
+				merge = False
+	if not merge: #add the last one
+		if len(tmpStretch) > 0:
+			tmpStretch2.append([tmpStretch[-1][0], tmpStretch[-1][1]])
+		
 	stretch = dict()
-	for s in positionsStretch:
-		if len(s) > 0:
-			if s[1] - s[0] > THRESH:
+
+
+	#garder seulement aux bords (=split/trimmed)
+	#~ for s in tmpStretch2:
+		#~ if s[0] == 0:
+			#~ if s[1] - s[0] > THRESH2:
+				#~ stretch[s[0]] = s[1]
+		#~ elif s[1] == len(correctedSequence) - 1:
+			#~ if s[1] - s[0] > THRESH2:
+				#~ stretch[s[0]] = s[1]
+	for s in tmpStretch2:
+			if s[1] - s[0] > THRESH2:
 				stretch[s[0]] = s[1]
+	
+
 	return stretch
-	#~ return positionsStretch
 
 
 
