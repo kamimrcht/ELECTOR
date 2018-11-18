@@ -20,7 +20,6 @@ typedef tuple<position,position,position> anchor;
 
 
 
-int k;
 
 
 
@@ -62,7 +61,7 @@ kmer nuc2intrc(char c){
 }
 
 
-void updateK(kmer& min, char nuc){
+void updateK(kmer& min, char nuc,int k){
     min<<=2;
     min+=nuc2int(nuc);
     min%=(1<<(2*k));
@@ -70,7 +69,7 @@ void updateK(kmer& min, char nuc){
 
 
 
-void updateRCK(kmer& min, char nuc){
+void updateRCK(kmer& min, char nuc,int k){
     min>>=2;
     min+=(nuc2intrc(nuc)<<(2*(k-1)));
 }
@@ -173,12 +172,12 @@ uint largest_fragment(const string& str){
 
 
 
-void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call,uint minSize=15){
+void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call,int k,uint minSize=15){
     unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
     kmer seq(str2num(ref.substr(0,k)));
     kmer_ref[seq]=0;
     for(uint j(0);j+k<ref.size();++j){
-        updateK(seq,ref[j+k]);
+        updateK(seq,ref[j+k],k);
         if(kmer_ref.count(seq)==0){
             kmer_ref[seq]=j+1;
         }else{
@@ -195,7 +194,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     }
 
     for(uint j(0);j+k<S1.size();++j){
-        updateK(seq,S1[j+k]);
+        updateK(seq,S1[j+k],k);
         if(kmer_ref.count(seq)==1){
             if(kmer_ref[seq]!=-1){
                 if(kmer_ref_inS1.count(seq)==0){
@@ -217,7 +216,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     }
 
     for(uint j(0);j+k<S2.size();++j){
-        updateK(seq,S2[j+k]);
+        updateK(seq,S2[j+k],k);
         if(kmer_ref_inS1.count(seq)==1){
             if(kmer_ref_inS1[seq]!=-1){
                 if(kmer_shared.count(seq)==0){
@@ -242,7 +241,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 
     uint last_indexed_anchor(0);
     for(uint j(0);j+k<ref.size();++j){
-        updateK(seq,ref[j+k]);
+        updateK(seq,ref[j+k],k);
         if(kmer_shared.count(seq) ){
         if(kmer_shared[seq]!=-1 and j-last_indexed_anchor> minSize){
                 anchor_list.push_back(make_tuple(kmer_ref[seq],kmer_ref_inS1[seq],kmer_shared[seq]));
@@ -307,8 +306,8 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 }
 
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
-    k=15;
-    split(ref,S1,S2,s_ref,s_S1,s_S2,header,true);
+    int k=15;
+    split(ref,S1,S2,s_ref,s_S1,s_S2,header,true,k);
     uint largest_frag(largest_fragment(s_ref));
     while(true){
         k-=2;
@@ -316,7 +315,7 @@ void best_split(const string& ref, const string& S1, const string& S2, string& s
             return;
         }
         string s_ref_aux,s_S1_aux,s_S2_aux;
-        split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header,true);
+        split(ref,S1,S2,s_ref_aux,s_S1_aux,s_S2_aux,header,true,k);
         uint largest_frag_aux(largest_fragment(s_ref_aux));
         if(largest_frag_aux<largest_frag){
             largest_frag=largest_frag_aux;
@@ -340,7 +339,7 @@ int main(int argc, char ** argv){
     string outputRef(argv[4]);
     string outputS1(argv[5]);
     string outputS2(argv[6]);
-    k=(stoi(argv[7]));
+    int k=(stoi(argv[7]));
     int nb_file=(stoi(argv[8]));
     int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
