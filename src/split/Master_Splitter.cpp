@@ -250,9 +250,16 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
             }
         }
     }
+
     //Anchors list filled Now to find maximal chain
     auto BL(best_chain_from_anchor_list(anchor_list));
-	int i=min(1,(int)BL.size()-1);
+    if(BL.size()==0){
+		out_ref+=header+"\n"+ref+"\n";
+		out_S2+=header+"\n"+S2+"\n";
+		out_S1+=header+"\n"+S1+"\n";
+		return;
+	}
+	int i=min(1,(int)anchor_list.size()-1);
     uint pred_ref(0),pred_S1(0),pred_S2(0);
     string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[i]])+k));
     string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[i]])+k));
@@ -268,6 +275,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		pred_S2=get<2>(anchor_list[BL[i]])+k;
 		++i;
 	}
+
     for(;i<(int)BL.size()-2;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
         if(size_R>minSize and size_S1>minSize and size_S2>minSize and abs(size_S1-size_R)<size_R*0.5 and abs(size_S2-size_R)<size_R*0.5 ){
@@ -279,6 +287,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
             pred_S2=get<2>(anchor_list[BL[i]])+k;
         }
     }
+
     string end_ref(ref.substr(pred_ref));
     string end_S1(S1.substr(pred_S1));
     string end_S2(S2.substr(pred_S2));
@@ -294,6 +303,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
 		out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
 	}
+
 }
 
 void best_split(const string& ref, const string& S1, const string& S2, string& s_ref, string& s_S1, string& s_S2,const string& header){
@@ -366,7 +376,7 @@ int main(int argc, char ** argv){
         if(nuc_amount>max_nuc_amount){
             break;
         }
-        #pragma omp parallel for ordered schedule(dynamic)
+        //~ #pragma omp parallel for ordered schedule(dynamic)
         for(uint ii=(0);ii<1000;++ii){
             if(nuc_amount>max_nuc_amount){
                 continue;
