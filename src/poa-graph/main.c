@@ -108,6 +108,7 @@ int main(int argc,char *argv[])
     ARGGET("-corrected_reads_fasta",seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
     ARGGET("-uncorrected_reads_fasta",unco_seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
     ARGGET("-reference_reads_fasta",ref_seq_filename); /* READ FASTA FILE FOR ALIGNMENT */
+    ARGGET("-pathMatrix",matrix_filename); /* READ FASTA FILE FOR ALIGNMENT */
     //~ NEXTARG(matrix_filename); /* NON-FLAG ARG SHOULD BE MATRIX FILE */
   }
 
