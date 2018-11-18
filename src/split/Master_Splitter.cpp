@@ -380,7 +380,7 @@ int main(int argc, char ** argv){
         if(nuc_amount>max_nuc_amount){
             break;
         }
-        //~ #pragma omp parallel for ordered schedule(dynamic)
+        #pragma omp parallel for ordered schedule(dynamic)
         for(uint ii=(0);ii<1000;++ii){
             if(nuc_amount>max_nuc_amount){
                 continue;
