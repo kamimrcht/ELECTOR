@@ -86,9 +86,9 @@ pair<int,int> best_chain_from_anchor(unordered_map<uint,pair<int,int>>& best_cha
     anchor anchor_start(anchor_list[anchor_indice]);
     for(uint i(anchor_indice+1);i<anchor_list.size();++i){
         anchor next(anchor_list[i]);
-        if(get<0>(next)-get<0>(anchor_start)<5000 and get<0>(next) > get<0>(anchor_start) ){
-            if(get<1>(next)-get<1>(anchor_start)<5000 and get<1>(next) > get<1>(anchor_start) ){
-                if(get<2>(next)-get<2>(anchor_start)<5000 and  get<2>(next) > get<2>(anchor_start)){
+        if(get<0>(next)-get<0>(anchor_start)<1000 and get<0>(next) > get<0>(anchor_start) ){
+            if(get<1>(next)-get<1>(anchor_start)<1000 and get<1>(next) > get<1>(anchor_start) ){
+                if(get<2>(next)-get<2>(anchor_start)<1000 and  get<2>(next) > get<2>(anchor_start)){
                     auto p=best_chain_from_anchor(best_chain_computed,anchor_list,i);
                     if(p.first>max_chain){
                         max_chain=p.first;
@@ -237,7 +237,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     uint pred_ref(0),pred_S1(0),pred_S2(0);
     for(int i(0);i<(int)BL.size()-1;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
-        if(size_R>20 and size_S1>20 and size_S2>20 and abs(size_S1-size_R)<size_R*0.4 and abs(size_S2-size_R)<size_R*0.4 ){
+        if(size_R>15 and size_S1>15 and size_S2>15 and abs(size_S1-size_R)<size_R*0.5 and abs(size_S2-size_R)<size_R*0.5 ){
             out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
             out_S2+=header+"\n"+S2.substr(pred_S2,get<2>(anchor_list[BL[i]])-pred_S2+k)+"\n";
             out_S1+=header+"\n"+S1.substr(pred_S1,get<1>(anchor_list[BL[i]])-pred_S1+k)+"\n";
@@ -257,7 +257,7 @@ void best_split(const string& ref, const string& S1, const string& S2, string& s
     uint largest_frag(largest_fragment(s_ref));
     while(true){
         k-=2;
-        if(k<13){
+        if(k<9){
             return;
         }
         string s_ref_aux,s_S1_aux,s_S2_aux;
