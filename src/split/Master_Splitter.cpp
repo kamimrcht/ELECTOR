@@ -253,22 +253,20 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     //Anchors list filled Now to find maximal chain
     auto BL(best_chain_from_anchor_list(anchor_list));
 
-    if(BL.size()==0){
+    if(BL.size()<1){
 		out_ref+=header+"\n"+ref+"\n";
 		out_S2+=header+"\n"+S2+"\n";
 		out_S1+=header+"\n"+S1+"\n";
 		return;
 	}
-
-	int i=min(1,(int)BL.size()-1);
+	int i=(0);
     uint pred_ref(0),pred_S1(0),pred_S2(0);
     string start_ref(ref.substr(pred_ref,get<0>(anchor_list[BL[i]])+k));
     string start_S1(S1.substr(pred_S1,get<1>(anchor_list[BL[i]])+k));
     string start_S2(S2.substr(pred_S2,get<2>(anchor_list[BL[i]])+k));
     string out_ref_2,out_S1_2,out_S2_2;
-
     if(start_S2.size()*2<start_ref.size() and start_ref.size()-start_S2.size()>200 and first_call and true){
-		split(start_ref,start_S1,start_ref,out_ref_2,out_S1_2,out_S2_2,header,false,1.2*start_S2.size());
+		split(start_ref,start_S1,start_ref,out_ref_2,out_S1_2,out_S2_2,header,false,k,1.2*start_S2.size());
 		out_ref+=out_ref_2;
 		out_S1+=out_S1_2;
 		out_S2+=generate_dumb_str(fragment(out_ref_2),header,start_S2,"");
@@ -279,7 +277,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 	}
 
 
-    for(;i<(int)BL.size()-2;++i){
+    for(;i<(int)BL.size()-1;++i){
         int size_R(get<0>(anchor_list[BL[i]])-pred_ref),size_S1(get<1>(anchor_list[BL[i]])-pred_S1),size_S2(get<2>(anchor_list[BL[i]])-pred_S2);
         if(size_R>minSize and size_S1>minSize and size_S2>minSize and abs(size_S1-size_R)<size_R*0.5 and abs(size_S2-size_R)<size_R*0.5 ){
             out_ref+=header+"\n"+ref.substr(pred_ref,get<0>(anchor_list[BL[i]])-pred_ref+k)+"\n";
@@ -296,7 +294,7 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
     string end_S2(S2.substr(pred_S2));
     if(end_S2.size()*2<end_ref.size() and end_ref.size()-end_S2.size()>200 and first_call and true){
 		out_ref_2=out_S1_2=out_S2_2="";
-		split(end_ref,end_S1,end_ref,out_ref_2,out_S1_2,out_S2_2,header,false,1.2*end_S2.size());
+		split(end_ref,end_S1,end_ref,out_ref_2,out_S1_2,out_S2_2,header,false,k,1.2*end_S2.size());
 		out_ref+=out_ref_2;
 		out_S1+=out_S1_2;
 		out_S2+=generate_dumb_str(fragment(out_ref_2),header,"",end_S2);
@@ -306,7 +304,6 @@ void split(const string& ref, const string& S1, const string& S2, string& out_re
 		out_S1+=header+"\n"+S1.substr(pred_S1)+'\n';
 		out_S2+=header+"\n"+S2.substr(pred_S2)+'\n';
 	}
-
 
 }
 
@@ -349,7 +346,8 @@ int main(int argc, char ** argv){
     int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
-    int factor((stoi(argv[12])/(nb_file))+2);
+    int factor((stoi(argv[12])/(nb_file)));
+    factor+=3;
     int small_reads(0);
     int wrong_reads(0);
     string progress_file(outDir + "/progress.txt");
@@ -380,7 +378,7 @@ int main(int argc, char ** argv){
         if(nuc_amount>max_nuc_amount){
             break;
         }
-        #pragma omp parallel for ordered schedule(dynamic)
+        //~ #pragma omp parallel for ordered schedule(dynamic)
         for(uint ii=(0);ii<1000;++ii){
             if(nuc_amount>max_nuc_amount){
                 continue;
@@ -398,25 +396,32 @@ int main(int argc, char ** argv){
 				if ((double) S2.size() / ref.size() >= SIZE_CORRECTED_READ_THRESHOLD){
                     best_split(ref,S1,S2,s_ref,s_S1,s_S2,href);
                     if((fragment(s_ref))<=1){
+						s_ref=href+"\nAAA\n";
+						s_S1=href+"\nAAA\n";
+						s_S2=href+"\nAAA\n";
                         #pragma omp atomic
                         wrong_reads++;
                     }else{
-                        #pragma omp ordered
-                        {
-                            outR[i/factor]<<s_ref;
-                            out1[i/factor]<<s_S1;
-                            out2[i/factor]<<s_S2;
-                            nuc_amount+=s_ref.size();
-                        }
                     }
-
                 }else{
+					s_ref=href+"\nAAA\n";
+					s_S1=href+"\nAAA\n";
+					s_S2=href+"\nAAA\n";
                     #pragma omp atomic
                     small_reads++;
                 }
-            }
-            href=s_ref=s_S1=s_S2=ref=S1=S2="";
-            ++i;
+				#pragma omp ordered
+				{
+					outR[i/factor]<<s_ref;
+					out1[i/factor]<<s_S1;
+					out2[i/factor]<<s_S2;
+					nuc_amount+=s_ref.size();
+				}
+				href=s_ref=s_S1=s_S2=ref=S1=S2="";
+				++i;
+            }else{
+			}
+
         }
     }
     for(uint i(0);i<nb_file;++i){
