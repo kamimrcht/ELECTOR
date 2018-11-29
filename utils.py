@@ -96,3 +96,8 @@ def getFileReadNumber(fileName):
 	cmdGrep = """grep ">" -c """ + fileName
 	val = subprocess.check_output(['bash','-c', cmdGrep])
 	return int(val.decode('ascii'))
+
+def getCorrectedSequence(fileName, header):
+	cmdGrep = """grep -A 1 """ + header + " " + fileName + "| tail -1"
+	val = subprocess.check_output(['bash','-c', cmdGrep])
+	return str(val.decode('ascii'))

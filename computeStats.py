@@ -123,7 +123,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 
 	#~ for pos,ntResult in enumerate(correctedSequence):   # look for gaps in splitted/trimmed corrected read
 	for ntRef,ntResult in zip(referenceSequence, correctedSequence):   # look for gaps in splitted/trimmed corrected read
-		if pos not in gapsPositions:
+		#~ if pos not in gapsPositions:
 			if prev == ".":
 				if ntResult == "." and countGap > 0:  # gaps are dots in msa file
 					countGap += 1
@@ -145,7 +145,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 			if ntRef != ".":
 				countGapRef = 0
 			if countGap >= THRESH:
-				if countGapRef < THRESH: #if countGapRef>=THRESH it means that a gap is openened both in ref and corrected because of the uncorrected seq in the msa, so this is not a trimmed zone
+				if countGapRef < THRESH2: #if countGapRef>=THRESH2 it means that a gap is openened both in ref and corrected because of the uncorrected seq in the msa, so this is not a trimmed zone
 					if len(positionsStretch) == 0:
 						positionsStretch.append([pos-THRESH + 1, pos]) # start new stretch of gap with leftmost position
 					else:
@@ -153,10 +153,11 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 							positionsStretch[-1].extend((pos-THRESH + 1, pos))
 						if len(positionsStretch[-1]) == 2:
 							positionsStretch[-1][1] = pos # update position
-				# else:
+				#~ else:
+					#~ print("hop", pos, countGapRef)
 					# forNotExisting.append(pos)
 			prev = ntResult
-		pos += 1
+			pos += 1
 
 	tmpStretch = []
 	# bords
@@ -200,9 +201,9 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 			tmpStretch2.append([tmpStretch[-1][0], tmpStretch[-1][1]])
 		
 	stretch = dict()
+	#~ print("tmpStretch2", tmpStretch2)
 
-
-	#~ #garder seulement aux bords (=split/trimmed)
+	#garder seulement aux bords (=split/trimmed)
 	for s in tmpStretch2:
 		if s[0] == 0:
 			if s[1] - s[0] > THRESH2:
@@ -210,11 +211,10 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 		elif s[1] == len(correctedSequence) - 1:
 			if s[1] - s[0] > THRESH2:
 				stretch[s[0]] = s[1]
-	#~ for s in tmpStretch2:
-			#~ if s[1] - s[0] > THRESH2:
-				#~ stretch[s[0]] = s[1]
-	
-	#~ print(stretch)
+	#~ if len(tmpStretch2) > 0:
+		#~ stretch[tmpStretch2[0][0]] = tmpStretch2[0][1]
+		#~ if len(tmpStretch2) > 1:
+			#~ stretch[tmpStretch2[-1][0]] = tmpStretch2[-1][1]
 	return stretch
 
 
@@ -498,7 +498,6 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 			GCSumCorr += 1
 		#insertion deletion substitution
 		insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef= indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef, reportedThreshold, gapsPositions)
-
 		if detectedHomopolymer:
 			detectedHomopolymer = False
 			okToReportRef = False
@@ -509,6 +508,7 @@ def getTPFNFP(reference, corrected, uncorrected,  correctedPositions, existingCo
 		#FP, FN, TP
 		corBases, uncorBases, FP, FN, TP,globalFP, globalFN, globalTP = getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions,  existingCorrectedPositions, position,  corBases, uncorBases, FP, FN, TP,globalFP, globalFN, globalTP)
 		position += 1
+
 	GCRateRef = round(GCSumRef * 1.0 / getLen(reference),3)
 	GCRateCorr = round(GCSumCorr * 1.0 / getLen(corrected),3)
 	return FP, TP, FN, corBases, uncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers, globalFP, globalFN, globalTP
@@ -650,7 +650,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			GCRateRefRead = 0
 			GCRateCorrRead = 0
 			if nbFragments > 1: #split read
-				
 				countReadSplit += 1
 				splits = 1
 				#~ realNotMissing = 0
@@ -671,7 +670,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 						correctedPositionsRead, existingCorrectedPositionsInThisRead, clips = getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, reference,  clipsNb, header, gapsPositions)
 						## indels, subs, TP, FP, FN...
 						indelsubsCorr,  corBasesForARead, uncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, allLenCorrected, GCRateRefRead, GCRateCorrRead,  insU, deleU, subsU  = nucleotideMetrics(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers, gapsPositions, indelsubsCorr,  corBasesForARead, uncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, allLenCorrected)
-					
 						for pos,cor in enumerate(existingCorrectedPositionsInThisRead):
 							if cor:
 								realNotMissing.append(pos)
@@ -685,9 +683,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 								if pos not in realNotMissing and reference[pos] != '.':
 									missingInRead += 1
 							maxim = 0
-							#~ indelsubsUncorr[0] += insU
-							#~ indelsubsUncorr[1] += deleU
-							#~ indelsubsUncorr[2] += subsU
 							globalFNlistForARead.append(missingInRead) #add final missed length because of split
 							recall, precision, globalRecall, globalPrecision, corBasesRate, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, totalCorBases, totalUncorBases, globalRec, globalPrec = outputMetrics(recall, precision, globalRecall, globalPrecision, corBasesRate, missingInRead, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, totalCorBases, totalUncorBases, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, GCRateRefRead, GCRateCorrRead)
 							if isExtended:
@@ -706,6 +701,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 					splits += 1
 
 			else: # not split
+				
 				reference = lines[nbLines].rstrip() # get msa for ref
 				nbLines += 2
 				corrected =  lines[nbLines].rstrip() # msa for corrected
