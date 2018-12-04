@@ -143,7 +143,7 @@ def main():
 #	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
 	#~ print(clipsNb)
 	
-	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer, globalRecall, globalPrecision = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
+	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
 
 	#~ if simulator == "nanosim":
 		#~ computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
@@ -173,7 +173,7 @@ def main():
 		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
 	#TODO: inclure les nouvelles métriques dans le plot
-	plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, globalRecall, globalPrecision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
+	plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
 
 
 if __name__ == '__main__':

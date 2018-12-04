@@ -78,8 +78,6 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	
 	Recall (computed on corrected bases)& %(meanRecall)s  \\ \hline
 	Precision (computed on corrected bases)& %(meanPrecision)s  \\ \hline
-	Global recall (computed on whole read)& %(meanGlobRecall)s  \\ \hline
-	Global precision  (computed on whole read)& %(meanGlobPrecision)s  \\ \hline
 	Average correct bases rate  (computed on whole read)& %(meanCorrectBaseRate)s \\ \hline
 	Overall error rate (computed on whole read)& %(errorRate)s \\ \hline\hline
 	
@@ -168,8 +166,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
 	#~ proc.communicate()
 
-def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision,globRecall, globPrecision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75,  remap, assemble, homoRatio ):
-	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall,"meanGlobPrecision": globPrecision, "meanGlobRecall": globRecall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoRatio": homoRatio}
+def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75,  remap, assemble, homoRatio ):
+	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoRatio": homoRatio}
 	launchRscripts(installDirectory, soft, outDir)
 	generateLatexFigures(outDir, "summary", filesDict, remap, assemble)
 
