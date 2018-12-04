@@ -30,6 +30,7 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import copy
 import statistics
+import utils
 #~ import ast
 #SIZE_CORRECTED_READ_THRESHOLD = 0.1
 
@@ -93,23 +94,22 @@ def nbRightGaps(sequence):
 	return totalGaps
 
 # store corrected reads in a list of tuples [(header, sequence)]
-def getCorrectedReads(correctedReadsFileName):
-	fastaTuple = dict()
-	#~ read = ""
-	with open(correctedReadsFileName) as fileIn:
-		for line in fileIn:
-			if ">" in line:
-				header = line.rstrip().split(' ')[0][1:]
+#~ def getCorrectedReads(correctedReadsFileName):
+	#~ fastaTuple = dict()
+	#~ with open(correctedReadsFileName) as fileIn:
+		#~ for line in fileIn:
+			#~ if ">" in line:
+				#~ header = line.rstrip().split(' ')[0][1:]
 				
-			else:
-				read = line.rstrip()
-				if read != "":
+			#~ else:
+				#~ read = line.rstrip()
+				#~ if read != "":
 					
-					if header not in fastaTuple.keys():
-						fastaTuple[header] = [read]
-					else:
-						fastaTuple[header].append(read)
-	return fastaTuple
+					#~ if header not in fastaTuple.keys():
+						#~ fastaTuple[header] = [read]
+					#~ else:
+						#~ fastaTuple[header].append(read)
+	#~ return fastaTuple
 
 
 # find long stretches of "." = trimmed or split reads, and return the coordinates of these regions for the corrected line of a msa
@@ -611,8 +611,8 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	lines = msa.readlines()
 	nbReadsToDivide = 0
 	readNo = 0
-	correctedReadsList = getCorrectedReads(correctedFileName)
-	upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
+	#~ correctedReadsList = getCorrectedReads(correctedFileName)
+	#~ upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
 	countReadSplit = 0
 	countReadExtended = 0
 	countReadTrimmed = 0
@@ -664,6 +664,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 					uncorrected = lines[nbLines].rstrip() # msa for corrected
 					nbLines += 1
 					if len(reference) > 10:
+						upperCasePositions = getUpperCasePositions(correctedFileName, headerNo, corrected)
 						# gaps and extensions
 						gapsPositions, isExtended , extendedBasesCount, missingInRead, stretches, isTrimmed, totalGaps = gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtended, isTrimmed, extendedBasesCount, missingInRead)
 						## zones where the corrected read does not exist / where the correction is not done
@@ -709,7 +710,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				uncorrected = lines[nbLines].rstrip()
 				nbLines += 1
 				if len(reference) > 10:
-
+					upperCasePositions = getUpperCasePositions(correctedFileName, headerNo, corrected)
 					# gaps and extensions
 					gapsPositions, isExtended , extendedBasesCount, missingInRead, stretches, isTrimmed, totalGaps = gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtended, isTrimmed, extendedBasesCount, missingInRead)
 					## zones where the corrected read does not exist / where the correction is not done
@@ -762,61 +763,90 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 
 
 # get the position of nt in uppercase to compute recall and precision only at these positions
-def getUpperCasePositions(correctedReadsList, lines):
-	upperCasePositions = [] # positions to take into account in the msa
-	nbLines = 3 # starting at the first corrected sequence
-	headerNo = lines[0].split(">")[1].split(" ")[0]
-	headerPrev = ""
+#~ def getUpperCasePositions(correctedReadsList, lines):
+	#~ upperCasePositions = [] # positions to take into account in the msa
+	#~ nbLines = 3 # starting at the first corrected sequence
+	#~ headerNo = lines[0].split(">")[1].split(" ")[0]
+	#~ headerPrev = ""
 	
-	while nbLines < len(lines):
-		headerNo = lines[nbLines - 1].split(">")[1].split(" ")[0]
-		correctedMsa = lines[nbLines].rstrip()
-		#TOVERIFY
-		if headerNo == headerPrev:
-			index += 1
-		else:
-			index = 0
-		if headerNo in correctedReadsList.keys():
-			correctedReadSequence = correctedReadsList[headerNo][index]
-			headerPrev = headerNo
-			posiNt = 0
-			posiNtSeq = 0
-			inUpper = False
-			upperCasePositions.append([])
-			while posiNt < len(correctedMsa):
-				if posiNtSeq >= len(correctedReadSequence):
-					upperCasePositions[-1].append(False)
-					posiNt += 1
-				else:
-					nt = correctedMsa[posiNt]
-					ntSeq = correctedReadSequence[posiNtSeq]
-					if not ntSeq.islower():
-						if nt != ".":
-							inUpper = True
-						else:
-							inUpper = False
-					else:
-						inUpper = False
+	#~ while nbLines < len(lines):
+		#~ headerNo = lines[nbLines - 1].split(">")[1].split(" ")[0]
+		#~ correctedMsa = lines[nbLines].rstrip()
+		#~ #TOVERIFY
+		#~ if headerNo == headerPrev:
+			#~ index += 1
+		#~ else:
+			#~ index = 0
+		#~ if headerNo in correctedReadsList.keys():
+			#~ correctedReadSequence = correctedReadsList[headerNo][index]
+			#~ headerPrev = headerNo
+			#~ posiNt = 0
+			#~ posiNtSeq = 0
+			#~ inUpper = False
+			#~ upperCasePositions.append([])
+			#~ while posiNt < len(correctedMsa):
+				#~ if posiNtSeq >= len(correctedReadSequence):
+					#~ upperCasePositions[-1].append(False)
+					#~ posiNt += 1
+				#~ else:
+					#~ nt = correctedMsa[posiNt]
+					#~ ntSeq = correctedReadSequence[posiNtSeq]
+					#~ if not ntSeq.islower():
+						#~ if nt != ".":
+							#~ inUpper = True
+						#~ else:
+							#~ inUpper = False
+					#~ else:
+						#~ inUpper = False
 					
 							
-					if inUpper:
-						upperCasePositions[-1].append(True)
-					else:
-						upperCasePositions[-1].append(False)
-					if nt != ".":
-						posiNtSeq += 1
-					posiNt += 1
-			nbLines += 6
-		else:
-			upperCasePositions[-1] = [False] * len(correctedMsa)
-	return upperCasePositions
+					#~ if inUpper:
+						#~ upperCasePositions[-1].append(True)
+					#~ else:
+						#~ upperCasePositions[-1].append(False)
+					#~ if nt != ".":
+						#~ posiNtSeq += 1
+					#~ posiNt += 1
+			#~ nbLines += 6
+		#~ else:
+			#~ upperCasePositions[-1] = [False] * len(correctedMsa)
+	#~ return upperCasePositions
 
+
+def getUpperCasePositions(correctedReadsFile, header, correctedMsa):
+	correctedReadSequence = utils.getCorrectedSequence(correctedReadsFile, header)
+	upperCasePositions = [] # positions to take into account in the msa
+	posiNt = 0
+	posiNtSeq = 0
+	inUpper = False
+	while posiNt < len(correctedMsa):
+		if posiNtSeq >= len(correctedReadSequence):
+			upperCasePositions.append(False)
+			posiNt += 1
+		else:
+			nt = correctedMsa[posiNt]
+			ntSeq = correctedReadSequence[posiNtSeq]
+			if not ntSeq.islower():
+				if nt != ".":
+					inUpper = True
+				else:
+					inUpper = False
+			else:
+				inUpper = False		
+			if inUpper:
+				upperCasePositions.append(True)
+			else:
+				upperCasePositions.append(False)
+			if nt != ".":
+				posiNtSeq += 1
+			posiNt += 1
+	return upperCasePositions
 
 # add to the uppercase positions the positions where there is no stretch of "." , i.e. all positions where recall and precision are actually computed
 
 def getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, reference, clipsNb, header,  gapsPositions):
 	msaLineLen = len(corrected)
-	correctedPositions = copy.copy(upperCasePositions[readNo]) #all positions in upper case in the corrected read
+	correctedPositions = copy.copy(upperCasePositions) #all positions in upper case in the corrected read
 	existingCorrectedPositions = [True] * len(correctedPositions)
 	leftClipping = 0
 	rightClipping = None
