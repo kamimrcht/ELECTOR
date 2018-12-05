@@ -236,7 +236,7 @@ def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, w
 		outMetrics.write("score metric\n")
 		readsToSplit = getSplit(outDir + "/msa.fa")
 
-		nbReads, throughput, precision, recall, corBasesRate, errorRate, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr,  ratioHomopolymers, lenAllCorrectedReads,  isSplit, isTrimmed, isExtended, extendedBasesCount  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold, clipsNb, readsToSplit)
+		nbReads, throughput, precision, recall, corBasesRate, errorRate, missingSize,  GCRateRef, GCRateCorr,  indelsubsUncorr, indelsubsCorr,  ratioHomopolymers, lenAllCorrectedReads,  countReadSplit, countReadTrimmed, countReadExtended, extendedBasesCount  = computeMetrics(outDir + "/msa.fa", outMetrics, correctedFileName, reportedHomopolThreshold, clipsNb, readsToSplit)
 
 	# read lengths
 	outputReadSizeDistribution(correctedFileName, fileSizeName, outDir, countReadSplit+countReadTrimmed, lenAllCorrectedReads)
