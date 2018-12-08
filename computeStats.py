@@ -153,9 +153,6 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 							positionsStretch[-1].extend((pos-THRESH + 1, pos))
 						if len(positionsStretch[-1]) == 2:
 							positionsStretch[-1][1] = pos # update position
-				#~ else:
-					#~ print("hop", pos, countGapRef)
-					# forNotExisting.append(pos)
 			prev = ntResult
 			pos += 1
 
@@ -201,7 +198,6 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 			tmpStretch2.append([tmpStretch[-1][0], tmpStretch[-1][1]])
 		
 	stretch = dict()
-	#~ print("tmpStretch2", tmpStretch2)
 
 	#garder seulement aux bords (=split/trimmed)
 	for s in tmpStretch2:
@@ -250,7 +246,7 @@ def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, w
 	#~ if len(extendedBases) > 0:
 		#~ meanExtendedBases = round(sum(extendedBases)/len(extendedBases),1)
 	if countReadExtended > 0:
-		#~ print('count', extendedBasesCount)
+
 		meanExtendedBases = round(sum(extendedBasesCount)/countReadExtended,1)
 	if soft is not None:
 		print(soft)
@@ -268,9 +264,9 @@ def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, w
 	print("Assessed reads: ", str(nbReads))
 	print("Throughput (uncorrected)", str(uncorThroughput))
 	print("Throughput (corrected): ", str(throughput))
-	print("Recall (computed only on corrected bases):", str(recall))
+	print("Recall:", str(recall))
 	#~ print("Global recall (computed on all bases):", str(globalRecall))
-	print("Precision (computed only on corrected bases):", str(precision))
+	print("Precision:", str(precision))
 	#~ print("Global precision (computed on all bases:", str(globalPrecision))
 	print("Average correct bases rate (uncorrected): ", str(uncorCorBasesRate))
 	print("Error rate (uncorrected):", str(1-uncorCorBasesRate ))
@@ -334,7 +330,6 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 	okToAppendR = False
 	okToAppendC = False
 	
-					#~ print("del",position, ntRef, ntResult, ntUnco)
 	if existingCorrectedPositions[position]:
 		##### homopolymers in ref ######
 		if ntRef != '.':
@@ -363,7 +358,6 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 				else:
 					if ntUnco != "." :
 						subsU += 1
-						#~ print("sub",position, ntRef, ntResult, ntUnco)
 
 					else:
 						deleU += 1
@@ -566,14 +560,12 @@ def gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtend
 	stretches = findGapStretches(corrected, reference, gapsPositions)
 	totalGaps =  gapsLeft + gapsRight
 	for s in stretches:
-		#~ print(s, stretches[s])
 		missingSize += stretches[s] - s - (reference[s: stretches[s]+1].count('.'))
 	missingSize -= totalGaps
 	if missingSize < 0:
 		missingSize = 0
 	if missingSize > THRESH:
 		isTrimmed = True
-	#~ print('missingSize', missingSize)
 	return gapsPositions, isExtended , extendedBasesCount, missingSize, stretches, isTrimmed, totalGaps
 
 #~ def nucleotideMetrics(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers, gapsPositions, indelsubsCorr,  corBasesForARead, uncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, allLenCorrected):
@@ -650,7 +642,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				realNotMissing = []
 				tmpindelsubsUncorr = [[],[],[]]
 				while splits <= nbFragments:
-					#~ print(splits, nbLines)
+					gapsPositions = []
 					reference = lines[nbLines].rstrip() # get msa for ref
 					nbLines += 2
 					corrected =  lines[nbLines].rstrip() # msa for uncorrected
@@ -670,7 +662,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 						for pos,cor in enumerate(existingCorrectedPositionsInThisRead):
 							if cor:
 								realNotMissing.append(pos)
-						#~ print(len(corrected), existingCorrectedPositionsInThisRead.count(True), insU, deleU, subsU)
+
 						indelsubsUncorr[0] += insU
 						indelsubsUncorr[1] += deleU
 						indelsubsUncorr[2] += subsU
@@ -680,7 +672,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 								if pos not in realNotMissing and reference[pos] != '.':
 									missingInRead += 1
 							maxim = 0
-							#~ globalFNlistForARead.append(missingInRead) #add final missed length because of split
 							recall, precision,  corBasesRate, uncorCorBasesRate, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, totalCorBases, totalUncorBases = outputMetrics(recall, precision,corBasesRate, uncorCorBasesRate, missingInRead, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, uncorCorBasesForARead, uncorUncorBasesForARead, totalCorBases, totalUncorBases, uncorTotalCorBases, uncorTOtalUncorBases,  GCRateRefRead, GCRateCorrRead)
 							if isExtended:
 								countReadExtended += 1
@@ -698,7 +689,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 					splits += 1
 
 			else: # not split
-				
 				reference = lines[nbLines].rstrip() # get msa for ref
 				nbLines += 2
 				corrected =  lines[nbLines].rstrip() # msa for corrected
@@ -862,7 +852,6 @@ def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, head
 		existingCorrectedPositions[i] = False
 		i += 1
 		lenClip += 1
-	#~ print(i)
 
 	i = msaLineLen - 1
 	j = msaLineLen - 1
@@ -874,16 +863,12 @@ def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, head
 			lenClip += 1
 			i -= 1
 
-	#~ for pos in forNotExisting:
-		#~ existingCorrectedPositions[pos] = False
-
 	positionsToRemove = list()
 	if len(stretches.keys()) > 0:  # split read (or trimmed)
 		for pos in stretches.keys(): 
 			positionsToRemove.append([pos, stretches[pos]]) #interval(s)) in which the corrected read sequence does not exist
 		for interv in positionsToRemove:
 			for i in range(interv[0], interv[1] +1):
-				#~ print(interv[0], interv[1])
 				existingCorrectedPositions[i] = False # remove regions where there is no corrected sequence  # remove regions where there is no corrected sequence (split/trimmed) from corrected regions
 				#~ correctedPositions[i] = False
 	for i in gapsPositions:
