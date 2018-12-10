@@ -172,7 +172,7 @@ uint largest_fragment(const string& str){
 
 
 
-void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call,int k,uint minSize=15){
+void split(const string& ref, const string& S1, const string& S2, string& out_ref, string& out_S1, string& out_S2,const string& header,bool first_call,int k,uint minSize=20){
     unordered_map<kmer,position> kmer_ref,kmer_ref_inS1,kmer_shared;
     kmer seq(str2num(ref.substr(0,k)));
     kmer_ref[seq]=0;
@@ -353,15 +353,15 @@ int main(int argc, char ** argv){
     string progress_file(outDir + "/progress.txt");
     string ref,S1,S2;
     string href,hS1,hS2,s_ref,s_S1,s_S2,line;
-    uint32_t position_ref(0),position_cor(0),position_err(0);
+    uint64_t position_ref(0),position_cor(0),position_err(0);
     ifstream inR(inputRef),in1(inputS1),in2(inputS2),progress_in(progress_file);
     if(progress_in.good() and not progress_in.eof()){
         getline(progress_in,line);
-        position_ref=stoi(line);
+        position_ref=stoll(line);
         getline(progress_in,line);
-        position_cor=stoi(line);
+        position_cor=stoll(line);
         getline(progress_in,line);
-        position_err=stoi(line);
+        position_err=stoll(line);
         inR.seekg (position_ref, inR.beg);
         in1.seekg (position_cor, in1.beg);
         in2.seekg (position_err, in2.beg);
@@ -444,9 +444,9 @@ int main(int argc, char ** argv){
     }
     ofstream out(progress_file);
 
-    out<<inR.tellg()<<"\n";
-    out<<in1.tellg()<<"\n";
-    out<<in2.tellg()<<"\n"<<flush;
+    out<<(uint64_t)inR.tellg()<<"\n";
+    out<<(uint64_t)in1.tellg()<<"\n";
+    out<<(uint64_t)in2.tellg()<<"\n"<<flush;
     out.close();
     return 1;
 }
