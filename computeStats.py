@@ -513,8 +513,8 @@ def outputMetrics(recall, precision,  corBasesRate, uncorCorBasesRate, missingIn
 		prec = TPsum / (TPsum + FPsum) if (TPsum + FPsum) != 0 else 0
 		if missingInRead != 0:
 			missingSize.append(missingInRead)
-		corBRate = sum(corBasesForARead)/(sum(corBasesForARead) + sum(uncorBasesForARead))
-		uncorCorBRate = sum(uncorCorBasesForARead)/(sum(uncorCorBasesForARead) + sum(uncorUncorBasesForARead))
+		corBRate = sum(corBasesForARead)/(sum(corBasesForARead) + sum(uncorBasesForARead)) if (sum(corBasesForARead) + sum(uncorBasesForARead)) != 0 else 0
+		uncorCorBRate = sum(uncorCorBasesForARead)/(sum(uncorCorBasesForARead) + sum(uncorUncorBasesForARead)) if (sum(uncorCorBasesForARead) + sum(uncorUncorBasesForARead)) != 0 else 0
 		outPerReadMetrics.write(str(rec) + " recall\n")
 		outPerReadMetrics.write(str(prec) + " precision\n")
 		outPerReadMetrics.write(str(corBRate) + " correct_rate\n")
