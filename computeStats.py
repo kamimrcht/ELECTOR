@@ -846,7 +846,8 @@ def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, head
 	i = 0
 	j = 0
 	lenClip = 0
-	while j < leftClipping:
+
+	while j < leftClipping and i < len(corrected):
 		if corrected[i] != ".":
 			j += 1
 		existingCorrectedPositions[i] = False
@@ -856,7 +857,7 @@ def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, head
 	i = msaLineLen - 1
 	j = msaLineLen - 1
 	if rightClipping is not None:
-		while j >= rightClipping:
+		while j >= rightClipping and i >= 0:
 			if corrected[i] != ".":
 				j -= 1
 			existingCorrectedPositions[i] = False
