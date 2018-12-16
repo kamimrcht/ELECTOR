@@ -429,8 +429,8 @@ int main(int argc, char ** argv){
         out1[i].close();
         out2[i].close();
     }
-    ofstream out_small(outDir + "small_reads.txt");
-    ofstream out_wrong(outDir + "wrongly_cor_reads.txt");
+    ofstream out_small(outDir + "/small_reads.txt");
+    ofstream out_wrong(outDir + "/wrongly_cor_reads.txt");
     out_small<<small_reads<<endl;
     out_wrong<<wrong_reads<<endl;
     out_small.close();
