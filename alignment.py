@@ -113,14 +113,14 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			# ~ print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
-			with open(outDir + "small_reads.txt") as file:
+			with open(outDir + "/small_reads.txt") as file:
 				for line in file:
 					small_reads += int( line.rstrip())
 					break
 				file.close()
 				cmdRM = "rm " + outDir + "small_reads.txt"
 				subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL,stderr=DEVNULL)
-			with open(outDir + "wrongly_cor_reads.txt") as file:
+			with open(outDir + "/wrongly_cor_reads.txt") as file:
 				for line in file:
 					wrongly_cor_reads += int(line.rstrip())
 					break
