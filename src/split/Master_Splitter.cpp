@@ -343,10 +343,10 @@ int main(int argc, char ** argv){
     string outputS2(argv[6]);
     int k=(stoi(argv[7]));
     int nb_file=(stoi(argv[8]));
-    int max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
+    uint64_t max_nuc_amount=(stoll(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
-    int factor((stoi(argv[12])/(nb_file)));
+    int64_t factor((stoll(argv[12])/(nb_file)));
     factor+=3;
     int small_reads(0);
     int wrong_reads(0);
@@ -373,7 +373,7 @@ int main(int argc, char ** argv){
         out1[i].open(outputS1+to_string(i),ofstream::trunc);
         out2[i].open(outputS2+to_string(i),ofstream::trunc);
     }
-    uint i(0);
+    uint64_t i(0);
     while(not inR.eof() and not in2.eof() and not in1.eof()){
         if(nuc_amount>max_nuc_amount){
             break;
