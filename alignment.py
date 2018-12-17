@@ -89,7 +89,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		subprocess.check_output(['bash','-c', cmdMv])
 		return 0, 0
 	else:
-		amount_nuc=100*1000*1000;
+		#amount_nuc=100*1000*1000;
+		amount_nuc=100*1000*1000*1000*1000;
 		print("- Means that a large amount of nuc has been handled: "+str(amount_nuc))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
