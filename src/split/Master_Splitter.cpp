@@ -412,9 +412,9 @@ int main(int argc, char ** argv){
                 }
 				#pragma omp ordered
 				{
-					outR[i/80]<<s_ref;
-					out1[i/80]<<s_S1;
-					out2[i/80]<<s_S2;
+					outR[i%100]<<s_ref;
+					out1[i%100]<<s_S1;
+					out2[i%100]<<s_S2;
 					nuc_amount+=s_ref.size();
 				}
 				href=s_ref=s_S1=s_S2=ref=S1=S2="";
