@@ -332,6 +332,22 @@ void best_split(const string& ref, const string& S1, const string& S2, string& s
 }
 
 
+uint64_t count_lines(const string& str){
+	uint64_t res(0);
+	ifstream inFile(str);
+	string lineBuffer;
+	while(!inFile.eof())
+	{
+		//~ cout<<"COUNT"<<endl;
+		getline (inFile, lineBuffer);
+		getline (inFile, lineBuffer);
+		res++;
+	}
+	//~ cout<<"res:"<<res<<endl;
+	return res;
+}
+
+
 
 int main(int argc, char ** argv){
 
@@ -346,8 +362,10 @@ int main(int argc, char ** argv){
     uint64_t max_nuc_amount=(stoll(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
-    int64_t factor((stoll(argv[12])/(nb_file)));
-    factor+=3;
+    int64_t factor((count_lines(inputRef)/(nb_file)));
+    //~ cout<<count_lines(inputRef)<<" "<<nb_file<<" "<<factor<<endl;
+
+    factor+=1;
     int small_reads(0);
     int wrong_reads(0);
     string progress_file(outDir + "/progress.txt");
@@ -412,6 +430,7 @@ int main(int argc, char ** argv){
                 }
 				#pragma omp ordered
 				{
+					//~ cout<<i<<" "<<factor<<" "<<i/factor<<endl;
 					outR[i/factor]<<s_ref;
 					out1[i/factor]<<s_S1;
 					out2[i/factor]<<s_S2;

@@ -56,10 +56,10 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 
 
 	# return number of reads in a fasta
-def getFileReadNumber(fileName):
-	cmdGrep = """grep ">" -c """ + fileName
-	val = subprocess.check_output(['bash','-c', cmdGrep])
-	return int(val.decode('ascii'))
+#~ def getFileReadNumber(fileName):
+	#~ cmdGrep = """grep ">" -c """ + fileName
+	#~ val = subprocess.check_output(['bash','-c', cmdGrep])
+	#~ return int(val.decode('ascii'))
 
 #~ # do the msa
 #~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
@@ -106,7 +106,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		else:
 			mergeOut = outDir + "/msa.fa"
 
-		read_number=getFileReadNumber(reference)
+		read_number=0
 
 		while(position_in_read_file!=0):
 			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir+ " "+str(read_number)
@@ -135,10 +135,10 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
-			cmdRM = "rm " + outDir + "/out*"
-			subprocess.call(['bash','-c', cmdRM])
-			cmdRM = "rm " + outDir + "/smsa*"
-			subprocess.call(['bash','-c', cmdRM])
+			#~ cmdRM = "rm " + outDir + "/out*"
+			#~ subprocess.call(['bash','-c', cmdRM])
+			#~ cmdRM = "rm " + outDir + "/smsa*"
+			#~ subprocess.call(['bash','-c', cmdRM])
 
 		print()
 		#if soft is not None:
