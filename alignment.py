@@ -90,8 +90,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		return 0, 0
 	else:
 		#amount_nuc=100*1000*1000;
-		amount_nuc=100*1000*1000*3;
-		print("- Means that a large amount of nuc has been handled: "+str(amount_nuc))
+		amount_read=1000*100;
+		print("- Means that a large amount of nuc has been handled: "+str(amount_read))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
 		global outDirGlobal
@@ -110,8 +110,8 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		read_number=0
 
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_nuc)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir+ " "+str(read_number)
-			# ~ print(cmdSplitter)
+			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_read)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
+			print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
 			with open(outDir + "/small_reads.txt") as file:

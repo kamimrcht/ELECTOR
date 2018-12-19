@@ -359,12 +359,12 @@ int main(int argc, char ** argv){
     string outputS2(argv[6]);
     int k=(stoi(argv[7]));
     int nb_file=(stoi(argv[8]));
-    uint64_t max_nuc_amount=(-1),nuc_amount(0);
+    uint64_t max_nuc_amount=(stoi(argv[9])),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
-    uint64_t nb_line((count_lines(inputRef)));
-    int64_t factor(nb_line/(nb_file));
-    cout<<nb_line<<" "<<nb_file<<" "<<factor<<endl;
+    //~ uint64_t nb_line((count_lines(inputRef)));
+    int64_t factor(max_nuc_amount/(nb_file));
+    cout<<max_nuc_amount<<" "<<nb_file<<" "<<factor<<endl;
 
     factor+=1;
     int small_reads(0);
@@ -394,12 +394,12 @@ int main(int argc, char ** argv){
     }
     uint64_t i(0);
     while(not inR.eof() and not in2.eof() and not in1.eof()){
-        if(nuc_amount>max_nuc_amount){
+        if(i>max_nuc_amount){
             break;
         }
         //~ #pragma omp parallel for ordered schedule(dynamic)
         for(uint ii=(0);ii<1000;++ii){
-            if(nuc_amount>max_nuc_amount){
+            if(i>max_nuc_amount){
                 continue;
             }
             #pragma omp ordered
@@ -458,8 +458,8 @@ int main(int argc, char ** argv){
 
 
     if(inR.eof() or in2.eof() or in1.eof() ){
-//	const char* cProgress = (outDir + "/progress.txt").c_str();
-//        remove(cProgress);
+		const char* cProgress = (outDir + "/progress.txt").c_str();
+		remove(cProgress);
         return 0;
     }
     ofstream out(progress_file);
