@@ -359,11 +359,12 @@ int main(int argc, char ** argv){
     string outputS2(argv[6]);
     int k=(stoi(argv[7]));
     int nb_file=(stoi(argv[8]));
-    uint64_t max_nuc_amount=(stoll(argv[9])),nuc_amount(0);
+    uint64_t max_nuc_amount=(-1),nuc_amount(0);
     double SIZE_CORRECTED_READ_THRESHOLD=(stod(argv[10]));
     string outDir(argv[11]);
-    int64_t factor((count_lines(inputRef)/(nb_file)));
-    //~ cout<<count_lines(inputRef)<<" "<<nb_file<<" "<<factor<<endl;
+    uint64_t nb_line((count_lines(inputRef)));
+    int64_t factor(nb_line/(nb_file));
+    cout<<nb_line<<" "<<nb_file<<" "<<factor<<endl;
 
     factor+=1;
     int small_reads(0);
