@@ -90,7 +90,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		return 0, 0
 	else:
 		#amount_nuc=100*1000*1000;
-		amount_read=1000*100;
+		amount_read=1000*50;
 		print("- Means that a large amount of nuc has been handled: "+str(amount_read))
 		global installDirectoryGlobal
 		installDirectoryGlobal=installDirectory
