@@ -288,7 +288,8 @@ def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
 		tail = int(id[7])
 		# TODO: prolly start in pos+head and end in pos+mid
 		#seq = fSeqs[refId][pos:pos+mid]
-		seq = fSeqs[refId][pos+head:pos+head+mid]
+		#seq = fSeqs[refId][pos+head:pos+head+mid]
+		seq = fSeqs[refId][pos:pos+head+mid+tail]
 		if strand == "R":
 			seq = str(Seq(seq).reverse_complement())
 		out.write(">" + header + "\n" + seq + "\n")
