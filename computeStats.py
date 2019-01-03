@@ -698,6 +698,7 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 				uncorrected = lines[nbLines].rstrip()
 				nbLines += 1
 				if len(reference) > 10:
+					allLenUncorrected.append(getLen(uncorrected))
 					# upperCasePositions = getUpperCasePositions(correctedFileName, headerNo, corrected)
 					# gaps and extensions
 					gapsPositions, isExtended , extendedBasesCount, missingInRead, stretches, isTrimmed, totalGaps = gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtended, isTrimmed, extendedBasesCount, missingInRead)
