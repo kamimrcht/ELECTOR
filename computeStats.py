@@ -585,7 +585,7 @@ def nucleotideMetrics(reference, corrected, uncorrected,  existingCorrectedPosit
 	TPlistForARead.append(TP)
 	FNlistForARead.append(FN)
 	allLenCorrected.append(getLen(corrected))
-	allLenUncorrected.append(getLen(uncorrected))
+	#allLenUncorrected.append(getLen(uncorrected))
 	return indelsubsCorr,  corBasesForARead, uncorBasesForARead, uncorCorBasesForARead, uncorUncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, allLenCorrected, allLenUncorrected, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU
 
 def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThreshold, clipsNb, readsToSplit):
@@ -650,6 +650,8 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 					uncorrected = lines[nbLines].rstrip() # msa for corrected
 					nbLines += 1
 					if len(reference) > 10:
+						if splits == 1:
+							allLenUncorrected.append(getLen(uncorrected))
 						# upperCasePositions = getUpperCasePositions(correctedFileName, headerNo, corrected)
 						# gaps and extensions
 						gapsPositions, isExtended , extendedBasesCount, missingInRead, stretches, isTrimmed, totalGaps = gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtended, isTrimmed, extendedBasesCount, missingInRead)
