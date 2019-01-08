@@ -135,6 +135,7 @@ def computeCoverage(readsBaseName, reference):
 	coveredBases = sum(1 for line in inCov)
 	inCov.close()
 	cov = float(coveredBases / refLength * 100)
+	return cov
 
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
