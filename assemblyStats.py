@@ -145,7 +145,7 @@ def generateResults(reads, reference, threads, logFile):
 	NG50 = nbContigsNGs[1]
 	NG75 = nbContigsNGs[2]
 	nbBreakpoints = computeNbBreakpoints((os.path.splitext(reads)[0]))
-	coveredBases = computeCoverage(readsBaseName);
+	coveredBases = computeCoverage(readsBaseName, reference);
 	cov = float(coveredBases / refLength * 100)
 
 	print("Number of contigs : " + str(nbContigs))

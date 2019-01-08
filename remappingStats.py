@@ -97,7 +97,7 @@ def generateResults(reads, reference, threads, logFile):
 	outErr.close()
 	computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
 	avId = averageIdentity(readsBaseName + ".id")
-	coveredBases = computeCoverage(readsBaseName)
+	coveredBases = computeCoverage(readsBaseName, reference)
 	inCov.close()
 
 	print("Average identity : " + str(round(avId, 3)) + "%")
