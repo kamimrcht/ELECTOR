@@ -157,4 +157,4 @@ def generateResults(reads, reference, threads, logFile):
 	print("NGA75 : " + str(NG75))
 	print("Genome covered : " + str(round(cov, 4)) + "%")
 	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "%\n Genome covered : " + print("Genome covered : " + str(round(cov, 4)) + "%\n"))
-	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75)
+	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75), str(cov)
