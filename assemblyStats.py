@@ -133,6 +133,7 @@ def computeCoverage(readsBaseName, reference):
 	refLength = getTotalLength(reference)
 	inCov = open(readsBaseName + ".cov")
 	coveredBases = sum(1 for line in inCov)
+	inCov.close()
 
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)

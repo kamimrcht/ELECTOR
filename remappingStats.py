@@ -82,6 +82,7 @@ def computeCoverage(readsBaseName, reference):
 	refLength = getTotalLength(reference)
 	inCov = open(readsBaseName + ".cov")
 	coveredBases = sum(1 for line in inCov)
+	inCov.close()
 
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
@@ -98,7 +99,6 @@ def generateResults(reads, reference, threads, logFile):
 	computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
 	avId = averageIdentity(readsBaseName + ".id")
 	coveredBases = computeCoverage(readsBaseName, reference)
-	inCov.close()
 
 	print("Average identity : " + str(round(avId, 3)) + "%")
 	cov = float(coveredBases / refLength * 100)
