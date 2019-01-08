@@ -134,6 +134,7 @@ def computeCoverage(readsBaseName, reference):
 	inCov = open(readsBaseName + ".cov")
 	coveredBases = sum(1 for line in inCov)
 	inCov.close()
+	cov = float(coveredBases / refLength * 100)
 
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
@@ -146,8 +147,7 @@ def generateResults(reads, reference, threads, logFile):
 	NG50 = nbContigsNGs[1]
 	NG75 = nbContigsNGs[2]
 	nbBreakpoints = computeNbBreakpoints((os.path.splitext(reads)[0]))
-	coveredBases = computeCoverage(readsBaseName, reference);
-	cov = float(coveredBases / refLength * 100)
+	cov = computeCoverage(readsBaseName, reference)
 
 	print("Number of contigs : " + str(nbContigs))
 	print("Number of aligned contigs : " + str(nbAlContigs))
