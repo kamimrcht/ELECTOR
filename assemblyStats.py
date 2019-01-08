@@ -117,7 +117,7 @@ def computeNbBreakpoints(file):
 	return bp
 
 #Compute the genome coverage of the alignments
-def computeCoverage(readsBaseName):
+def computeCoverage(readsBaseName, reference):
 	cmdConvertToBam = "./samtools/samtools view -Sb " + readsBaseName + ".sam"
 	outBam = open(readsBaseName + ".bam", 'w')
 	cmdSortBam = "./samtools/samtools sort " + readsBaseName + ".bam"
