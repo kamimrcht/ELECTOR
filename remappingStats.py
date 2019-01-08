@@ -102,7 +102,7 @@ def generateResults(reads, reference, threads, logFile):
 	avId = averageIdentity(readsBaseName + ".id")
 	cov = computeCoverage(readsBaseName, reference)
 
-	print("Average identity : " + str(round(avId, 3)) + "%")
-	print("Genome covered : " + str(round(cov, 3)) + "%")
-	logFile.write("Average identity : " + str(round(avId, 3)) + "%\nGenome covered : " + str(round(cov, 3)) + "%\n")
+	print("Average identity : " + str(round(avId, 4)) + "%")
+	print("Genome covered : " + str(round(cov, 4)) + "%")
+	logFile.write("Average identity : " + str(round(avId, 4)) + "%\nGenome covered : " + str(round(cov, 4)) + "%\n")
 	return str(avId), str(cov)
