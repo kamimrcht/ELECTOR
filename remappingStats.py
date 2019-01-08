@@ -65,20 +65,8 @@ def averageIdentity(alignments):
 	f.close()
 	return avId / nbReads
 
-def generateResults(reads, reference, threads, logFile):
-	threads = str(threads)
-
-	readsBaseName = os.path.splitext(reads)[0]
-	cmdMakeIndex = "./bwa/bwa index " + reference
-	cmdAlign = "./bwa/bwa mem -t " + threads + " " + reference + " " + reads
-	outSam = open(readsBaseName + ".sam", 'w')
-	outErr = open("/dev/null", 'w')
-	subprocessLauncher(cmdMakeIndex, outErr, outErr)
-	subprocessLauncher(cmdAlign, outSam, outErr)
-	outSam.close()
-	outErr.close()
-	computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
-	avId = averageIdentity(readsBaseName + ".id")
+#Compute the genome coverage of the alignments
+def computeCoverage(readsBaseName):
 	cmdConvertToBam = "./samtools/samtools view -Sb " + readsBaseName + ".sam"
 	outBam = open(readsBaseName + ".bam", 'w')
 	cmdSortBam = "./samtools/samtools sort " + readsBaseName + ".bam"
@@ -94,6 +82,22 @@ def generateResults(reads, reference, threads, logFile):
 	refLength = getTotalLength(reference)
 	inCov = open(readsBaseName + ".cov")
 	coveredBases = sum(1 for line in inCov)
+
+def generateResults(reads, reference, threads, logFile):
+	threads = str(threads)
+
+	readsBaseName = os.path.splitext(reads)[0]
+	cmdMakeIndex = "./bwa/bwa index " + reference
+	cmdAlign = "./bwa/bwa mem -t " + threads + " " + reference + " " + reads
+	outSam = open(readsBaseName + ".sam", 'w')
+	outErr = open("/dev/null", 'w')
+	subprocessLauncher(cmdMakeIndex, outErr, outErr)
+	subprocessLauncher(cmdAlign, outSam, outErr)
+	outSam.close()
+	outErr.close()
+	computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
+	avId = averageIdentity(readsBaseName + ".id")
+	coveredBases = computeCoverage(readsBaseName)
 	inCov.close()
 
 	print("Average identity : " + str(round(avId, 3)) + "%")

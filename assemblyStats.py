@@ -116,8 +116,28 @@ def computeNbBreakpoints(file):
 	bp = int(l[0]) + int(l[2])
 	return bp
 
+#Compute the genome coverage of the alignments
+def computeCoverage(readsBaseName):
+	cmdConvertToBam = "./samtools/samtools view -Sb " + readsBaseName + ".sam"
+	outBam = open(readsBaseName + ".bam", 'w')
+	cmdSortBam = "./samtools/samtools sort " + readsBaseName + ".bam"
+	outSBam = open(readsBaseName + "_sorted.bam", 'w')
+	cmdGetCov = "./samtools/samtools depth " + readsBaseName + "_sorted.bam"
+	outCov = open(readsBaseName + ".cov", 'w')
+	subprocessLauncher(cmdConvertToBam, outBam)
+	outBam.close()
+	subprocessLauncher(cmdSortBam, outSBam)
+	outSBam.close()
+	subprocessLauncher(cmdGetCov, outCov)
+	outCov.close()
+	refLength = getTotalLength(reference)
+	inCov = open(readsBaseName + ".cov")
+	coveredBases = sum(1 for line in inCov)
+
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
+
+	readsBaseName = os.path.splitext(reads)[0]
 	nbContigs = runAssembly(reads, threads)
 	alignContigs((os.path.splitext(reads)[0]), reference, threads)
 	nbContigsNGs = computeContigsNbAndNG50((os.path.splitext(reads)[0]) + ".contigs.sam", getTotalLength(reference))
@@ -125,11 +145,14 @@ def generateResults(reads, reference, threads, logFile):
 	NG50 = nbContigsNGs[1]
 	NG75 = nbContigsNGs[2]
 	nbBreakpoints = computeNbBreakpoints((os.path.splitext(reads)[0]))
+	coveredBases = computeCoverage(readsBaseName);
+	cov = float(coveredBases / refLength * 100)
 
 	print("Number of contigs : " + str(nbContigs))
 	print("Number of aligned contigs : " + str(nbAlContigs))
 	print("Number of breakpoints : " + str(nbBreakpoints))
 	print("NGA50 : " + str(NG50))
 	print("NGA75 : " + str(NG75))
-	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n")
+	print("Genome covered : " + str(round(cov, 3)) + "%")
+	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "%\n Genome covered : " + print("Genome covered : " + str(round(cov, 3)) + "%\n"))
 	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75)
