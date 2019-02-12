@@ -22,7 +22,6 @@ def getNbReads(reads):
 		if line[0] == '>':
 			nb = nb + 1
 		line = f.readline()
-		line = f.readline()
 	return nb
 
 def getNbAlignedReads(reads):
