@@ -19,7 +19,8 @@ def getNbReads(reads):
 	f = open(reads)
 	line = f.readline()
 	while line != '':
-		nb = nb + 1
+		if line[0] == '>':
+			nb = nb + 1
 		line = f.readline()
 		line = f.readline()
 	return nb
