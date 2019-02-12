@@ -24,7 +24,7 @@ def getNbReads(reads):
 		line = f.readline()
 	return nb
 
-def getNbAlignedReads(alignedReads):
+def getNbAlignedReads(reads):
 	nb = 0
 	f = open(reads)
 	line = f.readline()
