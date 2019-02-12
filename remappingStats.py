@@ -14,6 +14,25 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
 	p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
 	return p
 
+def getNbReads(reads):
+	nb = 0
+	f = open(reads)
+	line = f.readline()
+	while line != '':
+		nb = nb + 1
+		line = f.readline()
+		line = f.readline()
+	return nb
+
+def getNbAlignedReads(alignedReads):
+	nb = 0
+	f = open(reads)
+	line = f.readline()
+	while line != '':
+		nb = nb + 1
+		line = f.readline()
+	return nb
+
 #Returns the total length of the sequences contained in reference.
 def getTotalLength(reference):
 	totalLength = 0
@@ -101,8 +120,12 @@ def generateResults(reads, reference, threads, logFile):
 	computeIdentity(readsBaseName + ".sam", readsBaseName + ".id")
 	avId = averageIdentity(readsBaseName + ".id")
 	cov = computeCoverage(readsBaseName, reference)
+	totalReads = getNbReads(reads)
+	alignedReads = getNbAlignedReads(readsBaseName + ".id")
+	aligned = float(alignedReads / totalReads * 100)
 
+	print("Aligned reads : " + str(round(aligned, 4)) + "%")
 	print("Average identity : " + str(round(avId, 4)) + "%")
 	print("Genome covered : " + str(round(cov, 4)) + "%")
-	logFile.write("Average identity : " + str(round(avId, 4)) + "%\nGenome covered : " + str(round(cov, 4)) + "%\n")
+	logFile.write("Aligned reads : " + str(round(aligned, 4)) + " %\nAverage identity : " + str(round(avId, 4)) + "%\nGenome covered : " + str(round(cov, 4)) + "%\n")
 	return str(avId), str(cov)
