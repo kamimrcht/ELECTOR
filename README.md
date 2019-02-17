@@ -99,12 +99,12 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 
 
 ## Example
-Using files from example:
+Using files from example generated from ~10X _E coli_ long reads:
 
 	cd ELECTOR
 	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect ~/papers/ELECTOR/perfect_reads_elector.fa -corrected ~/papers/ELECTOR/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
 	
-Output will be written in out directory. Here's an example of the log written in stdout:
+Output will be written in ``out`` directory. Here's an example of the log written in stdout (same information can be found in ``out/log``):
 ```
 *********** SUMMARY ***********
 Assessed reads:  459
@@ -132,3 +132,21 @@ Number of substitutions in uncorrected:  154842
 Number of substitutions in corrected:  12148
 Ratio of homopolymer sizes in corrected vs reference: 0.9925
 ```
+These results are recalled in out/log and out/summary.pdf along with figures:
+
+![alt text](Images/plot_recall_precision.png "recall precision")
+Recall and precision computed for each read after correction.
+Recall is the rate of correct bases out of bases that needed correction in the
+original read, precision is the rate of correct bases out of the number of bases
+that were modified by the correction method.
+
+![alt text](Images/plot_size_distribution.png  "size distribution")
+ Size distributions after correction. ”Sequences” relate to each
+fasta sequence of the corrected file. ”Reads” relate to corrected reads. In case
+of split reads, a ”read” can be composed of two ”sequences” for instance. This
+is why we report two different distributions. In case no read is split, we only
+report read length distribution.
+
+
+
+ 
