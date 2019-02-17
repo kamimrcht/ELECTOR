@@ -102,6 +102,33 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 Using files from example:
 
 	cd ELECTOR
-	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect ~/papers/ELECTOR/perfect_reads_elector.fa -corrected ~/papers/ELECTOR/corrected_reads.fa -output out -split -corrector lordec -simulator simlord
+	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect ~/papers/ELECTOR/perfect_reads_elector.fa -corrected ~/papers/ELECTOR/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
 	
-Output will be written in out directory.
+Output will be written in out directory. Here's an example of the log written in stdout:
+```
+*********** SUMMARY ***********
+Assessed reads:  459
+Throughput (uncorrected) 4367089
+Throughput (corrected):  4454164
+Recall: 0.995006
+Precision: 0.9938972
+Average correct bases rate (uncorrected):  0.8970857918784844
+Error rate (uncorrected): 0.10291420812151564
+Average correct bases rate (corrected):  0.9938413
+Error rate (corrected): 0.006158699999999961
+Number of trimmed/split reads: 37
+Mean missing size in trimmed/split reads: 2406.6
+Number of over-corrected reads by extention:  4
+Mean extension size in over-corrected reads:  40.0
+%GC in reference reads:  51.1
+%GC in corrected reads:  51.1
+Number of corrected reads which length is < 10.0 % of the original read: 25
+Number of very low quality corrected reads:  0
+Number of insertions in uncorrected:  159839
+Number of insertions in corrected:  8119
+Number of deletions in uncorrected:  160207
+Number of deletions in corrected:  8161
+Number of substitutions in uncorrected:  154842
+Number of substitutions in corrected:  12148
+Ratio of homopolymer sizes in corrected vs reference: 0.9925
+```
