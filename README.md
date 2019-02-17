@@ -22,13 +22,13 @@ EvaLuation of Error Correction Tools for lOng Reads
 	
 	./install.sh
 
-Binaries are then in ./bin
+Binaries are then in ./bin. ELECTOR can be run using `elector.py` in the main directory.
 
 ## Running ELECTOR
 
 ELECTOR can be run with:
 
-	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName
+	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
 
 where
 
@@ -44,18 +44,20 @@ where
 
 * simulatorName is the simulator that was used to simulate the long reads. Please see the list of compatible simulators below.
 
+* out is a directory where to write the output
+
 
 The reference reads can also be directly provided, with:
 
 	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
 	
-If the corrected long reads are split, the -split option MUST be provided to ELECTOR.
+If the corrected long reads are **split**, the -split option MUST be provided to ELECTOR.
 
 ## Help
 
 	python3 elector.py -h
 	
-## Compatible correctors
+## Current compatible correctors
 
 * Proovread
 
@@ -95,69 +97,11 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 
 ## Output
 
-If a corrector has been provided using the -tool option, the program outputs the following:
-
-* corrector_msa_profile.txt
-
-* msa.fa
-
-Else, the output files must be
-
-* msa_profile.txt
-
-* msa.fa
-
-The analysis of the correction per read is printed in corrector_msa_profile.txt or msa_profile.txt.
-For each read, this file comes in three parts:
-
-* A header with the identifier of the read, for instance:
-	>read 45
-
-* The alignment profile. For correct bases untouched by the corrector, we leave a blank space. For erroneous bases corrected, we print a "*". For erroneous bases left uncorrected, we print a "M". For positions were the corrector inserted a wrong base, we output a "!". For instance:
-
-	     *                            M   M             MM                    M            M     M      M M      MM   *                         M              M  M     *         * **
-	     *        **             *       *         *                      *   *   *         ***    *            *                                    *                                 
-	          *       *              M        * !                          *       *                           **         *          *                       *                   **    
-	               *                *  **          *** **        * ***           *     **          MM    M  *         *   *      *       *    *                  *  *           *      
-	                        **      *                 * * **  *            *         *                     *     *                 ***             *  *         *              *       
-	                            *                  * *                 *                           *  **      *                         *   *        *  *               M   M          
-	                                 **** *        *                              M
-
-
-* The false negative (FN), false positive (FP) and true positive (TP) counts for this read.
-
-	FN = sum(M)
-	
-	FP = sum(!)
-	
-	TP = sum(*)
-
-The last lines report of summary of the results. They provide the recall and precision of the tools and its runtime.
-
-	recall = TP/(TP+FN)
-	precision = TP/(TP+FP)
-
-They also provide the number of trimmed reads and the mean size of missing subsequence in trimmed regions.
-For trimmed reads, recall and precision are only computed on the region that is actually corrected.
-If a corrected sequence is a truncated read, missing parts will also be reported in the header
-For instance:
-
-	>read 0 splitted_pos1:66 splitted_pos865:1072
-
-indicates that a first region is missing in the beginning of the read (65 nucleotides), and a second in the end (till the 1072th last nucleotide).
-
-The program also recalls precision, recall and runtime for each tool in the standard output.
-
-The multiple alignment that was used to compute these results is found in msa.fa.
-
-# Toy tests
 
 ## Example
+Using files from example:
 
-Generate reference reads:
-
-	python3 elector.py -reference example/example_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads -simulator simlord
-
-Directly provide reference reads:
-
-	python3 elector.py -perfect example/Simlord/simulatedReads_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads.fasta
+	cd ELECTOR
+	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect ~/papers/ELECTOR/perfect_reads_elector.fa -corrected ~/papers/ELECTOR/corrected_reads.fa -output out -split -corrector lordec -simulator simlord
+	
+Output will be written in out directory.
