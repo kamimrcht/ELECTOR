@@ -22,13 +22,13 @@ EvaLuation of Error Correction Tools for lOng Reads
 	
 	./install.sh
 
-Binaries are then in ./bin
+Binaries are then in ./bin. ELECTOR can be run using `elector.py` in the main directory.
 
 ## Running ELECTOR
 
 ELECTOR can be run with:
 
-	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName
+	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
 
 where
 
@@ -44,18 +44,20 @@ where
 
 * simulatorName is the simulator that was used to simulate the long reads. Please see the list of compatible simulators below.
 
+* out is a directory where to write the output
+
 
 The reference reads can also be directly provided, with:
 
 	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
 	
-If the corrected long reads are split, the -split option MUST be provided to ELECTOR.
+If the corrected long reads are **split**, the -split option MUST be provided to ELECTOR.
 
 ## Help
 
 	python3 elector.py -h
 	
-## Compatible correctors
+## Current compatible correctors
 
 * Proovread
 
@@ -95,69 +97,38 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 
 ## Output
 
-If a corrector has been provided using the -tool option, the program outputs the following:
-
-* corrector_msa_profile.txt
-
-* msa.fa
-
-Else, the output files must be
-
-* msa_profile.txt
-
-* msa.fa
-
-The analysis of the correction per read is printed in corrector_msa_profile.txt or msa_profile.txt.
-For each read, this file comes in three parts:
-
-* A header with the identifier of the read, for instance:
-	>read 45
-
-* The alignment profile. For correct bases untouched by the corrector, we leave a blank space. For erroneous bases corrected, we print a "*". For erroneous bases left uncorrected, we print a "M". For positions were the corrector inserted a wrong base, we output a "!". For instance:
-
-	     *                            M   M             MM                    M            M     M      M M      MM   *                         M              M  M     *         * **
-	     *        **             *       *         *                      *   *   *         ***    *            *                                    *                                 
-	          *       *              M        * !                          *       *                           **         *          *                       *                   **    
-	               *                *  **          *** **        * ***           *     **          MM    M  *         *   *      *       *    *                  *  *           *      
-	                        **      *                 * * **  *            *         *                     *     *                 ***             *  *         *              *       
-	                            *                  * *                 *                           *  **      *                         *   *        *  *               M   M          
-	                                 **** *        *                              M
-
-
-* The false negative (FN), false positive (FP) and true positive (TP) counts for this read.
-
-	FN = sum(M)
-	
-	FP = sum(!)
-	
-	TP = sum(*)
-
-The last lines report of summary of the results. They provide the recall and precision of the tools and its runtime.
-
-	recall = TP/(TP+FN)
-	precision = TP/(TP+FP)
-
-They also provide the number of trimmed reads and the mean size of missing subsequence in trimmed regions.
-For trimmed reads, recall and precision are only computed on the region that is actually corrected.
-If a corrected sequence is a truncated read, missing parts will also be reported in the header
-For instance:
-
-	>read 0 splitted_pos1:66 splitted_pos865:1072
-
-indicates that a first region is missing in the beginning of the read (65 nucleotides), and a second in the end (till the 1072th last nucleotide).
-
-The program also recalls precision, recall and runtime for each tool in the standard output.
-
-The multiple alignment that was used to compute these results is found in msa.fa.
-
-# Toy tests
 
 ## Example
+Using files from example:
 
-Generate reference reads:
-
-	python3 elector.py -reference example/example_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads -simulator simlord
-
-Directly provide reference reads:
-
-	python3 elector.py -perfect example/Simlord/simulatedReads_reference.fasta -corrected example/Simlord/correctedReads.fasta -uncorrected example/Simlord/simulatedReads.fasta
+	cd ELECTOR
+	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect ~/papers/ELECTOR/perfect_reads_elector.fa -corrected ~/papers/ELECTOR/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
+	
+Output will be written in out directory. Here's an example of the log written in stdout:
+```
+*********** SUMMARY ***********
+Assessed reads:  459
+Throughput (uncorrected) 4367089
+Throughput (corrected):  4454164
+Recall: 0.995006
+Precision: 0.9938972
+Average correct bases rate (uncorrected):  0.8970857918784844
+Error rate (uncorrected): 0.10291420812151564
+Average correct bases rate (corrected):  0.9938413
+Error rate (corrected): 0.006158699999999961
+Number of trimmed/split reads: 37
+Mean missing size in trimmed/split reads: 2406.6
+Number of over-corrected reads by extention:  4
+Mean extension size in over-corrected reads:  40.0
+%GC in reference reads:  51.1
+%GC in corrected reads:  51.1
+Number of corrected reads which length is < 10.0 % of the original read: 25
+Number of very low quality corrected reads:  0
+Number of insertions in uncorrected:  159839
+Number of insertions in corrected:  8119
+Number of deletions in uncorrected:  160207
+Number of deletions in corrected:  8161
+Number of substitutions in uncorrected:  154842
+Number of substitutions in corrected:  12148
+Ratio of homopolymer sizes in corrected vs reference: 0.9925
+```
