@@ -134,13 +134,21 @@ Ratio of homopolymer sizes in corrected vs reference: 0.9925
 ```
 These results are recalled in out/log and out/summary.pdf along with figures:
 
-![alt text](Images/plot_recall_precision.png "recall precision")
+<p align="center">
+<img src="Images/plot_recall_precision.png" width="40%">
+</p>
+<!--![alt text](Images/plot_recall_precision.png "recall precision")-->
+
 Recall and precision computed for each read after correction.
 Recall is the rate of correct bases out of bases that needed correction in the
 original read, precision is the rate of correct bases out of the number of bases
 that were modified by the correction method.
 
-![alt text](Images/plot_size_distribution.png  "size distribution")
+<p align="center">
+<img src="Images/plot_size_distribution.png" width="40%">
+</p>
+<!--![alt text](Images/plot_size_distribution.png  "size distribution")-->
+
  Size distributions after correction. ”Sequences” relate to each
 fasta sequence of the corrected file. ”Reads” relate to corrected reads. In case
 of split reads, a ”read” can be composed of two ”sequences” for instance. This
