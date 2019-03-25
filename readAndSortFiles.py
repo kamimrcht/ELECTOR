@@ -193,7 +193,17 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
-	elif corrector == "nas":
+	elif corrector == "lsc":
+		cmdFormatHeader = "sed 's/|.*//g' " + correctedReads
+		formattedReads = open(name, 'w')
+                subprocessLauncher(cmdFormatHeader, formattedReads)
+                formattedReads.close()
+	elif corrector == "ectools":
+		cmdFormatHeader = "sed 's/_corrected.*//g' " + correctedReads
+		formattedReads = open(name, 'w')
+                subprocessLauncher(cmdFormatHeader, formattedReads)
+                formattedReads.close()
+	elif corrector == "nas" or corrector == "hercules" or corrector == "fmlrc":
 		#already formatted
 		pass
 	elif corrector == "jabba":
@@ -252,7 +262,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "daccord":
 		#~ formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
 		formatDaccord(correctedReads, uncorrectedReads, dazzDb, name)
-	elif corrector == "mecat":
+	elif corrector == "mecat" or corrector == "flas":
 		#~ formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 		formatMecat(correctedReads, uncorrectedReads, name)
 	#~ else: #None corrector
