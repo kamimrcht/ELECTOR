@@ -398,10 +398,10 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 			# 	print(header)
 			# 	print(nbS, nbH)
 			out.write(">" + header + "\n" + seq + "\n")
+			clipsNb[header] = [nbSLeft, nbSRight]
 		elif line[1] == "4":
 			out.write(">" + line[0] + "\n" + "\n")
 		line = f.readline().split("\t")
-		clipsNb[header] = [nbSLeft, nbSRight]
 	f.close()
 	out.close()
 
