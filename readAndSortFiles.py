@@ -201,8 +201,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "ectools":
 		cmdFormatHeader = "sed 's/_corrected.*//g' " + correctedReads
 		formattedReads = open(name, 'w')
-                subprocessLauncher(cmdFormatHeader, formattedReads)
-                formattedReads.close()
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "nas" or corrector == "hercules" or corrector == "fmlrc":
 		#already formatted
 		pass
