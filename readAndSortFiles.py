@@ -196,8 +196,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "lsc":
 		cmdFormatHeader = "sed 's/|.*//g' " + correctedReads
 		formattedReads = open(name, 'w')
-                subprocessLauncher(cmdFormatHeader, formattedReads)
-                formattedReads.close()
+		subprocessLauncher(cmdFormatHeader, formattedReads)
+		formattedReads.close()
 	elif corrector == "ectools":
 		cmdFormatHeader = "sed 's/_corrected.*//g' " + correctedReads
 		formattedReads = open(name, 'w')
