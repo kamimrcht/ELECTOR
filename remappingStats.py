@@ -24,6 +24,16 @@ def getNbReads(reads):
 		line = f.readline()
 	return nb
 
+def getTotalSize(reads):
+	size = 0
+	f = open(reads)
+	line = f.readline()[:-1]
+	while line != '':
+		if line[0] != '>':
+			size += len(line)
+		line = f.readline()[:-1]
+	return size
+
 def getNbAlignedReads(reads):
 	nb = 0
 	f = open(reads)
@@ -121,11 +131,15 @@ def generateResults(reads, reference, threads, logFile):
 	avId = averageIdentity(readsBaseName + ".id")
 	cov = computeCoverage(readsBaseName, reference)
 	totalReads = getNbReads(reads)
+	totalSize = getTotalSize(reads)
 	alignedReads = getNbAlignedReads(readsBaseName + ".id")
 	aligned = float(alignedReads / totalReads * 100)
 
+	print("Number of reads : " + str(totalReads))
+	print("Number of bases : " + str(totalSize))
+	print("Average length : " + str(totalSize / totalReads))
 	print("Aligned reads : " + str(round(aligned, 4)) + "%")
 	print("Average identity : " + str(round(avId, 4)) + "%")
 	print("Genome covered : " + str(round(cov, 4)) + "%")
-	logFile.write("Aligned reads : " + str(round(aligned, 4)) + " %\nAverage identity : " + str(round(avId, 4)) + "%\nGenome covered : " + str(round(cov, 4)) + "%\n")
+	logFile.write("Number of reads : " + str(totalReads) + "Number of bases : " + str(totalSize) + "Average length : " + str(totalSize / totalReads) + "Aligned reads : " + str(round(aligned, 4)) + " %\nAverage identity : " + str(round(avId, 4)) + "%\nGenome covered : " + str(round(cov, 4)) + "%\n")
 	return str(avId), str(cov)
