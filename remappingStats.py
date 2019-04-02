@@ -32,6 +32,7 @@ def getTotalSize(reads):
 		if line[0] != '>':
 			size += len(line)
 		line = f.readline()[:-1]
+	f.close()
 	return size
 
 def getNbAlignedReads(reads):
