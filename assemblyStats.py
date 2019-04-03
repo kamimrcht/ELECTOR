@@ -91,7 +91,7 @@ def computeIdentity(alignments, ids):
 			nbs = [int(i) for i in (re.findall('\d+', q))]
 			dels = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
 			clips = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar))])
-			out.write(str(sum(nbs) / (l+dels) * 100) + '\n')
+			out.write(str(sum(nbs) / (l+dels-clips) * 100) + '\n')
 		line = f.readline()
 	f.close()
 	out.close()
@@ -196,6 +196,6 @@ def generateResults(reads, reference, threads, logFile):
 	print("NGA50 : " + str(NG50))
 	print("NGA75 : " + str(NG75))
 	print("Genome covered : " + str(round(cov, 4)) + "%")
-	print("Identity : " + str(round(id, 4)) + "%")
-	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "Genome covered : " + str(round(cov, 4)) + "%\n" + "Identity : " + str(round(id, 4)) + "%\n")
+#	print("Identity : " + str(round(id, 4)) + "%")
+	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "Genome covered : " + str(round(cov, 4)) + "%\n")
 	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75), str(cov)
