@@ -120,11 +120,9 @@ def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
 
 	readsBaseName = os.path.splitext(reads)[0]
-	cmdMakeIndex = "./bwa/bwa index " + reference
-	cmdAlign = "./bwa/bwa mem -t " + threads + " " + reference + " " + reads
+	cmdAlign = "./minimap2/minimap2 -a --MD -t " + threads + " " + reference + " " + reads
 	outSam = open(readsBaseName + ".sam", 'w')
 	outErr = open("/dev/null", 'w')
-	subprocessLauncher(cmdMakeIndex, outErr, outErr)
 	subprocessLauncher(cmdAlign, outSam, outErr)
 	outSam.close()
 	outErr.close()

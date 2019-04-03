@@ -64,7 +64,7 @@ def runAssembly(readsF, nbThreads):
 
 #Align the contigs to the reference genome
 def alignContigs(contigs, reference, nbThreads):
-	cmdAl = "minimap2 -a --MD -t " + nbThreads + " " + reference + " " + contigs + ".contigs.fa"
+	cmdAl = "./minimap2/minimap2 -a --MD -t " + nbThreads + " " + reference + " " + contigs + ".contigs.fa"
 	outAl = open(contigs + ".contigs.sam", 'w')
 	outEr = open("/dev/null", 'w')
 	subprocessLauncher(cmdAl, outAl, outEr)
