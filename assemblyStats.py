@@ -91,7 +91,7 @@ def computeIdentity(alignments, ids):
 			nbs = [int(i) for i in (re.findall('\d+', q))]
 			dels = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
 			clips = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar))])
-			out.write(str(sum(nbs) / (l+dels-clips) * 100) + '\n')
+			out.write(str(sum(nbs) / (l+dels) * 100) + '\n')
 		line = f.readline()
 	f.close()
 	out.close()
