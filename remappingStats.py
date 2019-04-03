@@ -72,7 +72,8 @@ def computeIdentity(alignments, ids):
 		if t[1] == "0" or t[1] == "16":
 			pos = t[3]
 			l = len(t[9])
-			q = t[12]
+#			q = t[12]
+			q = line.split("MD:Z:")[1]
 			cigar = t[5]
 			nbs = [int(i) for i in (re.findall('\d+', q))]
 			dels = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
