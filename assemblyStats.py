@@ -64,12 +64,50 @@ def runAssembly(readsF, nbThreads):
 
 #Align the contigs to the reference genome
 def alignContigs(contigs, reference, nbThreads):
-	cmdAl = "./bwa/bwa mem -t " + nbThreads + " " + reference + " " + contigs + ".contigs.fa"
+	cmdAl = "minimap2 -a --MD -t " + nbThreads + " " + reference + " " + contigs + ".contigs.fa"
 	outAl = open(contigs + ".contigs.sam", 'w')
 	outEr = open("/dev/null", 'w')
 	subprocessLauncher(cmdAl, outAl, outEr)
 	outAl.close()
 
+#Computes the idetity of each alignement in the file alignements.
+#Stores the results in the file ids.
+def computeIdentity(alignments, ids):
+	f = open(alignments)
+	out = open(ids, 'w')
+	line = f.readline()
+	#Skip headers
+	while line[0] == "@":
+		line = f.readline()
+	while line != '':
+		t = line.split("\t")
+		#Compute identity only for full alignments
+		if t[1] == "0" or t[1] == "16":
+			pos = t[3]
+			l = len(t[9])
+			#q = t[12]
+			q = line.split("MD:Z:")[1]
+			cigar = t[5]
+			nbs = [int(i) for i in (re.findall('\d+', q))]
+			dels = sum([int(i.split("D")[0]) for i in (re.findall('\d+D', cigar))])
+			clips = sum([int(i.split("S")[0]) for i in (re.findall('\d+S', cigar))])
+			out.write(str(sum(nbs) / (l+dels-clips) * 100) + '\n')
+		line = f.readline()
+	f.close()
+	out.close()
+
+#Computes the average identity of the alignements in the file alignments
+def averageIdentity(alignments):
+	f = open(alignments)
+	nbReads = 0
+	avId = 0
+	s = f.readline()
+	while s != '':
+		nbReads = nbReads + 1
+		avId = avId + float(s)
+		s = f.readline()
+	f.close()
+	return avId / nbReads
 
 #Compute the number of aligned contigs and the NGA50 and NGA75 of the aligned contigs contained
 #in the file contigs, based on the provided genome size genSize.
@@ -148,7 +186,9 @@ def generateResults(reads, reference, threads, logFile):
 	NG50 = nbContigsNGs[1]
 	NG75 = nbContigsNGs[2]
 	nbBreakpoints = computeNbBreakpoints((os.path.splitext(reads)[0]))
-	cov = computeCoverage(readsBaseName, reference)
+	cov = computeCoverage(readsBaseName + ".contigs", reference)
+	computeIdentity(readsBaseName + ".contigs.sam", readsBaseName + ".contigs.id")
+	id = averageIdentity(readsBaseName + ".contigs.id")
 
 	print("Number of contigs : " + str(nbContigs))
 	print("Number of aligned contigs : " + str(nbAlContigs))
@@ -156,5 +196,6 @@ def generateResults(reads, reference, threads, logFile):
 	print("NGA50 : " + str(NG50))
 	print("NGA75 : " + str(NG75))
 	print("Genome covered : " + str(round(cov, 4)) + "%")
-	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "%\n Genome covered : " + "Genome covered : " + str(round(cov, 4)) + "%\n")
+	print("Identity : " + str(round(id, 4)) + "%")
+	logFile.write("Number of contigs : " + str(nbContigs) + "\n" + "Number of aligned contigs : " + str(nbAlContigs) + "\n" + "Number of breakpoints : " + str(nbBreakpoints) + "\n" + "NGA50 : " + str(NG50) + "\n" + "NGA75 : " + str(NG75) + "\n" + "Genome covered : " + str(round(cov, 4)) + "%\n" + "Identity : " + str(round(id, 4)) + "%\n")
 	return str(nbContigs), str(nbAlContigs), str(nbBreakpoints),  str(NG50), str(NG75), str(cov)
