@@ -113,7 +113,7 @@ def main():
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
-		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat" or args.soft == "jabba":
+		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat" or args.soft == "jabba" or args.soft == "fmlrc" or args.soft == "flas" or args.soft == "hercules":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	if simulator is not None:
