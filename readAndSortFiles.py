@@ -72,6 +72,16 @@ def sortPBDCHeaders(infileName, outfileName):
 		outfile.write(str(record.seq)+"\n")
 	outfile.close()
 
+def sortFLASHeaders(infileName, outfileName):
+	handle = open(infileName, "rU")
+	l = SeqIO.parse(handle, "fasta")
+	sortedList = [f for f in sorted(l, key=lambda x : int(x.id.split("/")[0]))]
+	outfile = open(outfileName, 'w')
+	for record in sortedList:
+		outfile.write(">" + record.description+"\n")
+		outfile.write(str(record.seq)+"\n")
+	outfile.close()
+
 # format daccord headers
 def formatDaccord(correctedReads, uncorrectedReads, dazzDb, formattedReads):
 	#dump database
@@ -262,9 +272,12 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 	elif corrector == "daccord":
 		#~ formatDaccord(correctedReads, uncorrectedReads, dazzDb, "corrected_format_daccord.fa")
 		formatDaccord(correctedReads, uncorrectedReads, dazzDb, name)
-	elif corrector == "mecat" or corrector == "flas":
+	elif corrector == "mecat":
 		#~ formatMecat(correctedReads, uncorrectedReads, "corrected_format_mecat.fa")
 		formatMecat(correctedReads, uncorrectedReads, name)
+	elif corrector == "flas":
+		sortFLASHeaders(correctedReads, "tmp_sorted_flas.fa")
+		formatMecat("tmp_sorted_flas.fa", uncorrectedReads, name)
 	#~ else: #None corrector
 
 def loadReference(fRef, simulator):
@@ -438,7 +451,7 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	else:
 		formatHeader(corrector, corrected, uncorrected, dazzDb, split)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split):
+	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split) and corrector != "hercules" and corrector != "fmlrc":
 		newCorrectedFileName = "corrected_format_" + corrector + ".fa"
 		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
 		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
