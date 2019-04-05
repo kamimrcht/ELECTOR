@@ -291,7 +291,10 @@ def loadReference(fRef, simulator):
 	while id != "":
 		seq = f.readline()[:-1]
 		refSeqs[id] = seq
-		id = f.readline()[1:-1].split(" ")[0]
+		if simulator == "nanosim" or simulator == "real":
+			id = f.readline()[1:-1].strip().split(" ")[0].replace("_", "-")
+		else:
+			id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
 	f.close()
 	return refSeqs
 
