@@ -20,6 +20,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************"""
 
+
+
 from Bio import SeqIO
 import time
 import argparse
@@ -31,11 +33,9 @@ import re
 import copy
 import statistics
 import utils
-#~ import ast
-#SIZE_CORRECTED_READ_THRESHOLD = 0.1
+from utils import *
 
-#THRESH = 100
-#THRESH2 = 400
+
 
 THRESH=5
 THRESH2=20
@@ -54,6 +54,8 @@ def getSplit(fileName):
 			read = l.split('>')[1].replace(' ','').replace('\t','')
 			readToSplit[read] = int(nb/3)
 	return readToSplit
+
+
 
 #@Camille, modif ici pour les LR corrigés étendus, avec d'autres fonctions de détection de gaps
 def nbLeftGaps(sequence):
@@ -74,6 +76,8 @@ def nbLeftGaps(sequence):
 
 	return totalGaps
 
+
+
 #@Camille, modif ici pour les LR corrigés étendus, avec d'autres fonctions de détection de gaps
 def nbRightGaps(sequence):
 	nbGaps = 0
@@ -93,23 +97,6 @@ def nbRightGaps(sequence):
 
 	return totalGaps
 
-# store corrected reads in a list of tuples [(header, sequence)]
-#~ def getCorrectedReads(correctedReadsFileName):
-	#~ fastaTuple = dict()
-	#~ with open(correctedReadsFileName) as fileIn:
-		#~ for line in fileIn:
-			#~ if ">" in line:
-				#~ header = line.rstrip().split(' ')[0][1:]
-				
-			#~ else:
-				#~ read = line.rstrip()
-				#~ if read != "":
-					
-					#~ if header not in fastaTuple.keys():
-						#~ fastaTuple[header] = [read]
-					#~ else:
-						#~ fastaTuple[header].append(read)
-	#~ return fastaTuple
 
 
 # find long stretches of "." = trimmed or split reads, and return the coordinates of these regions for the corrected line of a msa
@@ -121,9 +108,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 	positionsStretch = []
 	pos = 0
 
-	#~ for pos,ntResult in enumerate(correctedSequence):   # look for gaps in splitted/trimmed corrected read
 	for ntRef,ntResult in zip(referenceSequence, correctedSequence):   # look for gaps in splitted/trimmed corrected read
-		#~ if pos not in gapsPositions:
 			if prev == ".":
 				if ntResult == "." and countGap > 0:  # gaps are dots in msa file
 					countGap += 1
@@ -161,18 +146,12 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 	for i,s in enumerate(positionsStretch):
 		if len(positionsStretch) > 1:
 			if len(s) > 0:
-				#~ if i == 0:
 					if s[0] <= THRESH2:
 						tmpStretch.append([0, s[1]])
-					#~ else:
-						#~ tmpStretch.append([s[0], s[1]])
-				#~ elif i == len(positionsStretch) - 1:
 					if len(correctedSequence) - s[1] <= THRESH2:
 						tmpStretch.append([s[0], len(correctedSequence) - 1])
 					else:
 						tmpStretch.append([s[0], s[1]])
-				#~ else:
-					#~ tmpStretch.append([s[0], s[1]])
 		elif  len(positionsStretch) == 1:
 			if len(s) > 0:
 				if s[0] <= THRESH2:
@@ -181,7 +160,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 					tmpStretch.append([s[0], s[1]])
 				if len(correctedSequence) - s[1] <= THRESH2:
 					tmpStretch[-1][1] = len(correctedSequence) - 1
-		
+
 	#merge
 	tmpStretch2 = []
 	merge = False
@@ -196,7 +175,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 	if not merge: #add the last one
 		if len(tmpStretch) > 0:
 			tmpStretch2.append([tmpStretch[-1][0], tmpStretch[-1][1]])
-		
+
 	stretch = dict()
 
 	#garder seulement aux bords (=split/trimmed)
@@ -207,12 +186,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 		elif s[1] == len(correctedSequence) - 1:
 			if s[1] - s[0] > THRESH2:
 				stretch[s[0]] = s[1]
-	#~ if len(tmpStretch2) > 0:
-		#~ stretch[tmpStretch2[0][0]] = tmpStretch2[0][1]
-		#~ if len(tmpStretch2) > 1:
-			#~ stretch[tmpStretch2[-1][0]] = tmpStretch2[-1][1]
 	return stretch
-
 
 
 
@@ -240,18 +214,12 @@ def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, w
 	outMetrics.close()
 	meanMissingSize = 0
 	if countReadSplit + countReadTrimmed > 0:
-		#~ meanMissingSize = round(sum(missingSize)/len(missingSize),1)
 		meanMissingSize = round(sum(missingSize)/(countReadSplit + countReadTrimmed),1)
 	meanExtendedBases = 0
-	#~ if len(extendedBases) > 0:
-		#~ meanExtendedBases = round(sum(extendedBases)/len(extendedBases),1)
 	if countReadExtended > 0:
-
 		meanExtendedBases = round(sum(extendedBasesCount)/countReadExtended,1)
 	if soft is not None:
 		print(soft)
-
-	
 
 	recall = round(recall, 7)
 	precision = round(precision, 7)
@@ -289,12 +257,16 @@ def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, w
 	print("Number of substitutions in uncorrected: ", str(indelsubsUncorr[2]))
 	print("Number of substitutions in corrected: ", str(indelsubsCorr[2]))
 	print("Ratio of homopolymer sizes in corrected vs reference:", str(ratioHomopolymers))
-	
+
 	logFile.write("*********** SUMMARY ***********\n" + "Assessed reads: " + str(nbReads) +"\nThroughput (uncorrected): " + str(uncorThroughput) + "\nThroughput (corrected): " + str(throughput) + "\nRecall (computed only on corrected bases):" + str(recall)  + "\nPrecision (computed only on corrected bases):" + str(precision) +  "\nAverage correct bases rate (uncorrected):" + str(uncorCorBasesRate) + "\nError rate (uncorrected): " + str(1-uncorCorBasesRate) +  "\nAverage correct bases rate (corrected):" + str(corBasesRate) + "\nError rate (corrected): " + str(1-corBasesRate) + "\nNumber of trimmed/split reads:" + str(countReadSplit + countReadTrimmed) + "\nMean missing size in trimmed/split reads:" + str(meanMissingSize) + "\nNumber of over-corrected reads by extention: " + str(countReadExtended) + "\nMean extension size in over-corrected reads: " + str(meanExtendedBases) + "\n%GC in reference reads: " + str(GCRateRef) + "\n%GC in corrected reads: " + str(GCRateCorr) + "\nNumber of corrected reads which length is <" + str(SIZE_CORRECTED_READ_THRESHOLD*100) + "% of the original read:" + str(smallReadNumber) + "\nNumber of very low quality corrected reads: " + str(wronglyCorrectedReadsNumber) + "\nNumber of insertions in uncorrected: " + str(indelsubsUncorr[0]) +"\nNumber of insertions in corrected: " + str(indelsubsCorr[0]) + "\nNumber of deletions in uncorrected: " + str(indelsubsUncorr[1]) +"\nNumber of deletions in corrected: " + str(indelsubsCorr[1]) + "\nNumber of substitutions in uncorrected: " + str(indelsubsUncorr[2]) +"\nNumber of substitutions in corrected: " + str(indelsubsCorr[2]) + 	"\nRatio of homopolymer sizes in corrected vs reference: " + str(ratioHomopolymers) + "\n")
 	return nbReads, throughput, precision, recall, corBasesRate, 1-corBasesRate, smallReadNumber, wronglyCorrectedReadsNumber, GCRateRef, GCRateCorr, str(countReadSplit + countReadTrimmed) , meanMissingSize,  str(countReadExtended), meanExtendedBases, SIZE_CORRECTED_READ_THRESHOLD,  indelsubsUncorr, indelsubsCorr, countReadSplit + countReadTrimmed, ratioHomopolymers
 
+
+
 def getLen(sequenceMsa):
 	return len(sequenceMsa) - sequenceMsa.count('.')
+
+
 
 # Compute the length distribution of uncorrected and corrected reads
 def outputReadSizeDistribution(correctedFileName, outFileName, outDir, trimmedOrSplit, lenAllReads):
@@ -303,23 +275,15 @@ def outputReadSizeDistribution(correctedFileName, outFileName, outDir, trimmedOr
 	for readSize in lenAllReads:
 		out.write(str(readSize) + " reads\n")
 	if trimmedOrSplit != 0:
-	#~ unco = open(uncorrectedFileName)
 		cor = open(correctedFileName)
-		
-		
-		#~ l = unco.readline()
-		#~ while l != "":
-			#~ l = unco.readline()[:-1]
-			#~ out.write(str(len(l)) + " uncorrected\n")
-			#~ l = unco.readline()
 		l = cor.readline()
 		while l != "":
 			l = cor.readline()[:-1]
 			out.write(str(len(l)) + " sequences\n")
 			l = cor.readline()
-		#~ unco.close()
 		cor.close()
 	out.close()
+
 
 
 # compute ins, del, subs
@@ -329,7 +293,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 	endOfHomopolResult = True
 	okToAppendR = False
 	okToAppendC = False
-	
+
 	if existingCorrectedPositions[position]:
 		##### homopolymers in ref ######
 		if ntRef != '.':
@@ -340,7 +304,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 			else:
 				if okToReportRef: #we were in a homopolymer and it just terminated at this base => report it
 					endOfHomopolRef = True
-	
+
 	#compute only indels in parts of the MSA that actually correspond to a portion that exist in the corrected read
 		if ntResult != ntRef:
 			if ntRef == ".":
@@ -361,14 +325,12 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 
 					else:
 						deleU += 1
-				
+
 		##########" homopolymer in corrected ############
 		if ntResult != '.':
 			if ntResult == reported[1][-1]:
 				okToAppendC = True #elongation of the repeated chain
 				endOfHomopolResult = False #we still are elongating of the repeated chain for corrected read => do not stop
-			#~ else:
-				#~ endOfHomopolResult = False
 
 	if okToAppendC or okToAppendR:
 		reported[0].append(ntRef)
@@ -377,7 +339,7 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 		if not (endOfHomopolRef and endOfHomopolResult):
 			if (not endOfHomopolRef and ntRef != "."):
 				reported= [[ntRef],[ntResult]]
-		
+
 	if endOfHomopolRef and endOfHomopolResult:  #finally report an homopolymer
 		detectedHomopolymer = True
 		ntH = max(set(reported[0]), key=reported[0].count)
@@ -398,8 +360,10 @@ def indels(ntRef, ntUnco, ntResult,  existingCorrectedPositions, position, insU,
 		sizeHomopolReference = max(sizeHomopolR)
 		sizeHomopolCorrected = max(sizeHomopolC)
 		reported = [sizeHomopolReference, sizeHomopolCorrected]
-				
+
 	return insU, deleU, subsU, insC, deleC, subsC, reported, detectedHomopolymer, endOfHomopolRef, okToReportRef
+
+
 
 # compute fp, tp, fn
 # def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, correctedPositions, existingCorrectedPositions, position, corBases, uncorBase, FP, FN, TP, globalFP, globalFN, globalTP):
@@ -425,36 +389,8 @@ def getCorrectionAtEachPosition(ntRef, ntUnco, ntResult, existingCorrectedPositi
 					FP += 1
 				uncorBase += 1
 			uncorUncorBases += 1
-	#correct base rate is computed everywhere
-	#~ else:
-		#~ if existingCorrectedPositions[position]:
-			#~ if ntRef == ntUnco:  
-				#~ if ntUnco != ntResult: #FP
-					#~ globalFP += 1
-					#~ uncorBase += 1
-				#~ else:
-					#~ globalTP += 1
-					#~ corBases += 1
-			#~ else: #error
-				#~ if ntRef == ntResult: #error corrected
-					#~ globalTP += 1
-					#~ corBases += 1
-				#~ else:
-					#~ if ntUnco == ntResult: # error not corrected
-						#~ globalFN += 1
-					#~ else: #new error introduced by corrector
-						#~ globalFP += 1
-					#~ uncorBase += 1
-		#~ else:
-			#~ globalFP += 1
-			#~ globalFN += 1
-					#~ corBases -= 1
-				#~ corBases -= 1
-	#~ if corBases < 0 :
-		#~ corBases = 0
-	#~ if uncorBase < 0:
-		#~ uncorBase = 0
 	return corBases, uncorBase, uncorCorBases, uncorUncorBases, FP, FN, TP
+
 
 
 # get insertion deletion substitution FP, FN, TP and GC rates for a triplet
@@ -503,7 +439,7 @@ def getTPFNFP(reference, corrected, uncorrected,   existingCorrectedPositions, r
 	return FP, TP, FN, corBases, uncorBases, uncorCorBases, uncorUncorBases, GCRateRef, GCRateCorr, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers
 
 
-#~ def outputMetrics(recall, precision, globalRecall, globalPrecision, corBasesRate, missingInRead, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, totalCorBases, totalUncorBases, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, GCRateRefRead, GCRateCorrRead):
+
 def outputMetrics(recall, precision,  corBasesRate, uncorCorBasesRate, missingInRead, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, FPlistForARead, TPlistForARead, FNlistForARead, corBasesForARead, uncorBasesForARead, uncorCorBasesForARead, uncorUncorBasesForARead, totalCorBases, totalUncorBases, uncorTotalCorBases, uncorTOtalUncorBases,  GCRateRefRead, GCRateCorrRead):
 	if FPlistForARead != [] or TPlistForARead != [] or FNlistForARead != [] or corBasesForARead != []:
 		FNsum = sum(FNlistForARead)
@@ -526,18 +462,10 @@ def outputMetrics(recall, precision,  corBasesRate, uncorCorBasesRate, missingIn
 		totalUncorBases += sum(uncorBasesForARead)
 		uncorTotalCorBases += sum(uncorCorBasesForARead)
 		uncorTOtalUncorBases += sum(uncorUncorBasesForARead)
-	#~ if globalFPlistForARead != [] or globalTPlistForARead != [] or globalFNlistForARead != [] :
-		#~ globalFNsum = sum(globalFNlistForARead) + missingInRead + FNsum
-		#~ globalFNsum = sum(globalFNlistForARead) + missingInRead
-		#~ globalTPsum = sum(globalTPlistForARead) + TPsum
-		#~ globalFPsum = sum (globalFPlistForARead) + FPsum
-		#~ globalRec = globalTPsum / (globalTPsum + globalFNsum) if (globalTPsum + globalFNsum) != 0 else 0
-		#~ globalPrec = globalTPsum / (globalTPsum + globalFPsum) if (globalTPsum + globalFPsum) != 0 else 0
-		#~ globalPrecision.append(globalPrec)
-		#~ globalRecall.append(globalRec)
 	GCRateRef.append(GCRateRefRead)
 	GCRateCorr.append(GCRateCorrRead)
 	return recall, precision,  corBasesRate, uncorCorBasesRate, missingSize, GCRateRef, GCRateCorr, outPerReadMetrics, totalCorBases, totalUncorBases
+
 
 
 def gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtended, isTrimmed, extendedBasesCount, missingSize):
@@ -568,15 +496,13 @@ def gapsAndExtensions(reference, corrected, uncorrected, gapsPositions, isExtend
 		isTrimmed = True
 	return gapsPositions, isExtended , extendedBasesCount, missingSize, stretches, isTrimmed, totalGaps
 
-#~ def nucleotideMetrics(reference, corrected, uncorrected, correctedPositionsRead, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers, gapsPositions, indelsubsCorr,  corBasesForARead, uncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, globalFPlistForARead, globalTPlistForARead, globalFNlistForARead, allLenCorrected):
+
+
 def nucleotideMetrics(reference, corrected, uncorrected,  existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers, gapsPositions, indelsubsCorr,  corBasesForARead, uncorBasesForARead, uncorCorBasesForARead, uncorUncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead,  allLenCorrected, allLenUncorrected):
 	FP, TP, FN, corBases, uncorBases, uncorCorBases, uncorUncorBases, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU, insC, deleC, subsC, ratioHomopolymers = getTPFNFP(reference, corrected, uncorrected, existingCorrectedPositionsInThisRead, reportedThreshold, ratioHomopolymers, gapsPositions)
 	indelsubsCorr[0] += insC
 	indelsubsCorr[1] += deleC
 	indelsubsCorr[2] += subsC
-	#~ indelsubsUncorr[0] += insU
-	#~ indelsubsUncorr[1] += deleU
-	#~ indelsubsUncorr[2] += subsU
 	corBasesForARead.append(corBases)
 	uncorBasesForARead.append(uncorBases)
 	uncorCorBasesForARead.append(uncorCorBases)
@@ -585,8 +511,9 @@ def nucleotideMetrics(reference, corrected, uncorrected,  existingCorrectedPosit
 	TPlistForARead.append(TP)
 	FNlistForARead.append(FN)
 	allLenCorrected.append(getLen(corrected))
-	#allLenUncorrected.append(getLen(uncorrected))
 	return indelsubsCorr,  corBasesForARead, uncorBasesForARead, uncorCorBasesForARead, uncorUncorBasesForARead, FPlistForARead, TPlistForARead, FNlistForARead, allLenCorrected, allLenUncorrected, GCRateRefRead, GCRateCorrRead, insU, deleU, subsU
+
+
 
 def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThreshold, clipsNb, readsToSplit):
 	msa = open(fileName, 'r')
@@ -594,8 +521,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	lines = msa.readlines()
 	nbReadsToDivide = 0
 	readNo = 0
-	#~ correctedReadsList = getCorrectedReads(correctedFileName)
-	#~ upperCasePositions = getUpperCasePositions(correctedReadsList, lines)
 	countReadSplit = 0
 	countReadExtended = 0
 	countReadTrimmed = 0
@@ -638,7 +563,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 			if nbFragments > 1: #split read
 				countReadSplit += 1
 				splits = 1
-				#~ realNotMissing = 0
 				realNotMissing = []
 				tmpindelsubsUncorr = [[],[],[]]
 				while splits <= nbFragments:
@@ -664,7 +588,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 						for pos,cor in enumerate(existingCorrectedPositionsInThisRead):
 							if cor:
 								realNotMissing.append(pos)
-
 						indelsubsUncorr[0] += insU
 						indelsubsUncorr[1] += deleU
 						indelsubsUncorr[2] += subsU
@@ -738,8 +661,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 	GCRateCorr = round(sum(GCRateCorr) / len(GCRateCorr),3)
 	recall = sum(recall)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	precision = sum(precision)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
-	#~ globalRecall = sum(globalRecall)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
-	#~ globalPrecision = sum(globalPrecision)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	corBasesRate = sum(corBasesRate)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	uncorCorBasesRate = sum(uncorCorBasesRate)*1.0 / nbReadsToDivide if nbReadsToDivide != 0 else 0
 	throughput = sum(allLenCorrected)
@@ -752,56 +673,6 @@ def computeMetrics(fileName, outPerReadMetrics, correctedFileName, reportedThres
 		meanRatioHomopolymers = 1
 	return nbReadsToDivide, throughput, uncorThroughput, precision, recall, corBasesRate, errorRate, uncorCorBasesRate, uncorErrorRate, missingSize,  GCRateRef, GCRateCorr, indelsubsUncorr, indelsubsCorr, meanRatioHomopolymers, allLenCorrected, countReadSplit, countReadTrimmed, countReadExtended, extendedBasesCount
 
-
-# get the position of nt in uppercase to compute recall and precision only at these positions
-#~ def getUpperCasePositions(correctedReadsList, lines):
-	#~ upperCasePositions = [] # positions to take into account in the msa
-	#~ nbLines = 3 # starting at the first corrected sequence
-	#~ headerNo = lines[0].split(">")[1].split(" ")[0]
-	#~ headerPrev = ""
-	
-	#~ while nbLines < len(lines):
-		#~ headerNo = lines[nbLines - 1].split(">")[1].split(" ")[0]
-		#~ correctedMsa = lines[nbLines].rstrip()
-		#~ #TOVERIFY
-		#~ if headerNo == headerPrev:
-			#~ index += 1
-		#~ else:
-			#~ index = 0
-		#~ if headerNo in correctedReadsList.keys():
-			#~ correctedReadSequence = correctedReadsList[headerNo][index]
-			#~ headerPrev = headerNo
-			#~ posiNt = 0
-			#~ posiNtSeq = 0
-			#~ inUpper = False
-			#~ upperCasePositions.append([])
-			#~ while posiNt < len(correctedMsa):
-				#~ if posiNtSeq >= len(correctedReadSequence):
-					#~ upperCasePositions[-1].append(False)
-					#~ posiNt += 1
-				#~ else:
-					#~ nt = correctedMsa[posiNt]
-					#~ ntSeq = correctedReadSequence[posiNtSeq]
-					#~ if not ntSeq.islower():
-						#~ if nt != ".":
-							#~ inUpper = True
-						#~ else:
-							#~ inUpper = False
-					#~ else:
-						#~ inUpper = False
-					
-							
-					#~ if inUpper:
-						#~ upperCasePositions[-1].append(True)
-					#~ else:
-						#~ upperCasePositions[-1].append(False)
-					#~ if nt != ".":
-						#~ posiNtSeq += 1
-					#~ posiNt += 1
-			#~ nbLines += 6
-		#~ else:
-			#~ upperCasePositions[-1] = [False] * len(correctedMsa)
-	#~ return upperCasePositions
 
 
 def getUpperCasePositions(correctedReadsFile, header, correctedMsa):
@@ -823,7 +694,7 @@ def getUpperCasePositions(correctedReadsFile, header, correctedMsa):
 				else:
 					inUpper = False
 			else:
-				inUpper = False		
+				inUpper = False
 			if inUpper:
 				upperCasePositions.append(True)
 			else:
@@ -833,8 +704,9 @@ def getUpperCasePositions(correctedReadsFile, header, correctedMsa):
 			posiNt += 1
 	return upperCasePositions
 
-# add to the uppercase positions the positions where there is no stretch of "." , i.e. all positions where recall and precision are actually computed
 
+
+# add to the uppercase positions the positions where there is no stretch of "." , i.e. all positions where recall and precision are actually computed
 # def getCorrectedPositions(stretches, corrected, readNo, upperCasePositions, reference, clipsNb, header,  gapsPositions):
 def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, header,  gapsPositions):
 	msaLineLen = len(corrected)
@@ -869,14 +741,11 @@ def getCorrectedPositions(stretches, corrected, readNo, reference, clipsNb, head
 
 	positionsToRemove = list()
 	if len(stretches.keys()) > 0:  # split read (or trimmed)
-		for pos in stretches.keys(): 
+		for pos in stretches.keys():
 			positionsToRemove.append([pos, stretches[pos]]) #interval(s)) in which the corrected read sequence does not exist
 		for interv in positionsToRemove:
 			for i in range(interv[0], interv[1] +1):
 				existingCorrectedPositions[i] = False # remove regions where there is no corrected sequence  # remove regions where there is no corrected sequence (split/trimmed) from corrected regions
-				#~ correctedPositions[i] = False
 	for i in gapsPositions:
 		existingCorrectedPositions[i] = False
-		#~ correctedPositions[i] = False
-	#~ return correctedPositions, existingCorrectedPositions, lenClip
 	return existingCorrectedPositions, lenClip

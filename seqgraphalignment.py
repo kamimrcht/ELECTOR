@@ -8,6 +8,9 @@ except ImportError:
 import poagraph
 import numpy
 import collections
+from utils import *
+
+
 
 class SeqGraphAlignment(object):
     #~ __matchscore=4
@@ -40,7 +43,7 @@ class SeqGraphAlignment(object):
         self.stringidxs, self.nodeidxs = matches
 
     def alignmentStrings(self):
-        return ( "".join([self.sequence[i] if i is not None else "-" for i in self.stringidxs]), 
+        return ( "".join([self.sequence[i] if i is not None else "-" for i in self.stringidxs]),
                  "".join([self.graph.nodedict[j].base if j is not None else "-" for j in self.nodeidxs]) )
 
     def matchscore(self,c1,c2):
@@ -52,13 +55,13 @@ class SeqGraphAlignment(object):
     def matchscoreVec(self,c,v):
         res = numpy.where(v == c, self.matchscore, self.mismatchscore)
         return res
-   
+
     def alignStringToGraphSimple(self):
         """Align string to graph, following same approach as smith waterman
         example"""
         if not type(self.sequence) == str:
             raise TypeError("Invalid Type")
-        
+
         l1 = self.graph.nNodes
         l2 = len(self.sequence)
 
@@ -76,7 +79,7 @@ class SeqGraphAlignment(object):
 
             for j,sbase in enumerate(self.sequence):
                 # add all candidates to a list, pick the best
-                    
+
                 candidates = [(scores[i+1,j] + insertCost[(i+1,j)], i+1, j, "INS")]
                 for predIndex in self.prevIndices(node, nodeIDtoIndex):
                     candidates.append( (scores[predIndex+1,j] + self.matchscore(sbase,pbase), predIndex+1, j, "MATCH") )
@@ -101,7 +104,7 @@ class SeqGraphAlignment(object):
         at each iteration."""
         if not type(self.sequence) == str:
             raise TypeError("Invalid Type")
-        
+
         l1 = self.graph.nNodes
         l2 = len(self.sequence)
 
@@ -148,7 +151,7 @@ class SeqGraphAlignment(object):
             bestmatch  = numpy.zeros((l2),dtype=numpy.int)+predecessors[0]+1
 
             for predecessor in predecessors[1:]:
-                newdeletescore = scores[predecessor+1,1:] + deleteCost[predecessor+1,1:] 
+                newdeletescore = scores[predecessor+1,1:] + deleteCost[predecessor+1,1:]
                 bestdelete     = numpy.where(newdeletescore > deletescore, predecessor+1, bestdelete)
                 deletescore    = numpy.maximum(newdeletescore, deletescore)
 
@@ -181,7 +184,7 @@ class SeqGraphAlignment(object):
         return self.backtrack(scores, backStrIdx, backGrphIdx, nodeIndexToID)
 
     def prevIndices(self, node, nodeIDtoIndex):
-        """Return a list of the previous dynamic programming table indices 
+        """Return a list of the previous dynamic programming table indices
            corresponding to predecessors of the current node."""
         prev = []
         for predID in list(node.inEdges.keys()):

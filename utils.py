@@ -32,17 +32,29 @@ import argparse
 import glob
 
 
+
+installDirectory = os.path.dirname(os.path.realpath(__file__))+"/bin/"
+dataDirectory = os.path.dirname(os.path.realpath(__file__))+"/src/poa-graph/"
+
+
+
 try:
     from subprocess import DEVNULL # py3k
 except ImportError:
     import os
     DEVNULL = open(os.devnull, 'wb')
 
-######### utils for warnings, user messages, errors ######### 
 
+
+######### utils for warnings, user messages, errors #########
 #warnings
+
+
+
 def printWarningMsg(msg):
 	print("[Warning] " + msg)
+
+
 
 # to return if an error makes the run impossible
 def dieToFatalError (msg):
@@ -50,11 +62,13 @@ def dieToFatalError (msg):
   sys.exit(1);
 
 
+
 # check if file exists and is not empty
 def checkIfFile(pathToFile):
 	if not(os.path.exists(pathToFile) and os.path.getsize(pathToFile) > 0):
 		return False
 	return True
+
 
 
 def checkReadFiles(readfiles):
@@ -68,10 +82,9 @@ def checkReadFiles(readfiles):
 	if not allFilesAreOK:
 		dieToFatalError("One or more read files do not exist.")
 
-######### utils for subprocess ######### 
 
 
-
+######### utils for subprocess #########
 # launch subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
@@ -80,9 +93,8 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	return p
 
 
-######### utils for sequence files ######### 
 
-
+######### utils for sequence files #########
 # find files with a regex
 def getFiles(pathToFiles, name): #for instance name can be "*.txt"
 	os.chdir(pathToFiles)
@@ -91,11 +103,15 @@ def getFiles(pathToFiles, name): #for instance name can be "*.txt"
 		listFiles.append(files)
 	return listFiles
 
+
+
 # return number of reads in a fasta
 def getFileReadNumber(fileName):
 	cmdGrep = """grep ">" -c """ + fileName
 	val = subprocess.check_output(['bash','-c', cmdGrep])
 	return int(val.decode('ascii'))
+
+
 
 def getCorrectedSequence(fileName, header):
 	cmdGrep = """grep -A 1 """ + header + " " + fileName + "| tail -1"

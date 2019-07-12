@@ -7,12 +7,17 @@ import re
 import csv
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
+from utils import *
+
+
 
 #Launches subprocess
 def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
 	args = shlex.split(cmd)
 	p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
 	return p
+
+
 
 def getNbReads(reads):
 	nb = 0
@@ -23,6 +28,8 @@ def getNbReads(reads):
 			nb = nb + 1
 		line = f.readline()
 	return nb
+
+
 
 def getTotalSize(reads):
 	size = 0
@@ -35,6 +42,8 @@ def getTotalSize(reads):
 	f.close()
 	return size
 
+
+
 def getNbAlignedReads(reads):
 	nb = 0
 	f = open(reads)
@@ -43,6 +52,8 @@ def getNbAlignedReads(reads):
 		nb = nb + 1
 		line = f.readline()
 	return nb
+
+
 
 #Returns the total length of the sequences contained in reference.
 def getTotalLength(reference):
@@ -55,6 +66,7 @@ def getTotalLength(reference):
 		line = f.readline()
 	f.close()
 	return totalLength
+
 
 
 #Computes the idetity of each alignement in the file alignements.
@@ -83,6 +95,8 @@ def computeIdentity(alignments, ids):
 	f.close()
 	out.close()
 
+
+
 #Computes the average identity of the alignements in the file alignments
 def averageIdentity(alignments):
 	f = open(alignments)
@@ -96,13 +110,15 @@ def averageIdentity(alignments):
 	f.close()
 	return avId / nbReads
 
+
+
 #Compute the genome coverage of the alignments
 def computeCoverage(readsBaseName, reference):
-	cmdConvertToBam = "./samtools/samtools view -Sb " + readsBaseName + ".sam"
+	cmdConvertToBam = installDirectory+"samtools view -Sb " + readsBaseName + ".sam"
 	outBam = open(readsBaseName + ".bam", 'w')
-	cmdSortBam = "./samtools/samtools sort " + readsBaseName + ".bam"
+	cmdSortBam = installDirectory+"samtools sort " + readsBaseName + ".bam"
 	outSBam = open(readsBaseName + "_sorted.bam", 'w')
-	cmdGetCov = "./samtools/samtools depth " + readsBaseName + "_sorted.bam"
+	cmdGetCov = installDirectory+"samtools depth " + readsBaseName + "_sorted.bam"
 	outCov = open(readsBaseName + ".cov", 'w')
 	subprocessLauncher(cmdConvertToBam, outBam)
 	outBam.close()
@@ -117,11 +133,12 @@ def computeCoverage(readsBaseName, reference):
 	cov = float(coveredBases / refLength * 100)
 	return cov
 
+
+
 def generateResults(reads, reference, threads, logFile):
 	threads = str(threads)
-
 	readsBaseName = os.path.splitext(reads)[0]
-	cmdAlign = "./minimap2/minimap2 -a --MD -t " + threads + " " + reference + " " + reads
+	cmdAlign = installDirectory+"minimap2 -a --MD -t " + threads + " " + reference + " " + reads
 	outSam = open(readsBaseName + ".sam", 'w')
 	outErr = open("/dev/null", 'w')
 	subprocessLauncher(cmdAlign, outSam, outErr)

@@ -9,6 +9,9 @@ import numpy
 import seqgraphalignment
 import textwrap
 import collections
+from utils import *
+
+
 
 class Node(object):
     def __init__(self, nodeID=-1, base='N'):
@@ -67,6 +70,7 @@ class Node(object):
         return list(labelset)
 
 
+
 class Edge(object):
     def __init__(self, inNodeID=-1, outNodeID=-1, label=None):
         self.inNodeID  = inNodeID
@@ -91,9 +95,10 @@ class Edge(object):
             return nodestr + self.labels.__str__()
 
 
+
 class POAGraph(object):
     def addUnmatchedSeq(self, seq, label=None, updateSequences=True):
-        """Add a completely independant (sub)string to the graph, 
+        """Add a completely independant (sub)string to the graph,
            and return node index to initial and final node"""
         if seq is None:
             return
@@ -148,7 +153,7 @@ class POAGraph(object):
             raise KeyError('addEdge: Start node not in graph: '+str(start))
         if not end in self.nodedict:
             raise KeyError('addEdge: End node not in graph: '+str(end))
-        
+
         oldNodeEdges = self.nodedict[start].outDegree + self.nodedict[end].inDegree
 
         self.nodedict[start].addOutEdge( end, label )
@@ -230,7 +235,7 @@ class POAGraph(object):
             for outIdx in node.outEdges:
                 selfstr += "        " + node.outEdges[outIdx].__str__() + "\n"
         return selfstr
-    
+
     def incorporateSeqAlignment(self, alignment, seq, label=None):
         """Incorporate a SeqGraphAlignemnt into the graph."""
         newseq     = alignment.sequence
@@ -322,7 +327,7 @@ class POAGraph(object):
 
                 if weightScoreEdge > bestWeightScoreEdge:
                     bestWeightScoreEdge = weightScoreEdge
-                
+
             scores[nodeID] = sum(bestWeightScoreEdge[0:2])
             nextInPath[nodeID] = bestWeightScoreEdge[2]
 
@@ -402,7 +407,7 @@ class POAGraph(object):
                 charlist[ columnIndex[curnodeID] ] = node.base
                 curnodeID = node.nextNode(label)
             alignstrings.append( "".join(charlist) )
-        
+
         # now get the consenses
         consenses = self.allConsenses()
         consensusstrings = []
@@ -481,7 +486,7 @@ class POAGraph(object):
                     // create a network
                   """
         outfile.write(textwrap.dedent(header[1:]))
-        lines = self.jsOutput() 
+        lines = self.jsOutput()
         for line in lines:
             outfile.write(line+'\n')
         footer="""

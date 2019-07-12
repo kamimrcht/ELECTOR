@@ -28,8 +28,6 @@ import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
-#~ import readAndSortFiles
-#~ import computeStats
 import alignment
 import computeStats
 import readAndSortFiles
@@ -37,6 +35,8 @@ import plotResults
 import remappingStats
 import assemblyStats
 from utils import *
+
+
 
 # count the number of reads in a file
 def getFileReadNumber(fileName):
@@ -48,7 +48,6 @@ def getFileReadNumber(fileName):
 
 def main():
 	currentDirectory = os.path.dirname(os.path.abspath(sys.argv[0]))
-	installDirectory = os.path.dirname(os.path.realpath(__file__))
 	# Manage command line arguments
 	parser = argparse.ArgumentParser(description="Benchmark for quality assessment of long reads correctors.")
 	# Define allowed options
@@ -90,7 +89,6 @@ def main():
 	size_corrected_read_threshold = args.minsize / 100
 	clipsNb = {}
 
-	
 	if not outputDirPath is None:
 		if not os.path.exists(outputDirPath):
 			os.mkdir(outputDirPath)
@@ -106,9 +104,7 @@ def main():
 	logFile = open(outputDirPath + "/log", 'w')
 	logFile.write("ELECTOR\nCommand line was:\n" + " ".join(sys.argv) + "\n")
 
-
 	reportedHomopolThreshold = 5
-
 
 	if perfect is not None:
 		simulator = None
@@ -138,21 +134,9 @@ def main():
 		sortedUncoFileName =  "uncorrected_sorted_duplicated.fa"
 		sortedRefFileName =  "reference_sorted_duplicated.fa"
 		readSizeDistribution = "read_size_distribution.txt"
-	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, installDirectory, outputDirPath, size_corrected_read_threshold, soft)
-#	alignment.getPOA(corrected, reference, uncorrected, args.threads, installDirectory, soft)
-#	computeStats.outputRecallPrecision(corrected, 0, 0, soft)
-	#~ print(clipsNb)
-	
-	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
+	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, outputDirPath, size_corrected_read_threshold, soft)
 
-	#~ if simulator == "nanosim":
-		#~ computeStats.outputReadSizeDistribution(uncorrected + "_reads.fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
-	#~ elif simulator == "simlord":
-		#~ computeStats.outputReadSizeDistribution(uncorrected + ".fasta", sortedCorrectedFileName, readSizeDistribution, outputDirPath)
-	#~ else:
-		#~ computeStats.outputReadSizeDistribution(uncorrected, sortedCorrectedFileName, readSizeDistribution, outputDirPath)
-	#~ if int(numberSplit) != 0:
-		#~ computeStats.outputReadSizeDistribution(sortedCorrectedFileName, readSizeDistribution, outputDirPath)
+	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
 
 	avId=0
 	cov=0
@@ -172,8 +156,8 @@ def main():
 		logFile.write("********** ASSEMBLY **********\n")
 		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
-	#TODO: inclure les nouvelles métriques dans le plot
 	plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
+
 
 
 if __name__ == '__main__':

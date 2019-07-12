@@ -30,6 +30,8 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
 from os.path import basename
+from utils import *
+
 
 
 #Launches subprocess
@@ -37,6 +39,8 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None, argstdin=None):
         args = shlex.split(cmd)
         p = subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr).communicate()
         return p
+
+
 
 # format MECAT headers
 def formatMecat(correctedReads, uncorrectedReads, formattedReads):
@@ -60,7 +64,9 @@ def formatMecat(correctedReads, uncorrectedReads, formattedReads):
 	fCor.close()
 	fUnco.close()
 	fNewCor.close()
-	
+
+
+
 # sort read file by increasing order of integer headers
 def sortPBDCHeaders(infileName, outfileName):
 	handle = open(infileName, "rU")
@@ -72,6 +78,8 @@ def sortPBDCHeaders(infileName, outfileName):
 		outfile.write(str(record.seq)+"\n")
 	outfile.close()
 
+
+
 def sortFLASHeaders(infileName, outfileName):
 	handle = open(infileName, "rU")
 	l = SeqIO.parse(handle, "fasta")
@@ -81,6 +89,8 @@ def sortFLASHeaders(infileName, outfileName):
 		outfile.write(">" + record.description+"\n")
 		outfile.write(str(record.seq)+"\n")
 	outfile.close()
+
+
 
 # format daccord headers
 def formatDaccord(correctedReads, uncorrectedReads, dazzDb, formattedReads):
@@ -135,6 +145,7 @@ def formatDaccord(correctedReads, uncorrectedReads, dazzDb, formattedReads):
 	newCorrectedReads.close()
 
 
+
 # sort read file by increasing order of headers, return occurrence of each corrected read
 def readAndSortFasta(infileName, outfileName):
 	handle = open(infileName, "rU")
@@ -153,6 +164,7 @@ def readAndSortFasta(infileName, outfileName):
 			prevHeader = record.description
 	outfile.close()
 	return occurrenceEachRead
+
 
 
 # duplicate reference and uncorrected sequences when there are several corrected reads with the same header
@@ -177,6 +189,8 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 		return newRefName, newUncoName
 	else:
 		return reference, uncorrected
+
+
 
 # format corrected reads headers
 def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
@@ -280,6 +294,8 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		formatMecat("tmp_sorted_flas.fa", uncorrectedReads, name)
 	#~ else: #None corrector
 
+
+
 def loadReference(fRef, simulator):
 	f = open(fRef)
 	refSeqs = {}
@@ -297,6 +313,8 @@ def loadReference(fRef, simulator):
 			id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
 	f.close()
 	return refSeqs
+
+
 
 def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
 	fSeqs = loadReference(referenceGenome, "nanosim")
@@ -322,6 +340,8 @@ def generateRefReadsNanosim(simulatedReads, referenceGenome, referenceReads):
 		header = f.readline()[1:-1]
 	f.close()
 	out.close()
+
+
 
 def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 	fSeqs = loadReference(referenceGenome, "simlord")
@@ -353,9 +373,11 @@ def generateRefReadsSimLord(simulatedReads, referenceGenome, referenceReads):
 	f.close()
 	out.close()
 
+
+
 def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 	reFile = (os.path.splitext(realReads)[0])
-	cmdAl = "./minimap2/minimap2 -a -O4,24 " + referenceGenome + " " + realReads
+	cmdAl = installDirectory+"minimap2 -a -O4,24 " + referenceGenome + " " + realReads
 	outErr = open("/dev/null", 'w')
 	alFile = reFile + ".sam"
 	outAl = open(alFile, 'w')
@@ -389,10 +411,10 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 			nbHRight = sum([int(i.split("H")[0]) for i in (re.findall('\d+H', cigar[int(len(cigar)/2)+1:len(cigar)]))])
 			nbH = nbHLeft + nbHRight;
 			leftShift = 0
-			rightShift = 0	
+			rightShift = 0
 			length = length + nbD - nbI
 			pos = pos - nbSLeft
-			
+
 			# if 2 <= nbSLeft:# and nbSLeft <= 15:
 			# 	length = length
 			# 	pos = pos - nbSLeft
@@ -423,18 +445,22 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 
 	return clipsNb
 
+
+
 #Generates reference reads file (only supported for nanosim and simlord)
 def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
 	if simulator == "nanosim":
 		generateRefReadsNanosim(simulatedPrefix + "_reads.fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
 	elif simulator == "simlord":
-		cmdConv = "./bin/fq2fa " + simulatedPrefix + ".fastq"
+		cmdConv = installDirectory+"fq2fa " + simulatedPrefix + ".fastq"
 		outFa = open(simulatedPrefix + ".fasta", 'w')
 		subprocessLauncher(cmdConv, outFa)
 		outFa.close()
 		generateRefReadsSimLord(simulatedPrefix + ".fastq.sam", referenceGenome, simulatedPrefix + "_reference.fasta")
 	else:
 		generateRefReadsRealData(simulatedPrefix, referenceGenome, simulatedPrefix + "_reference.fasta")
+
+
 
 # main function
 def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):

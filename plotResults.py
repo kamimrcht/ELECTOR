@@ -39,10 +39,9 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 
-#todo
+
 def launchRscripts(installDirectory, soft, outDir):
 	# recall and precision figure
-	#~ print("uuu", installDirectory)
 	if soft is not None:
 		if checkIfFile( outDir + "/" + soft + "_per_read_metrics.txt"):
 			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + outDir + "/" + soft + "_per_read_metrics.txt " + outDir
@@ -62,6 +61,8 @@ def launchRscripts(installDirectory, soft, outDir):
 			cmdSizesDistr = "Rscript " + installDirectory + "/Rscripts/plot_distribution_sizes.R " + outDir + "/read_size_distribution.txt " + outDir
 			subprocessLauncher(cmdSizesDistr)
 
+
+
 def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	content = r'''\documentclass{article}
 	\usepackage{graphicx}
@@ -71,27 +72,27 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 
 	\section{Summary}
 	\begin{figure*}[ht!]
-	\begin{tabular}{|l|c|} 
+	\begin{tabular}{|l|c|}
 	\hline
 	Assessed reads & %(nbReads)s \\ \hline
 	Throughput & %(throughput)s \\ \hline\hline
-	
+
 	Recall (computed on corrected bases)& %(meanRecall)s  \\ \hline
 	Precision (computed on corrected bases)& %(meanPrecision)s  \\ \hline
 	Average correct bases rate  (computed on whole read)& %(meanCorrectBaseRate)s \\ \hline
 	Overall error rate (computed on whole read)& %(errorRate)s \\ \hline\hline
-	
+
 	Number of trimmed/split reads & %(numberReadSplit)s \\ \hline
     Mean missing size in trimmed/split reads & %(meanMissingSize)s \\ \hline
     Number of reads over-corrected by extension & %(numberReadExtended)s \\ \hline
     Mean extension size in over-correcte reads & %(meanExtensionSize)s \\ \hline
-    
- 
+
+
     Number of corrected reads which length & \multirow{2}{*}{%(smallReads)s} \\
   is $<$ %(minLength)s \%% of the original read & \\ \hline\hline
-  
+
   	Number of very low quality corrected reads & %(wronglyCorReads)s \\ \hline\hline
-  	
+
 	Ratio of homopolymer sizes in corrected vs reference &  %(homoRatio)s \\ \hline\hline
 
 	\%% GC in reference reads & %(GCRef)s \\ \hline
@@ -101,7 +102,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 	\end{figure*}
 
 	\begin{figure*}[ht!]
-	\begin{tabular}{|l|c|c|} 
+	\begin{tabular}{|l|c|c|}
 	\hline
 	 &Uncorrected & Corrected  \\ \hline
 	Insertions & %(insU)s& %(insC)s  \\ \hline
@@ -115,7 +116,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		content += r'''
 	    \section{Corrected reads remapping on genome}
 		\begin{figure*}[ht!]
-		\begin{tabular}{|l|c|} 
+		\begin{tabular}{|l|c|}
 		\hline
 		Average identity (\%%) & %(averageId)s  \\ \hline
 		Genome coverage (\%%) & %(genomeCov)s  \\ \hline
@@ -127,7 +128,7 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		content += r'''
 		\section{Corrected reads assembly metrics}
 		\begin{figure*}[ht!]
-		\begin{tabular}{|l|c|} 
+		\begin{tabular}{|l|c|}
 		\hline
 		Contigs number & %(nbContigs)s  \\ \hline
 		Aligned contigs number & %(nbAlContig)s  \\ \hline
@@ -137,9 +138,6 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		\end{tabular}
 		\end{figure*}
 		'''
-
-	
-	#filesDict = {"recall_precision": installDirectory + "/plot_recall_precision.png", "size_distribution": installDirectory + "/plot_size_distribution.png", "meanRecall": recall, "meanPrecision": precision, "meanCorrectBaseRate": correctBaseRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "GCRef": percentGCRef, "GCCorr": percentGCCorr, "smallReads": smallReads}
 
 	#add plot recall precision
 	if checkIfFile(filesDict["recall_precision"]):
@@ -165,6 +163,8 @@ def generateLatexFigures( outDir, outputPDFName, filesDict, remap, assemble ):
 		f.write(content%filesDict)
 	proc = subprocess.Popen(['pdflatex', '-output-directory', outDir, outputPDFName + ".tex"], stdout = DEVNULL, stderr = DEVNULL).communicate()
 	#~ proc.communicate()
+
+
 
 def generateResults(outDir, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NGA50, NGA75,  remap, assemble, homoRatio ):
 	filesDict = {"recall_precision": outDir + "/plot_recall_precision.png", "size_distribution": outDir + "/plot_size_distribution.png", "nbReads": nbReads, "throughput": throughput, "meanPrecision": precision, "meanRecall": recall, "meanCorrectBaseRate": correctBaseRate, "errorRate": errorRate, "numberReadSplit": numberSplit, "meanMissingSize": meanMissing, "numberReadExtended": numberExtended, "meanExtensionSize": meanExtension, "GCRef": str(percentGCRef), "GCCorr": str(percentGCCorr), "smallReads": smallReads, "wronglyCorReads": wronglyCorReads, "minLength": minLength, "insC": indelsubsCorr[0], "delC": indelsubsCorr[1], "subsC": indelsubsCorr[2], "insU": indelsubsUncorr[0],"delU": indelsubsUncorr[1], "subsU": indelsubsUncorr[2], "averageId" : avId, "genomeCov": cov, "nbContigs": nbContigs, "nbAlContig" : nbAlContig, "nbBreakpoints": nbBreakpoints, "NGA50": NGA50, "NGA75": NGA75, "homoRatio": homoRatio}

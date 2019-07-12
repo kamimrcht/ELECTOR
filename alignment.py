@@ -20,6 +20,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************"""
 
+
+
 from Bio import SeqIO
 import time
 import argparse
@@ -30,10 +32,12 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import alignment
 from multiprocessing import Pool, TimeoutError
+from utils import *
 
 
-installDirectoryGlobal=""
+
 outDirGlobal=""
+
 
 
 try:
@@ -49,38 +53,26 @@ def subprocessLauncher(cmd, argstdout=None, argstderr=None,	 argstdin=None):
 	args = shlex.split(cmd)
 	p=-1
 	p = (subprocess.Popen(args, stdin = argstdin, stdout = argstdout, stderr = argstderr))
-	#~ p = (subprocess.Popen(args, stdin = argstdin, stdout = DEVNULL, stderr = DEVNULL))
-	#~ rc=p.communicate()
-	#~ print (p.wait())
 	return p.wait()
 
 
-	# return number of reads in a fasta
-#~ def getFileReadNumber(fileName):
-	#~ cmdGrep = """grep ">" -c """ + fileName
-	#~ val = subprocess.check_output(['bash','-c', cmdGrep])
-	#~ return int(val.decode('ascii'))
 
-#~ # do the msa
-#~ def getPOA(corrected, reference, uncorrected, threads, installDirectory, soft=None):
 
 def fpoa(i):
-	#~ print("GO: "+str(i))
-	cmdPOA = installDirectoryGlobal + "/bin/poa -pir " + outDirGlobal + "/smsa"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + installDirectoryGlobal +"/src/poa-graph/blosum80.mat"
-	#subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
+	cmdPOA = installDirectory + "poa -pir " + outDirGlobal + "/smsa"+str(i)+"  -preserve_seqorder -corrected_reads_fasta " + outDirGlobal + "/out3"+str(i)+" -reference_reads_fasta " + outDirGlobal + "/out1"+str(i)+" -uncorrected_reads_fasta " + outDirGlobal +"/out2"+str(i)+" -preserve_seqorder -threads  1 -pathMatrix " + dataDirectory +"blosum80.mat"
 	if( os.stat(""+outDirGlobal + "/out3"+str(i)).st_size != 0):
 		subprocessLauncher(cmdPOA,DEVNULL,DEVNULL)
-	# ~ print (cmdPOA)
 	return i
 
 
-def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir, SIZE_CORRECTED_READ_THRESHOLD, soft=None):
+
+def getPOA(corrected, reference, uncorrected, threads, outDir, SIZE_CORRECTED_READ_THRESHOLD, soft=None):
 	oldMode=False
 	#oldMode=True
 	small_reads=0
 	wrongly_cor_reads=0
 	if(oldMode):
-		cmdPOA = installDirectory + "/bin/poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory  +"/src/poa-graph/blosum80.mat"
+		cmdPOA = installDirectory + "poa -preserve_seqorder -corrected_reads_fasta " + corrected + " -reference_reads_fasta " + reference + " -uncorrected_reads_fasta " + uncorrected + " -threads " + str(threads) + "  -pathMatrix " + installDirectory  +dataDirectory+"blosum80.mat"
 		subprocessLauncher(cmdPOA)
 		if soft is not None:
 			cmdMv = "mv default_output_msa.fasta " + outDir + "/msa_" + soft + ".fa"
@@ -89,7 +81,6 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		subprocess.check_output(['bash','-c', cmdMv])
 		return 0, 0
 	else:
-		#amount_nuc=100*1000*1000;
 		amount_read=1000*50;
 		print("- Means that a large amount of nuc has been handled: "+str(amount_read))
 		global installDirectoryGlobal
@@ -99,9 +90,6 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 
 		position_in_read_file=1
 
-		#cmdRM = "rm " + outDir + "/progress.txt"
-		#subprocess.call(['bash','-c', cmdRM],stdout=DEVNULL,stderr=DEVNULL)
-
 		if soft is not None:
 			mergeOut = outDir + "/msa_" + soft + ".fa"
 		else:
@@ -110,7 +98,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 		read_number=0
 
 		while(position_in_read_file!=0):
-			cmdSplitter = installDirectory + "/bin/masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_read)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
+			cmdSplitter = installDirectory + "masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_read)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
 			print(cmdSplitter)
 			position_in_read_file=subprocessLauncher(cmdSplitter)
 			#print("done")
@@ -132,7 +120,7 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 				for i in pool.imap_unordered(fpoa, range(100)):
 					continue
 			for i in range(0, 100):
-				cmdMerger = installDirectory + "/bin/Donatello " + outDir + "/smsa"+str(i)+ " " + mergeOut
+				cmdMerger = installDirectory + "Donatello " + outDir + "/smsa"+str(i)+ " " + mergeOut
 				subprocessLauncher(cmdMerger)
 			sys.stdout.write('-')
 			sys.stdout.flush()
@@ -142,12 +130,5 @@ def getPOA(corrected, reference, uncorrected, threads, installDirectory, outDir,
 			subprocess.call(['bash','-c', cmdRM])
 
 		print()
-		#if soft is not None:
-		#	cmdMv = "mv " + outDir + " /merger " + outDir + "/msa_" + soft + ".fa"
-		#else:
-		#	cmdMv = "mv " + outDir + " /merger " + outDir + "/msa.fa"
-		#subprocess.call(['bash','-c', cmdMv])
-		#~ print(skipped_reads)
-		#~ print("skipped_reads")
 		return small_reads, wrongly_cor_reads
 
