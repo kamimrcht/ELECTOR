@@ -4,9 +4,6 @@
 [submodule "miniasm"]
 	path = miniasm
 	url = https://github.com/lh3/miniasm
-[submodule "bwa"]
-	path = bwa
-	url = https://github.com/lh3/bwa
 [submodule "samtools"]
 	path = samtools
 	url = https://github.com/samtools/samtools
