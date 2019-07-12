@@ -28,7 +28,7 @@ import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
-from utils import *
+from .utils import *
 
 
 

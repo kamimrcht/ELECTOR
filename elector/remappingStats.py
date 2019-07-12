@@ -7,7 +7,7 @@ import re
 import csv
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
-from utils import *
+from .utils import *
 
 
 

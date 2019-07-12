@@ -33,8 +33,8 @@ import glob
 
 
 
-installDirectory = os.path.dirname(os.path.realpath(__file__))+"/bin/"
-dataDirectory = os.path.dirname(os.path.realpath(__file__))+"/src/poa-graph/"
+installDirectory = os.path.dirname(os.path.realpath(__file__))+"/../bin/"
+dataDirectory = os.path.dirname(os.path.realpath(__file__))+"/../src/poa-graph/"
 
 
 
