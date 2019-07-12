@@ -10,6 +10,3 @@
 [submodule "htslib"]
 	path = htslib
 	url = https://github.com/samtools/htslib
-[submodule "src/BOA"]
-	path = src/BOA
-	url = https://github.com/Malfoy/BOA
