@@ -19,9 +19,6 @@ make;
 cd ../miniasm;
 make;
 
-cd ../bwa;
-make;
-
 cd ../htslib;
 autoheader;
 autoconf;
