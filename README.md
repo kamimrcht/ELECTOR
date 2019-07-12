@@ -36,7 +36,7 @@ For hybrid correction methods, whether the short reads are real or simulated has
 
 ELECTOR can be run with:
 
-	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
+	python3 -m elector -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
 
 where
 
@@ -57,13 +57,13 @@ where
 
 The reference reads can also be directly provided, with:
 
-	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
+	python3 -m elector -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
 
 If the corrected long reads are **split**, the -split option MUST be provided to ELECTOR.
 
 ## Help
 
-	python3 elector.py -h
+	python3 -m elector.py
 
 ## Current compatible correctors
 
@@ -110,7 +110,7 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 Using files from example generated from ~10X _E coli_ long reads:
 
 	cd ELECTOR
-	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect example/perfect_reads_elector.fa -corrected  example/corrected_reads_elector.fa -output out
+	python3 -m elector -uncorrected  example/uncorrected_reads_elector.fa -perfect example/perfect_reads_elector.fa -corrected  example/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
 
 Output will be written in ``out`` directory. Here's an example of the log written in stdout (same information can be found in ``out/log``):
 ```

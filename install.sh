@@ -30,6 +30,7 @@ autoheader;
 autoconf -Wno-syntax;
 ./configure --disable-lzma;
 make;
+cp samtools ../bin;
 
 cd ../src/split;
 make;

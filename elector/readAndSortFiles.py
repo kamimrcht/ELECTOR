@@ -30,7 +30,7 @@ import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
 from os.path import basename
-from utils import *
+from .utils import *
 
 
 

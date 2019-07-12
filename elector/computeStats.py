@@ -32,8 +32,8 @@ from subprocess import Popen, PIPE, STDOUT
 import re
 import copy
 import statistics
-import utils
-from utils import *
+from . import utils
+from .utils import *
 
 
 
