@@ -110,7 +110,7 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 Using files from example generated from ~10X _E coli_ long reads:
 
 	cd ELECTOR
-	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect example/perfect_reads_elector.fa -corrected  example/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
+	python elector.py -uncorrected  example/uncorrected_reads_elector.fa -perfect example/perfect_reads_elector.fa -corrected  example/corrected_reads_elector.fa -output out
 
 Output will be written in ``out`` directory. Here's an example of the log written in stdout (same information can be found in ``out/log``):
 ```
