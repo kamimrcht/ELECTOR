@@ -7,7 +7,7 @@ from itertools import tee
 
 setup(
     name = "elector",
-    version = "0.9",
+    version = "1.0.1",
     packages = find_packages(),
 
     author = "Camile Marchet",
