@@ -28,13 +28,14 @@ import os
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 import re
-import alignment
-import computeStats
-import readAndSortFiles
-import plotResults
-import remappingStats
-import assemblyStats
-from utils import *
+
+from . import alignment
+from . import computeStats
+from . import readAndSortFiles
+from . import plotResults
+from . import remappingStats
+from . import assemblyStats
+from .utils import *
 
 
 

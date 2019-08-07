@@ -36,7 +36,7 @@ For hybrid correction methods, whether the short reads are real or simulated has
 
 ELECTOR can be run with:
 
-	python3 elector.py -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
+	python3 -m elector -reference referenceGenome.fa -uncorrected simulatedReadsPrefix -corrected correctedReads.fa -threads nbThreads -corrector correctorName -simulator simulatorName -output out
 
 where
 
@@ -57,13 +57,13 @@ where
 
 The reference reads can also be directly provided, with:
 
-	python3 elector.py -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
+	python3 -m elector -perfect referenceReads.fa -uncorrected uncorrectedReads.fa -corrected correctedReads.fa -threads nbThreads -corrector correctorName
 
 If the corrected long reads are **split**, the -split option MUST be provided to ELECTOR.
 
 ## Help
 
-	python3 elector.py -h
+	python3 -m elector.py
 
 ## Current compatible correctors
 

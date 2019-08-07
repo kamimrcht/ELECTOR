@@ -7,7 +7,7 @@ import csv
 import shlex, subprocess
 from subprocess import Popen, PIPE, STDOUT
 from os.path import basename
-from utils import *
+from .utils import *
 
 
 
@@ -159,39 +159,39 @@ def computeContigsNbAndNG50(contigs, genSize):
 
 #Computes the number of breakpoints in the assembly.
 def computeNbBreakpoints(file):
-	cmd = installDirectory+"samtools flagstat " + file + ".contigs.sam"
-	out = open(file + ".contigs.fs", 'w')
-	subprocessLauncher(cmd, out)
-	out.close()
-	fs = open(file + ".contigs.fs")
-	l = fs.readline()
-	l = fs.readline()
-	l = fs.readline().split(" ")
-	bp = int(l[0]) + int(l[2])
-	return bp
+        cmd = installDirectory+"samtools flagstat " + file + ".contigs.sam"
+        out = open(file + ".contigs.fs", 'w')
+        subprocessLauncher(cmd, out)
+        out.close()
+        fs = open(file + ".contigs.fs")
+        l = fs.readline()
+        l = fs.readline()
+        l = fs.readline().split(" ")
+        bp = int(l[0]) + int(l[2])
+        return bp
 
 
 
 #Compute the genome coverage of the alignments
 def computeCoverage(readsBaseName, reference):
-	cmdConvertToBam = installDirectory+"samtools view -Sb " + readsBaseName + ".sam"
-	outBam = open(readsBaseName + ".bam", 'w')
-	cmdSortBam = installDirectory+"samtools sort " + readsBaseName + ".bam"
-	outSBam = open(readsBaseName + "_sorted.bam", 'w')
-	cmdGetCov = installDirectory+"samtools depth " + readsBaseName + "_sorted.bam"
-	outCov = open(readsBaseName + ".cov", 'w')
-	subprocessLauncher(cmdConvertToBam, outBam)
-	outBam.close()
-	subprocessLauncher(cmdSortBam, outSBam)
-	outSBam.close()
-	subprocessLauncher(cmdGetCov, outCov)
-	outCov.close()
-	refLength = getTotalLength(reference)
-	inCov = open(readsBaseName + ".cov")
-	coveredBases = sum(1 for line in inCov)
-	inCov.close()
-	cov = float(coveredBases / refLength * 100)
-	return cov
+        mdConvertToBam = installDirectory+"samtools view -Sb " + readsBaseName + ".sam"
+        outBam = open(readsBaseName + ".bam", 'w')
+        cmdSortBam = installDirectory+"samtools sort " + readsBaseName + ".bam"
+        outSBam = open(readsBaseName + "_sorted.bam", 'w')
+        cmdGetCov = installDirectory+"samtools depth " + readsBaseName + "_sorted.bam"
+        outCov = open(readsBaseName + ".cov", 'w')
+        subprocessLauncher(cmdConvertToBam, outBam)
+        outBam.close()
+        subprocessLauncher(cmdSortBam, outSBam)
+        outSBam.close()
+        subprocessLauncher(cmdGetCov, outCov)
+        outCov.close()
+        refLength = getTotalLength(reference)
+        inCov = open(readsBaseName + ".cov")
+        coveredBases = sum(1 for line in inCov)
+        inCov.close()
+        cov = float(coveredBases / refLength * 100)
+        return cov
 
 
 
