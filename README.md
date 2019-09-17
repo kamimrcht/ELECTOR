@@ -13,6 +13,7 @@ EvaLuation of Error Correction Tools for lOng Reads
 * gcc and C++11
 * Python3 and Biopython
 * R
+* multirow LaTeX module
 
 # Usage
 
@@ -103,10 +104,7 @@ If another tool is used, please do not use the -corrector parameter, and make su
 If one of those tools is provided with the -simulator parameter, the pipeline will itself generate the reference reads.
 
 
-## Output
-
-
-## Example
+## Output Example
 Using files from example generated from ~10X _E coli_ long reads:
 
 	cd ELECTOR
@@ -140,6 +138,8 @@ Number of substitutions in uncorrected:  154842
 Number of substitutions in corrected:  12148
 Ratio of homopolymer sizes in corrected vs reference: 0.9925
 ```
+Details for each section in the (manuscript)[https://www.biorxiv.org/content/10.1101/512889v2].
+
 These results are recalled in out/log and out/summary.pdf along with figures:
 
 <p align="center">
@@ -164,5 +164,11 @@ is why we report two different distributions. In case no read is split, we only
 report read length distribution.
 
 
+# Manuscript
 
+[ELECTOR: Evaluator for long reads correction methods. Camille Marchet, Pierre Morisse, Lolita Lecompte, Arnaud Lefebvre, Thierry Lecroq, Pierre Peterlongo, Antoine limasset](https://www.biorxiv.org/content/10.1101/512889v2)
+
+## Reproducing manuscript results
+
+All scripts used to produce the results in our manuscript are provided in the folder [reproduce_manuscript_results](https://github.com/kamimrcht/ELECTOR/tree/master/reproduce_manuscript_results).
 
