@@ -79,24 +79,24 @@ def getPOA(corrected, reference, uncorrected, threads, outDir, SIZE_CORRECTED_RE
             subprocess.check_output(['bash','-c', cmdMv])
             return 0, 0
     else:
-        amount_read=1000*50;
-        print("- Means that a large amount of nuc has been handled: "+str(amount_read))
+        amount_read=1000*10;
+        print("- Means that a large amount of reads has been handled: "+str(amount_read))
         global installDirectoryGlobal
         installDirectoryGlobal=installDirectory
         global outDirGlobal
         outDirGlobal=outDir
 
         position_in_read_file=1
-        
+
         if soft is not None:
             mergeOut = outDir + "/msa_" + soft + ".fa"
         else:
             mergeOut = outDir + "/msa.fa"
-            
+
         read_number=0
 
         while(position_in_read_file!=0):
-            cmdSplitter = installDirectory + "masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 100 "+str(amount_read)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
+            cmdSplitter = installDirectory + "masterSplitter "+ reference +" "+uncorrected+" "+corrected +" " + outDir + "/out1 " + outDir + "/out2 " + outDir + "/out3 7 200 "+str(amount_read)+" "+str(SIZE_CORRECTED_READ_THRESHOLD)+" "+outDir
             print(cmdSplitter)
             position_in_read_file=subprocessLauncher(cmdSplitter)
             #print("done")
@@ -115,14 +115,14 @@ def getPOA(corrected, reference, uncorrected, threads, outDir, SIZE_CORRECTED_RE
                 cmdRM = "rm " + outDir + "wrongly_cor_reads.txt"
                 subprocess.call(['bash', '-c', cmdRM], stdout=DEVNULL, stderr=DEVNULL)
                 with Pool (processes=threads) as pool:
-                    for i in pool.imap_unordered(fpoa, range(100)):
+                    for i in pool.imap_unordered(fpoa, range(200)):
                         continue
-                    for i in range(0, 100):
+                    for i in range(0, 200):
                         cmdMerger = installDirectory + "Donatello " + outDir + "/smsa"+str(i)+ " " + mergeOut
                         subprocessLauncher(cmdMerger)
                         sys.stdout.write('-')
                         sys.stdout.flush()
-                        
+
                     cmdRM = "rm " + outDir + "/out*"
                     subprocess.call(['bash','-c', cmdRM])
                     cmdRM = "rm " + outDir + "/smsa*"
