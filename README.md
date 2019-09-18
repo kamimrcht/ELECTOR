@@ -6,7 +6,7 @@ EvaLuation of Error Correction Tools for lOng Reads
 # Description
 * This program enables the testing of different hybrid and non hybrid long read correction tools.
 * It embeds a modified version of [poaV2](https://sourceforge.net/projects/poamsa/)
-* Authors: Camille Marchet @kamimrcht, Pierre Morisse @morispi, Lolita Lecompte @llecompt, Antoine Limasset @malfoy. Many thanks to Pierre Marijon @natir.
+* Authors: Camille Marchet, Pierre Morisse [@morispi](https://github.com/morispi), Lolita Lecompte [@llecompt](https://github.com/llecompte), Antoine Limasset [@malfoy](https://github.com/malfoy). Many thanks to Pierre Marijon [@natir](https://github.com/natir).
 
 
 # Requirements
