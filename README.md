@@ -22,6 +22,7 @@ EvaLuation of Error Correction Tools for lOng Reads
 	git clone --recursive https://github.com/kamimrcht/ELECTOR
 
 	./install.sh
+	python3 setup.py install
 
 Binaries are then in ./bin. ELECTOR can be run using `elector.py` in the main directory.
 
@@ -107,7 +108,6 @@ If one of those tools is provided with the -simulator parameter, the pipeline wi
 ## Output Example
 Using files from example generated from ~10X _E coli_ long reads:
 
-	cd ELECTOR
 	python3 -m elector -uncorrected  example/uncorrected_reads_elector.fa -perfect example/perfect_reads_elector.fa -corrected  example/corrected_reads_elector.fa -output out -split -corrector lordec -simulator simlord
 
 Output will be written in ``out`` directory. Here's an example of the log written in stdout (same information can be found in ``out/log``):
