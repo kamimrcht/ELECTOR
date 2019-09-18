@@ -138,7 +138,7 @@ Number of substitutions in uncorrected:  154842
 Number of substitutions in corrected:  12148
 Ratio of homopolymer sizes in corrected vs reference: 0.9925
 ```
-Details for each section in the (manuscript)[https://www.biorxiv.org/content/10.1101/512889v2].
+Details for each section in the [manuscript](https://www.biorxiv.org/content/10.1101/512889v2).
 
 These results are recalled in out/log and out/summary.pdf along with figures:
 
