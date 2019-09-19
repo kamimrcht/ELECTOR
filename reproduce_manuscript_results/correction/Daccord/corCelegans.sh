@@ -4,5 +4,5 @@
 mv LR.fasta simCelegans.fasta
 fasta2DB CelegansDb simCelegans.fasta
 daligner CelegansDb CelegansDb
-daccord -t $(nproc) CelegansDb.CelegansDb.las CelegansDb.db > DaccordCelegans.fasta
+daccord -t$(nproc) CelegansDb.CelegansDb.las CelegansDb.db > DaccordCelegans.fasta
 rm simCelegans.fasta
