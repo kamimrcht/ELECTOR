@@ -6,3 +6,4 @@ fasta2DB EcoliDb simEcoli.fasta
 daligner EcoliDb EcoliDb
 daccord -t$(nproc) EcoliDb.EcoliDb.las EcoliDb.db > DaccordEcoli.fasta
 rm simEcoli.fasta
+./../removeLineBreaks.sh DaccordEcoli.fasta
