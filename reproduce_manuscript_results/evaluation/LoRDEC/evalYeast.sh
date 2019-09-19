@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd ../../../
-python3 -m elector -threads 9 -uncorrected ../../longReads/simYeast -corrected ../../correction/LoRDEC/LordecYeast.split.fasta -reference ../../references/Yeast.fasta -simulator simlord -output LordecYeast -split -corrector lordec
+python3 -m elector -threads 9 -uncorrected reproduce_manuscript_results/longReads/simYeast -corrected reproduce_manuscript_results/correction/LoRDEC/LordecYeast.split.fasta -reference reproduce_manuscript_results/references/Yeast.fasta -simulator simlord -output LordecYeast -split -corrector lordec
 cd reproduce_manuscript_results/evaluation/LoRDEC/
 rm corrected_* reference_* uncorrected_*

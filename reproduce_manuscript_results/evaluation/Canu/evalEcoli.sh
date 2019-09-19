@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd ../../../
-python3 -m elector -threads 16 -uncorrected ../../longReads/simEcoli -corrected ../../correction/Canu/CanuEcoli/CanuEcoli.correctedReads.fasta -reference ../../references/Ecoli.fasta -simulator simlord -output CanuEcoli -corrector canu
+python3 -m elector -threads 16 -uncorrected reproduce_manuscript_results/longReads/simEcoli -corrected reproduce_manuscript_results/correction/Canu/CanuEcoli/CanuEcoli.correctedReads.fasta -reference reproduce_manuscript_results/references/Ecoli.fasta -simulator simlord -output CanuEcoli -corrector canu
 cd reproduce_manuscript_results/evaluation/Canu/
 rm corrected_* reference_* uncorrected_*
