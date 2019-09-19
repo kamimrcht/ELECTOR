@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./ConverToPacBio_q2a.py ../../longReads/simEcoli.fasta
+./ConvertToPacBio_q2a.py ../../longReads/simEcoli.fasta
 mv LR.fasta simEcoli.fasta
 fasta2DB EcoliDb simEcoli.fasta
 daligner EcoliDb EcoliDb

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./ConverToPacBio_q2a.py ../../longReads/simCelegans.fasta
+./ConvertToPacBio_q2a.py ../../longReads/simCelegans.fasta
 mv LR.fasta simCelegans.fasta
 fasta2DB CelegansDb simCelegans.fasta
 daligner CelegansDb CelegansDb

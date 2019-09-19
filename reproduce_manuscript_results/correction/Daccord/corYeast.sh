@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./ConverToPacBio_q2a.py ../../longReads/simYeast.fasta
+./ConvertToPacBio_q2a.py ../../longReads/simYeast.fasta
 mv LR.fasta simYeast.fasta
 fasta2DB YeastDb simYeast.fasta
 daligner YeastDb YeastDb
