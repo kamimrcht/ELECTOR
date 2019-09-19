@@ -170,5 +170,5 @@ report read length distribution.
 
 ## Reproducing manuscript results
 
-All scripts used to produce the results in our manuscript are provided in the folder [reproduce_manuscript_results](https://github.com/kamimrcht/ELECTOR/tree/master/reproduce_manuscript_results).
+All scripts used to produce the results in our manuscript, as well as a detailed README, are provided in the folder [reproduce_manuscript_results](https://github.com/kamimrcht/ELECTOR/tree/master/reproduce_manuscript_results).
 
