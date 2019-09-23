@@ -456,7 +456,7 @@ def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator
 		outFa = open(simulatedPrefix + ".fasta", 'w')
 		subprocessLauncher(cmdConv, outFa)
 		outFa.close()
-		generateRefReadsSimLord(simulatedPrefix + ".fastq.sam", referenceGenome, simulatedPrefix + "_reference.fasta")
+		generateRefReadsSimLord(simulatedPrefix + ".sam", referenceGenome, simulatedPrefix + "_reference.fasta")
 	else:
 		generateRefReadsRealData(simulatedPrefix, referenceGenome, simulatedPrefix + "_reference.fasta")
 
