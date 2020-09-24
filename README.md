@@ -24,7 +24,7 @@ EvaLuation of Error Correction Tools for lOng Reads
 	./install.sh
 	python3 setup.py install
 
-Binaries are then in ./bin. ELECTOR can be run using `elector.py` in the main directory.
+Binaries are then in ./bin. ELECTOR can be run using `python3 -m elector` in the main directory.
 
 ## Running ELECTOR
 
@@ -103,6 +103,11 @@ If another tool is used, please do not use the -corrector parameter, and make su
 * NanoSim
 
 If one of those tools is provided with the -simulator parameter, the pipeline will itself generate the reference reads.
+
+## Running with real reads
+
+If you wish to run ELECTOR with real sequencing reads, please use the ``-simulator real`` option.
+The pipeline will work the same, and generate the reference reads itself. Instead of generating them from simulation files, it will rely on alignment to the reference.
 
 
 ## Output Example
