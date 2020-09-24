@@ -69,29 +69,45 @@ If the corrected long reads are **split**, the -split option MUST be provided to
 
 ## Current compatible correctors
 
-* Proovread
+* Canu (https://github.com/marbl/canu)
 
-* LoRDEC
+* CoLoRMap (https://github.com/sfu-compbio/colormap)
 
-* Nanocorr
+* CONSENT (https://github.com/morispi/CONSENT)
 
-* NaS
+* daccord (https://github.com/gt1/daccord)
 
-* CoLoRMap
+* ECTools (https://github.com/jgurtowski/ectools)
 
-* HG-CoLoR
+* FLAS (https://github.com/baoe/flas)
 
-* HALC
+* FMLRC (https://github.com/holtjma/fmlrc)
 
-* PBDAGCon
+* HALC (https://github.com/lanl001/halc)
 
-* Canu
+* Hercules (https://github.com/BilkentCompGen/hercules)
 
-* LoRMA
+* HG-CoLoR (https://github.com/morispi/HG-CoLoR/)
 
-* daccord
+* Jabba (https://github.com/biointec/jabba)
 
-* MECAT
+* LSC (https://web.stanford.edu/group/wonglab/LSC/LSC.html)
+
+* LoRDEC (http://www.atgc-montpellier.fr/lordec/)
+
+* LoRMA (https://www.cs.helsinki.fi/u/lmsalmel/LoRMA/)
+
+* MECAT (https://github.com/xiaochuanle/MECAT)
+
+* NaS (https://github.com/institut-de-genomique/NaS)
+
+* Nanocorr (https://github.com/jgurtowski/nanocorr)
+
+* PBDAGCon (https://github.com/PacificBiosciences/pbdagcon)
+
+* Proovread (https://github.com/BioInf-Wuerzburg/proovread)
+
+
 
 If one of those tools is provided with the -corrector parameter, the pipeline will itself retrieve the correspondance between corrected, uncorrected and reference reads.
 If another tool is used, please do not use the -corrector parameter, and make sure that the headers of the corrected reads are similar to those of the reference and uncorrected reads.
