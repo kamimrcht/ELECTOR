@@ -16,7 +16,9 @@ cp fq2fa ../../bin;
 
 cd ../../minimap2;
 make;
+cp minimap2 ../bin/
 cd ../miniasm;
+cp miniasm ../bin/
 make;
 
 cd ../htslib;
