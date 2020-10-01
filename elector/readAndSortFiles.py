@@ -227,7 +227,7 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
 		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
-	elif corrector == "nas" or corrector == "hercules" or corrector == "fmlrc":
+	elif corrector == "nas" or corrector == "hercules" or corrector == "fmlrc" or corrector =="consent":
 		#already formatted
 		pass
 	elif corrector == "jabba":
