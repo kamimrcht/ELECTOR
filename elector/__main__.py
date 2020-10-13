@@ -116,9 +116,9 @@ def main():
 	if simulator is not None:
 		# Récupération de la map id -> [nbLeftClips, nbRightClips] ici.
 		# Si un vrai simulateur est utilisé, la map récupérée est simplement vide
-		clipsNb = readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, split, simulator, dazzDb)
+		clipsNb = readAndSortFiles.processReadsForAlignment(soft, reference, uncorrected, corrected, size, split, simulator, dazzDb, outputDirPath)
 	else:
-		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, split, simulator, dazzDb)
+		readAndSortFiles.processReadsForAlignment(soft, perfect, uncorrected, corrected, size, split, simulator, dazzDb, outputDirPath)
 
 	# Check if the map is correct, ok
 	# for key,val in clipsNb.items():
@@ -126,14 +126,14 @@ def main():
 
 	#TOVERIFY
 	if soft is not None:
-		sortedCorrectedFileName = "corrected_sorted_by_" + soft + ".fa"
-		sortedUncoFileName =  "uncorrected_sorted_duplicated_" + soft + ".fa"
-		sortedRefFileName =  "reference_sorted_duplicated_" + soft + ".fa"
+		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + soft + ".fa"
+		sortedUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated_" + soft + ".fa"
+		sortedRefFileName =  outputDirPath + "/reference_sorted_duplicated_" + soft + ".fa"
 		readSizeDistribution = soft + "_read_size_distribution.txt"
 	else:
-		sortedCorrectedFileName = "corrected_sorted.fa"
-		sortedUncoFileName =  "uncorrected_sorted_duplicated.fa"
-		sortedRefFileName =  "reference_sorted_duplicated.fa"
+		sortedCorrectedFileName = outputDirPath + "/corrected_sorted.fa"
+		sortedUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated.fa"
+		sortedRefFileName =  outputDirPath + "/reference_sorted_duplicated.fa"
 		readSizeDistribution = "read_size_distribution.txt"
 	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, outputDirPath, size_corrected_read_threshold, soft)
 

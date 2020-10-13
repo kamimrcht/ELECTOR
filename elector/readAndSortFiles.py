@@ -193,8 +193,8 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 
 
 # format corrected reads headers
-def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split):
-	name = "corrected_format_" + str(corrector) + ".fa"
+def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split, outputDirPath):
+	name = outputDirPath + "/corrected_format_" + str(corrector) + ".fa"
 	if corrector == "proovread":
 		cmdFormatHeader = "sed 's/\(\.[0-9]*\)* SUBSTR.*$//g' " + correctedReads
 		#~ formattedReads = open("corrected_format_proovread.fa", 'w')
@@ -448,67 +448,67 @@ def generateRefReadsRealData(realReads, referenceGenome, referenceReads):
 
 
 #Generates reference reads file (only supported for nanosim and simlord)
-def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator):
+def convertSimulationOutputToRefFile(simulatedPrefix, referenceGenome, simulator, outputDirPath):
 	if simulator == "nanosim":
-		generateRefReadsNanosim(simulatedPrefix + "_reads.fasta", referenceGenome, simulatedPrefix + "_reference.fasta")
+		generateRefReadsNanosim(simulatedPrefix + "_reads.fasta", referenceGenome, outputDirPath + "/" + basename(simulatedPrefix) + "_reference.fasta")
 	elif simulator == "simlord":
 		cmdConv = installDirectory+"fq2fa " + simulatedPrefix + ".fastq"
-		outFa = open(simulatedPrefix + ".fasta", 'w')
+		outFa = open(outputDirPath + "/" + basename(simulatedPrefix) + ".fasta", 'w')
 		subprocessLauncher(cmdConv, outFa)
 		outFa.close()
-		generateRefReadsSimLord(simulatedPrefix + ".sam", referenceGenome, simulatedPrefix + "_reference.fasta")
+		generateRefReadsSimLord(simulatedPrefix + ".sam", referenceGenome, outputDirPath + "/" + basename(simulatedPrefix) + "_reference.fasta")
 	else:
-		generateRefReadsRealData(simulatedPrefix, referenceGenome, simulatedPrefix + "_reference.fasta")
+		generateRefReadsRealData(simulatedPrefix, referenceGenome, outputDirPath + "/" + basename(simulatedPrefix) + "_reference.fasta")
 
 
 
 # main function
-def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb):
+def processReadsForAlignment(corrector, reference, uncorrected, corrected, size, split, simulator, dazzDb, outputDirPath):
 	clipsNb = {}
 	#0- generate reference reads, if needed
 	if simulator is not None:
 		if simulator != "real":
-			convertSimulationOutputToRefFile(uncorrected, reference, simulator)
+			convertSimulationOutputToRefFile(uncorrected, reference, simulator, outputDirPath)
 		else:
 			#convertSimulationOutputToRefFile(corrected, reference, simulator)
-			clipsNb = generateRefReadsRealData(uncorrected, reference, uncorrected + "_reference.fasta")
+			clipsNb = generateRefReadsRealData(uncorrected, reference, outputDirPath + "/" + basename(uncorrected) + "_reference.fasta")
 	#1- correctly format the headers to be able to identify and sort the corrected reads
 	if simulator == "nanosim":
-		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split)
+		formatHeader(corrector, corrected, uncorrected + "_reads.fasta", dazzDb, split, outputDirPath)
 	elif simulator == "simlord":
-		formatHeader(corrector, corrected, uncorrected + ".fasta", dazzDb, split)
+		formatHeader(corrector, corrected, outputDirPath + "/" + basename(uncorrected) + ".fasta", dazzDb, split, outputDirPath)
 	else:
-		formatHeader(corrector, corrected, uncorrected, dazzDb, split)
+		formatHeader(corrector, corrected, uncorrected, dazzDb, split, outputDirPath)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
 	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split) and corrector != "hercules" and corrector != "fmlrc":
-		newCorrectedFileName = "corrected_format_" + corrector + ".fa"
-		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
-		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
-		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
-		sortedRefFileName = "reference_sorted_" + corrector + ".fa"
-		newRefFileName =  "reference_sorted_duplicated_" + corrector + ".fa"
+		newCorrectedFileName = outputDirPath + "/corrected_format_" + corrector + ".fa"
+		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
+		sortedUncoFileName = outputDirPath + "/uncorrected_sorted_" + corrector + ".fa"
+		newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated_" + corrector + ".fa"
+		sortedRefFileName = outputDirPath + "/reference_sorted_" + corrector + ".fa"
+		newRefFileName =  outputDirPath + "/reference_sorted_duplicated_" + corrector + ".fa"
 	elif corrector is not None:
 		newCorrectedFileName = corrected
-		sortedCorrectedFileName = "corrected_sorted_by_" + corrector + ".fa"
-		sortedUncoFileName = "uncorrected_sorted_" + corrector + ".fa"
-		newUncoFileName =  "uncorrected_sorted_duplicated_" + corrector + ".fa"
-		sortedRefFileName = "reference_sorted_" + corrector + ".fa"
-		newRefFileName =  "reference_sorted_duplicated_" + corrector + ".fa"
+		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
+		sortedUncoFileName = outputDirPath + "/uncorrected_sorted_" + corrector + ".fa"
+		newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated_" + corrector + ".fa"
+		sortedRefFileName = outputDirPath + "/reference_sorted_" + corrector + ".fa"
+		newRefFileName =  outputDirPath + "/reference_sorted_duplicated_" + corrector + ".fa"
 	else:
 		newCorrectedFileName = corrected
-		sortedCorrectedFileName = "corrected_sorted.fa"
-		sortedUncoFileName = "uncorrected_sorted.fa"
-		newUncoFileName =  "uncorrected_sorted_duplicated.fa"
-		sortedRefFileName = "reference_sorted.fa"
-		newRefFileName =  "reference_sorted_duplicated.fa"
+		sortedCorrectedFileName = outputDirPath + "/corrected_sorted.fa"
+		sortedUncoFileName = outputDirPath + "/uncorrected_sorted.fa"
+		newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated.fa"
+		sortedRefFileName = outputDirPath + "/reference_sorted.fa"
+		newRefFileName =  outputDirPath + "/reference_sorted_duplicated.fa"
 	if simulator == "nanosim":
 		readAndSortFasta(uncorrected + "_reads.fasta", sortedUncoFileName)
 	elif simulator == "simlord":
-		readAndSortFasta(uncorrected + ".fasta", sortedUncoFileName)
+		readAndSortFasta(outputDirPath + "/" + basename(uncorrected) + ".fasta", sortedUncoFileName)
 	else:
 		readAndSortFasta(uncorrected, sortedUncoFileName)
 	if simulator is not None:
-		readAndSortFasta(uncorrected + "_reference.fasta", sortedRefFileName)
+		readAndSortFasta(outputDirPath + "/" + basename(uncorrected) + "_reference.fasta", sortedRefFileName)
 	else:
 		readAndSortFasta(reference, sortedRefFileName)
 	occurrenceEachRead = readAndSortFasta(newCorrectedFileName, sortedCorrectedFileName)
