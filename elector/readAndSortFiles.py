@@ -480,7 +480,7 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	else:
 		formatHeader(corrector, corrected, uncorrected, dazzDb, split, outputDirPath)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split) and corrector != "hercules" and corrector != "fmlrc":
+	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split) and corrector != "hercules" and corrector != "fmlrc" and corrector != "consent":
 		newCorrectedFileName = outputDirPath + "/corrected_format_" + corrector + ".fa"
 		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
 		sortedUncoFileName = outputDirPath + "/uncorrected_sorted_" + corrector + ".fa"
