@@ -65,12 +65,13 @@ def main():
 	parser.add_argument('-perfect', nargs='?', type=str, action="store", dest="perfect", help="Fasta file with reference read sequences (each read sequence on one line)")
 	parser.add_argument('-reference', nargs='?', type=str,  action="store", dest="reference",  help="Fasta file with reference genome sequences (each sequence on one line)")
 	parser.add_argument('-simulator', nargs='?', type=str, action="store", dest="simulator", help="Tool used for the simulation of the long reads (either nanosim, simlord, or real). Value real should be used if assessing real data.")
-	parser.add_argument('-corrector', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: lorma, mecat, pbdagcon, daccord). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
+	parser.add_argument('-corrector', nargs='?', type=str,  action="store", dest="soft",  help="Corrector used (lowercase, in this list: canu, colormap, consent, daccord, ectools, flas, fmlrc, halc, hercules, hg-color, jabba, lsc, lordec, lorma, mecat, nas, nanocorr, pbdagcon, proovread). If no corrector name is provided, make sure the read's headers are correctly formatted (i.e. they correspond to those of uncorrected and reference files)")
 	parser.add_argument('-dazzDb', nargs='?', type=str, action="store", dest="dazzDb", help="Reads database used for the correction, if the reads were corrected with Daccord or PBDagCon")
 	parser.add_argument('-output', nargs='?', type=str, action="store", dest="outputDirPath", help="Name for output directory", default=None)
 	parser.add_argument('-remap',  dest="remap", action='store_true', default=False, help="Perform remapping of the corrected reads to the reference")
 	parser.add_argument('-assemble',  dest="assemble", action='store_true', default=False, help="Perform assembly of the corrected reads")
 	parser.add_argument('-minsize', nargs='?', type=float, action="store", dest="minsize", help="Do not assess reads/fragments chose length is <= MINSIZE %% of the original read", default=10)
+	parser.add_argument('-noplot',  dest="noplot", action='store_true', default=False, help="Do not output plots and PDF report with R/LaTeX")
 	# get options for this run
 	args = parser.parse_args()
 	if (len(sys.argv) <= 1):
@@ -87,6 +88,7 @@ def main():
 	outputDirPath = args.outputDirPath
 	remap = args.remap
 	assemble = args.assemble
+	noplot = args.noplot
 	size_corrected_read_threshold = args.minsize / 100
 	clipsNb = {}
 
@@ -110,7 +112,7 @@ def main():
 	if perfect is not None:
 		simulator = None
 	if args.soft is not None:
-		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat" or args.soft == "jabba" or args.soft == "fmlrc" or args.soft == "flas" or args.soft == "hercules":
+		if args.soft == "proovread" or args.soft == "lordec" or args.soft == "nanocorr" or args.soft == "nas" or args.soft == "colormap" or args.soft == "hg-color" or args.soft == "halc" or args.soft == "pbdagcon" or args.soft == "canu" or args.soft == "lorma" or args.soft == "daccord" or args.soft == "mecat" or args.soft == "jabba" or args.soft == "fmlrc" or args.soft == "flas" or args.soft == "hercules" or args.soft == "consent" or args.soft == "ectools" or args.soft == "lsc":
 			soft = args.soft
 	size =  getFileReadNumber(corrected)
 	if simulator is not None:
@@ -136,7 +138,6 @@ def main():
 		sortedRefFileName =  outputDirPath + "/reference_sorted_duplicated.fa"
 		readSizeDistribution = "read_size_distribution.txt"
 	smallReads, wronglyCorReads = alignment.getPOA(sortedCorrectedFileName, sortedRefFileName, sortedUncoFileName, args.threads, outputDirPath, size_corrected_read_threshold, soft)
-
 	nbReads, throughput, precision, recall, correctBaseRate, errorRate, smallReads, wronglyCorReads, percentGCRef, percentGCCorr, numberSplit, meanMissing, numberExtended, meanExtension, minLength, indelsubsUncorr, indelsubsCorr , truncated, ratioHomopolymer = computeStats.outputRecallPrecision(sortedCorrectedFileName, outputDirPath, logFile, smallReads, wronglyCorReads, reportedHomopolThreshold, size_corrected_read_threshold, readSizeDistribution, clipsNb, 0, 0, soft)
 
 	avId=0
@@ -157,7 +158,8 @@ def main():
 		logFile.write("********** ASSEMBLY **********\n")
 		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
-	plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
+	if not noplot:
+		plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
 
 
 
