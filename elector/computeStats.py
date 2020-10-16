@@ -194,6 +194,7 @@ def findGapStretches(correctedSequence, referenceSequence, gapsPositions):
 #@Camille j'ai aussi fait un peu de ménage ici
 #main function
 def outputRecallPrecision(correctedFileName, outDir, logFile, smallReadNumber, wronglyCorrectedReadsNumber, reportedHomopolThreshold, SIZE_CORRECTED_READ_THRESHOLD,  fileSizeName, clipsNb, beg=0, end=0, soft=None):
+	print(soft)
 	if soft is not None:
 		#recall, precision
 		outMetrics = open(outDir + "/" + soft + "_per_read_metrics.txt", 'w')

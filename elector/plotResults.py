@@ -42,14 +42,15 @@ except ImportError:
 
 def launchRscripts(installDirectory, soft, outDir):
 	# recall and precision figure
+	installDirectory += "../";
 	if soft is not None:
 		if checkIfFile( outDir + "/" + soft + "_per_read_metrics.txt"):
 			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + outDir + "/" + soft + "_per_read_metrics.txt " + outDir
 			subprocessLauncher(cmdRecallPrecision)
 	else:
 		if checkIfFile( outDir + "/per_read_metrics.txt"):
+			print("lalala");
 			cmdRecallPrecision = "Rscript " + installDirectory + "/Rscripts/plot_recall_precision_correctrate.R " + outDir + "/per_read_metrics.txt " + outDir
-			subprocessLauncher(cmdRecallPrecision)
 
 	# sizes distribution
 	if soft is not None:
