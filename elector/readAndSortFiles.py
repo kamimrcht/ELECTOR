@@ -297,21 +297,16 @@ def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split, out
 
 
 def loadReference(fRef, simulator):
-	f = open(fRef)
+	handle = open(fRef, "rU")
+	l = SeqIO.parse(handle, "fasta")
 	refSeqs = {}
 
-	if simulator == "nanosim" or simulator == "real":
-		id = f.readline()[1:-1].strip().split(" ")[0].replace("_", "-")
-	else:
-		id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
-	while id != "":
-		seq = f.readline()[:-1]
-		refSeqs[id] = seq
+	for record in l:
 		if simulator == "nanosim" or simulator == "real":
-			id = f.readline()[1:-1].strip().split(" ")[0].replace("_", "-")
+			id = record.description.split(" ")[0].replace("_", "-")
 		else:
-			id = f.readline()[1:-1].strip().replace(" ", "-").replace("_", "-")
-	f.close()
+			id = record.description.strip().replace(" ", "-").replace("_", "-")
+		refSeqs[id] = str(record.seq)
 	return refSeqs
 
 
