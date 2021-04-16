@@ -156,7 +156,7 @@ def main():
 	if assemble:
 		print("********** ASSEMBLY **********")
 		logFile.write("********** ASSEMBLY **********\n")
-		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
+		nbContigs, nbAlContig, nbBreakpoints, NG50, NG75, cov = assemblyStats.generateResults(corrected, reference, args.threads, logFile)
 		print("******************************")
 	if not noplot:
 		plotResults.generateResults(outputDirPath, installDirectory, soft, nbReads, throughput, recall, precision, correctBaseRate, errorRate, numberSplit, meanMissing, numberExtended, meanExtension, percentGCRef, percentGCCorr, smallReads, wronglyCorReads, minLength, indelsubsUncorr, indelsubsCorr, avId, cov, nbContigs, nbAlContig, nbBreakpoints, NG50, NG75 , remap, assemble, ratioHomopolymer)
