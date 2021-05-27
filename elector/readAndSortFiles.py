@@ -194,14 +194,17 @@ def duplicateRefReads(reference, uncorrected, occurrenceEachRead, size, newUncoN
 
 # format corrected reads headers
 def formatHeader(corrector, correctedReads, uncorrectedReads, dazzDb, split, outputDirPath):
-	name = outputDirPath + "/corrected_format_" + str(corrector) + ".fa"
+	if corrector is not None:
+		name = outputDirPath + "/corrected_format_" + str(corrector) + ".fa"
+	else:
+		name = outputDirPath + "/corrected_formatted.fa"
 	if corrector == "proovread":
 		cmdFormatHeader = "sed 's/\(\.[0-9]*\)* SUBSTR.*$//g' " + correctedReads
 		#~ formattedReads = open("corrected_format_proovread.fa", 'w')
 		formattedReads = open(name, 'w')
 		subprocessLauncher(cmdFormatHeader, formattedReads)
 		formattedReads.close()
-	elif corrector == "lordec":
+	elif corrector == "lordec" or corrector == None:
 		if not split:
 			#already formatted
 			pass
@@ -475,13 +478,21 @@ def processReadsForAlignment(corrector, reference, uncorrected, corrected, size,
 	else:
 		formatHeader(corrector, corrected, uncorrected, dazzDb, split, outputDirPath)
 	#2- count occurences of each corrected reads(in case of trimmed/split) and sort them
-	if corrector is not None and corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba") or split) and corrector != "hercules" and corrector != "fmlrc" and corrector != "consent":
-		newCorrectedFileName = outputDirPath + "/corrected_format_" + corrector + ".fa"
-		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
-		sortedUncoFileName = outputDirPath + "/uncorrected_sorted_" + corrector + ".fa"
-		newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated_" + corrector + ".fa"
-		sortedRefFileName = outputDirPath + "/reference_sorted_" + corrector + ".fa"
-		newRefFileName =  outputDirPath + "/reference_sorted_duplicated_" + corrector + ".fa"
+	if corrector != "nas" and ((corrector != "lordec" and corrector != "halc" and corrector != "jabba" and corrector != None) or split) and corrector != "hercules" and corrector != "fmlrc" and corrector != "consent":
+		if corrector is not None:
+			newCorrectedFileName = outputDirPath + "/corrected_format_" + corrector + ".fa"
+			sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
+			sortedUncoFileName = outputDirPath + "/uncorrected_sorted_" + corrector + ".fa"
+			newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated_" + corrector + ".fa"
+			sortedRefFileName = outputDirPath + "/reference_sorted_" + corrector + ".fa"
+			newRefFileName =  outputDirPath + "/reference_sorted_duplicated_" + corrector + ".fa"
+		else:
+			newCorrectedFileName = outputDirPath + "/corrected_formatted.fa"
+			sortedCorrectedFileName = outputDirPath + "/corrected_sorted.fa"
+			sortedUncoFileName = outputDirPath + "/uncorrected_sorted.fa"
+			newUncoFileName =  outputDirPath + "/uncorrected_sorted_duplicated.fa"
+			sortedRefFileName = outputDirPath + "/reference_sorted.fa"
+			newRefFileName =  outputDirPath + "/reference_sorted_duplicated.fa"
 	elif corrector is not None:
 		newCorrectedFileName = corrected
 		sortedCorrectedFileName = outputDirPath + "/corrected_sorted_by_" + corrector + ".fa"
